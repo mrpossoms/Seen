@@ -6,18 +6,15 @@ int main(int arc, const char* argv[])
 	seen::RendererGL renderer("../data", argv[0]);
 	seen::ListScene scene;
 	seen::Sky sky;
-	seen::Camera camera(renderer.width, renderer.height, M_PI / 2);
+	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
 
+	// define the sky shader
 	seen::ShaderConfig default_shader = {
 		.vertex = "sky.vsh",
 		.fragment = "sky.fsh"
 	};
 
-	mat4x4 view;
-
-	mat4x4_look_at(view, VEC3_ZERO.v, VEC3_FORWARD.v, VEC3_UP.v);
-	camera.view(view);
-
+	// callback for camera looking
 	renderer.mouse_moved = [&](double x, double y, double dx, double dy)
 	{
 		Quat q = camera.orientation();
@@ -32,8 +29,10 @@ int main(int arc, const char* argv[])
 		camera.orientation(q);
 	};
 
+	// set the sky shader to active
 	seen::ShaderProgram::active(seen::Shaders[default_shader]);
 
+	// Add all things to be drawn to the scene
 	scene.drawables().push_back(&sky);
 
 	while(renderer.is_running())

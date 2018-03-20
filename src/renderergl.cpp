@@ -78,6 +78,7 @@ void RendererGL::prepare()
 	int fb_width, fb_height;
 	glfwGetFramebufferSize(win, &fb_width, &fb_height);
 	glViewport(0, 0, fb_width, fb_height);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	assert(gl_get_error());

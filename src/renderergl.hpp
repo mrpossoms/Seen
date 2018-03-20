@@ -20,11 +20,11 @@ public:
 	void draw(Viewer* viewer, Scene* scene);
 
 	void finish();
-	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
-
 
 	GLFWwindow* win;
 	int width, height;
+
+	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
 private:
 	double mouse_last_x, mouse_last_y;
 

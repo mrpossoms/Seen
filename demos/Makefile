@@ -34,4 +34,4 @@ demo1: obj/sky.o obj/demo1.o
 	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
 
 clean:
-	rm -rf ./obj $(DEMOS)
+	rm -rf ./obj $(DEMOS) *.dSYM

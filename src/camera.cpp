@@ -8,7 +8,12 @@ Camera::Camera(float fov,
 {
 	width = frame_w;
 	height = frame_h;
-	mat4x4_perspective(_projection, fov, width / (float)height, 0.01, 1000);
+
+	float aspect = width / (float)height;
+
+	printf("%d x %d : %f\n", width, height, aspect);
+
+	mat4x4_perspective(_projection, fov, aspect, 0.01, 1000);
 }
 
 
