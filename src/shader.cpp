@@ -129,6 +129,8 @@ void ShaderProgram::init_draw_params()
 	draw_params.material_uniforms.norm = glGetUniformLocation(program, "norm");
 	draw_params.material_uniforms.spec = glGetUniformLocation(program, "spec");
 	draw_params.material_uniforms.envd = glGetUniformLocation(program, "envd");
+
+	gl_get_error();
 }
 //------------------------------------------------------------------------------
 
@@ -136,12 +138,15 @@ ShaderProgram* ShaderProgram::active(ShaderProgram* shader)
 {
 	static ShaderProgram* active;
 
+	assert(gl_get_error());
+
 	if(shader)
 	{
 		glUseProgram(shader->program);
 		active = shader;
 	}
 
+	assert(gl_get_error());
 	assert(active);
 
 	return active;

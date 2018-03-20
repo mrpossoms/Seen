@@ -27,6 +27,8 @@ Sky::~Sky()
 
 void Sky::draw(Viewer* viewer)
 {
+	assert(gl_get_error());
+
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
     glEnableVertexAttribArray(0);

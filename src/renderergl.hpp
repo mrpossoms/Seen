@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.h"
+#include <functional>
 
 namespace seen
 {
@@ -19,10 +20,14 @@ public:
 	void draw(Viewer* viewer, Scene* scene);
 
 	void finish();
+	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
 
 
 	GLFWwindow* win;
 	int width, height;
+private:
+	double mouse_last_x, mouse_last_y;
+
 };
 
 }

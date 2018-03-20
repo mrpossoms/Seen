@@ -2,6 +2,7 @@
 #include "camera.hpp"
 #include "texture.hpp"
 #include "geo.hpp"
+#include "shader.hpp"
 
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
@@ -91,7 +92,17 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 
 	prepare();
 
-	if(viewer) viewer->projection(proj)->view(view);
+	if(viewer)
+	{
+		DrawParams& params = ShaderProgram::active()->draw_params;
+
+		glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
+		glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
+
+		assert(gl_get_error());
+	}
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (scene)
 	for(auto drawable : scene->drawables())
@@ -100,7 +111,6 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 		if (std::find(excluding.begin(), excluding.end(), drawable) != excluding.end())
 			continue;
 
-
 		drawable->draw(viewer);
 	}
 
@@ -108,6 +118,12 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 
 	glfwPollEvents();
 	glfwSwapBuffers(win);
+
+	double xpos, ypos;
+	glfwGetCursorPos(win, &xpos, &ypos);
+	mouse_moved(xpos, ypos, xpos - mouse_last_x, ypos - mouse_last_y);
+	mouse_last_x = xpos;
+	mouse_last_y = ypos;
 }
 //------------------------------------------------------------------------------
 

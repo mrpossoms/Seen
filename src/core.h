@@ -18,11 +18,14 @@
 #include <GL/glx.h>
 #include <GL/glext.h>
 #endif
+
 #include <GLFW/glfw3.h>
 
 #ifdef __APPLE__
+#undef __gl_h_
 #include <OpenGL/gl3.h>
 #endif
+
 
 // #include <GL/glew.h>
 #include <linmath.h>

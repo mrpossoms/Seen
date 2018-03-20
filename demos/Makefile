@@ -5,7 +5,7 @@ CFLAGS=--std=c++11 -g
 INC=-I/usr/local/include -I../src
 LINK=../lib/seen.a -lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
-DEMOS=demo0 demo1:
+DEMOS=demo0 demo1
 
 ifeq ($(OS),Darwin)
 	LINK +=-lpthread -lm -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
@@ -24,11 +24,14 @@ all: $(DEMOS)
 obj: ../lib/seen.a
 	mkdir obj || True
 
+obj/%.o: src/%.cpp obj
+	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
+
 demo0: obj
 	$(CXX) $(CFLAGS) $(INC) src/$@.cpp -o $@ $(LINK)
 
-demo1: obj
-	$(CXX) $(CFLAGS) $(INC) src/sky.cpp src/$@.cpp -o $@ $(LINK)
+demo1: obj/sky.o obj/demo1.o
+	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
 
 clean:
 	rm -rf ./obj $(DEMOS)
