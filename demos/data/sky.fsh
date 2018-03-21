@@ -26,5 +26,5 @@ void main()
     vec3 sun = sun_color * (10.0 * pow(l, 64.0));
 
     color = vec4(mix(blue, sun, pow(l, 32.0)), 1.0);
-    // color = vec4((v_normal + 1.0) / 2.0, 1.0);
+    //color = vec4((v_normal + 1.0) / 2.0, 1.0);
 }

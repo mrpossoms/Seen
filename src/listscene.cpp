@@ -2,7 +2,7 @@
 
 using namespace seen;
 
-std::vector<Drawable*>& ListScene::drawables()
+std::vector<seen::Drawable*>& seen::ListScene::drawables()
 {
 	return _drawables;
 }

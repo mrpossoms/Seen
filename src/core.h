@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <fcntl.h>
 
+// c libs
+#include "string.h"
+
 // c++ libs
 #include <map>
 #include <vector>
@@ -12,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <streambuf>
+#include <algorithm>
 
 // project libs
 #ifdef __linux__
