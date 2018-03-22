@@ -55,6 +55,21 @@ protected:
 	std::vector<int> indices;
 	std::vector<Vertex> vertices;
 };
+
+//------------------------------------------------------------------------------
+
+struct Model : Drawable
+{
+public:
+	Model(Mesh* mesh);
+	~Model();
+
+	void draw(Viewer* viewer);
+private:
+	GLuint vbo;
+	int vertices;
+};
+
 //------------------------------------------------------------------------------
 struct STLMesh : Mesh
 {
@@ -83,7 +98,8 @@ private:
 class MeshFactory
 {
 public:
-	static Mesh* get_model(std::string path);
+	static Mesh* get_mesh(std::string path);
+	static Model* get_model(std::string path);
 };
 
 //------------------------------------------------------------------------------
@@ -102,5 +118,6 @@ struct Plane : Mesh
 	Plane(float size);
 	~Plane();
 };
+
 
 }

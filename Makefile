@@ -1,9 +1,9 @@
 $(eval OS := $(shell uname))
 
 CXX=g++
-CFLAGS=--std=c++11 -g
+CFLAGS=--std=c++11 -g -Wall
 INC=-I/usr/local/include
-SRCS=camera.cpp envmap.cpp geo.cpp texture.cpp shader.cpp renderergl.cpp listscene.cpp
+SRCS=camera.cpp envmap.cpp geo.cpp texture.cpp shader.cpp renderergl.cpp listscene.cpp core.cpp custompass.cpp
 LINK=-lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
 

@@ -12,8 +12,9 @@ public:
 
 	void prepare();
 
-	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*> excluding);
-	void draw_at(Vec3 position, Scene* scene, std::vector<Drawable*> excluding);
+	virtual void draw(Viewer* viewer) {};
+	virtual void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding);
+	virtual void draw_at(Vec3 position, Scene* scene, std::vector<Drawable*>& excluding);
 
 	void finish();
 

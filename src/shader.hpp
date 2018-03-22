@@ -40,7 +40,7 @@ struct ShaderProgram {
 
 class ShaderCache {
 public:
-	ShaderCache(std::string shader_path);
+	ShaderCache();
 	~ShaderCache();
 
 	ShaderProgram* operator[](ShaderConfig config);

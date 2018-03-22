@@ -3,10 +3,12 @@
 
 int main(int arc, const char* argv[])
 {
-	seen::RendererGL renderer("../data", argv[0]);
+	seen::RendererGL renderer("./data", argv[0]);
 	seen::ListScene scene;
 	seen::Sky sky;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
+
+	seen::Mesh* bale = seen::MeshFactory::get_model("mutable_cube.obj");
 
 	// define the sky shader
 	seen::ShaderConfig default_shader = {

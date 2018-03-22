@@ -1,6 +1,6 @@
 #include "shader.hpp"
 
-seen::ShaderCache seen::Shaders("./data/");
+seen::ShaderCache seen::Shaders;
 
 using namespace seen;
 
@@ -71,7 +71,6 @@ static GLint load_shader(const char* path, GLenum type)
 static GLint link_program(GLint vertex, GLint frag, const char** attributes)
 {
 	GLint status;
-	GLint logLength;
 	GLint prog = glCreateProgram();
 
 	assert(gl_get_error());
@@ -159,9 +158,9 @@ ShaderProgram* ShaderProgram::active()
 }
 //------------------------------------------------------------------------------
 
-ShaderCache::ShaderCache(std::string shader_path)
+ShaderCache::ShaderCache()
 {
-	_shader_path = shader_path;
+
 }
 //------------------------------------------------------------------------------
 
@@ -177,8 +176,8 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 
 	if(_program_cache.count(name) <= 0)
 	{
-		std::string vsh_path = _shader_path + "/" + config.vertex;
-		std::string fsh_path = _shader_path + "/" + config.fragment;
+		std::string vsh_path = DATA_PATH + "/" + config.vertex;
+		std::string fsh_path = DATA_PATH + "/" + config.fragment;
 
 		// Load, compile and store the vertex shader if needed
 		if(_shader_cache.count(vsh_path) <= 0)

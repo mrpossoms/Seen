@@ -7,7 +7,10 @@ Sky::Sky()
     glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    Mesh* mesh = MeshFactory::get_model("data/sphereized_cube.obj");
+    Mesh* mesh = MeshFactory::get_mesh("sphereized_cube.obj");
+
+    assert(mesh);
+
     vertices = mesh->vert_count();
 
     printf("mesh: %lx with %d vertices vbo: %d\n",

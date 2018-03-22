@@ -1,4 +1,5 @@
 #include "geo.hpp"
+#include "shader.hpp"
 
 using namespace seen;
 
@@ -246,7 +247,7 @@ static int get_line(int fd, char* line)
 //------------------------------------------------------------------------------
 bool parse_line(int fd, ObjLine& line)
 {
-	char *save_ptr = NULL, *sub_save_ptr = NULL;
+	char *save_ptr = NULL;
 	line.type = UNKNOWN;
 
 	if(get_line(fd, line.str) == 0)
@@ -353,26 +354,26 @@ OBJMesh::OBJMesh(int fd)
 				break;
 			case POSITION:
 			{
-				vec3_t p = { l.position[0], l.position[1], l.position[2] };
+				vec3_t p = { { l.position[0], l.position[1], l.position[2] } };
 				positions.push_back(p);
 			}
 				break;
 			case TEXTURE:
 			{
-				vec3_t t = { l.texture[0], l.texture[1], l.texture[2] };
+				vec3_t t = { { l.texture[0], l.texture[1], l.texture[2] } };
 				tex_coords.push_back(t);
 			}
 				break;
 			case NORMAL:
 			{
-				// printf("n %f %f %f\n", l.normal[0], l.normal[1], l.normal[2] };
-				vec3_t n = { l.normal[0], l.normal[1], l.normal[2] };
+				// printf("n %f %f %f\n", l.normal[0], l.normal[1], l.normal[2] } };
+				vec3_t n = { { l.normal[0], l.normal[1], l.normal[2] } };
 				normals.push_back(n);
 			}
 				break;
 			case PARAMETER:
 			{
-				vec3_t p = { l.parameter[0], l.parameter[1], l.parameter[2] };
+				vec3_t p = { { l.parameter[0], l.parameter[1], l.parameter[2] } };
 				params.push_back(p);
 			}
 				break;
@@ -413,26 +414,32 @@ OBJMesh::~OBJMesh()
 //   | _/ _` / _|  _/ _ \ '_| || |
 //   |_|\__,_\__|\__\___/_|  \_, |
 //                           |__/
-Mesh* MeshFactory::get_model(std::string path)
+Mesh* MeshFactory::get_mesh(std::string path)
 {
 	static std::map<std::string, Mesh*> _cached_models;
 
 	// try to open this file
-	int fd = open(path.c_str(), O_RDONLY);
+	std::string full_path = DATA_PATH + "/" + path;
+	int fd = open(full_path.c_str(), O_RDONLY);
 	if(fd < 0)
 	{
-		fprintf(stderr, "Failed to open '%s'\n", path.c_str());
+		fprintf(stderr, "Failed to open '%s'\n", full_path.c_str());
 		return NULL;
 	}
 
 	// Find this path's file ext
 	const char* ext = NULL;
-	for(int i = path.length() - 1; path.at(i); i--) if(path.at(i) == '.')
+	for(int i = full_path.length() - 1; full_path.at(i); i--) if(full_path.at(i) == '.')
 	{
-		ext = path.c_str() + i + 1;
+		ext = full_path.c_str() + i + 1;
 		break;
 	}
-	if(ext == NULL) return NULL;
+
+	if(ext == NULL)
+	{
+		fprintf(stderr, "Failed find to path's extension '%s'\n", full_path.c_str());
+		return NULL;
+	}
 
 	int matched_ext = -1;
 	const std::string exts[] = { "stl", "obj" };
@@ -455,8 +462,102 @@ Mesh* MeshFactory::get_model(std::string path)
 			case 1:
 				_cached_models[path] = new OBJMesh(fd);
 				break;
+			default:
+				fprintf(stderr, "No loader matched\n");
 		}
 	}
 
+	assert(_cached_models[path]);
+
 	return _cached_models[path];
+}
+
+
+Model* MeshFactory::get_model(std::string path)
+{
+	static std::map<std::string, Model*> _cached_models;
+
+	if(_cached_models.count(path) == 0)
+	{
+		_cached_models[path] = new Model(MeshFactory::get_mesh(path));
+	}
+
+	assert(_cached_models[path]);
+
+	return _cached_models[path];
+}
+
+
+Model::Model(Mesh* mesh)
+{
+    glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    assert(mesh);
+
+    vertices = mesh->vert_count();
+
+    printf("mesh: %lx with %d vertices vbo: %d\n",
+    (unsigned long)mesh,
+    mesh->vert_count(),
+    vbo);
+
+	glBufferData(
+		GL_ARRAY_BUFFER,
+		mesh->vert_count() * sizeof(Vertex),
+		mesh->verts(),
+		GL_STATIC_DRAW
+	);
+}
+//------------------------------------------------------------------------------
+
+Model::~Model()
+{
+    glDeleteBuffers(1, &vbo);
+}
+//------------------------------------------------------------------------------
+
+void Model::draw(Viewer* viewer)
+{
+	assert(gl_get_error());
+
+    glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	for(int i = 4; i--;)
+	{
+		glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3) * i));
+	}
+
+
+	assert(gl_get_error());
+
+	// TODO
+	// mat4x4 world;
+	// mat3x3 rot;
+	// mat4x4_identity(world);
+	// mat3x3_identity(rot);
+	//
+    // DrawParams& params = ShaderProgram::active()->draw_params;
+	//
+	// glUniformMatrix4fv(params.world_uniform, 1, GL_FALSE, (GLfloat*)world);
+	// glUniformMatrix3fv(params.norm_uniform,  1, GL_FALSE, (GLfloat*)rot);
+
+	assert(gl_get_error());
+
+	printf("%d\n", vertices);
+	glDrawArrays(GL_TRIANGLES, 0, vertices);
+
+	assert(gl_get_error());
+
+	for(int i = 4; i--;)
+	{
+		glDisableVertexAttribArray(i);
+	}
+
+	assert(gl_get_error());
 }

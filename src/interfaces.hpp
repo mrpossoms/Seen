@@ -50,6 +50,7 @@ class RenderingPass : public Drawable
 {
 public:
 	virtual void prepare() {};
+	virtual void draw(Viewer* viewer) {};
 	virtual void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) = 0;
 	virtual void finish() {};
 

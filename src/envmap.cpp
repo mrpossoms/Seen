@@ -70,7 +70,7 @@ void EnvironmentMap::prepare()
 
 void EnvironmentMap::draw(Viewer* viewer,
                           Scene* scene,
-                          std::vector<Drawable*> excluding)
+                          std::vector<Drawable*>& excluding)
 {
 	Vec3 pos = viewer->position();
 	draw_at(pos, scene, excluding);
@@ -79,7 +79,7 @@ void EnvironmentMap::draw(Viewer* viewer,
 
 void EnvironmentMap::draw_at(Vec3 position,
                              Scene* scene,
-                             std::vector<Drawable*> excluding)
+                             std::vector<Drawable*>& excluding)
 {
 	struct basis {
 		Vec3 up, forward;

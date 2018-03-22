@@ -10,8 +10,10 @@
 
 using namespace seen;
 
+std::string seen::DATA_PATH;
+
 //------------------------------------------------------------------------------
-static GLFWwindow* init_glfw(int width, int height, std::string title)
+static GLFWwindow* init_glfw(int width, int height, const char* title)
 {
 	if (!glfwInit()){
 		fprintf(stderr, "glfwInit() failed\n");
@@ -24,7 +26,7 @@ static GLFWwindow* init_glfw(int width, int height, std::string title)
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* win = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+	GLFWwindow* win = glfwCreateWindow(width, height, title, NULL, NULL);
 
 	if (!win){
 		glfwTerminate();
@@ -49,10 +51,12 @@ static GLFWwindow* init_glfw(int width, int height, std::string title)
 }
 //------------------------------------------------------------------------------
 
-RendererGL::RendererGL(std::string data_path, std::string title)
+RendererGL::RendererGL(const char* data_path, const char* title)
 {
 	width = 640;
 	height = 480;
+
+	DATA_PATH = std::string(data_path);
 
 	win = init_glfw(width, height, title);
 
@@ -88,8 +92,6 @@ void RendererGL::prepare()
 void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding)
 {
 	assert(gl_get_error());
-
-	mat4x4 view, proj;
 
 	prepare();
 

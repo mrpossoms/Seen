@@ -113,7 +113,8 @@ GLuint TextureFactory::load_texture(std::string path)
 	std::cerr << "loading texture '" <<  path << "'... ";
 
 	/* open file and test for it being a png */
-	FILE *fp = fopen(path.c_str(), "rb");
+	std::string full_path = DATA_PATH + "/" + path;
+	FILE *fp = fopen(full_path.c_str(), "rb");
 	if (!fp)
 	{
 		fprintf(stderr, "[read_png_file] File %s could not be opened for reading", path.c_str());

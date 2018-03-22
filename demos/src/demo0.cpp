@@ -2,7 +2,7 @@
 
 int main(int arc, const char* argv[])
 {
-	seen::RendererGL renderer("../data", argv[0]);
+	seen::RendererGL renderer("./data", argv[0]);
 
 	while(renderer.is_running())
 	{

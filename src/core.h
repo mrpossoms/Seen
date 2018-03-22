@@ -37,36 +37,8 @@
 
 namespace seen {
 
+extern std::string DATA_PATH;
 
-static bool gl_get_error()
-{
-	GLenum err = GL_NO_ERROR;
-	bool good = true;
-
-	while((err = glGetError()) != GL_NO_ERROR)
-	{
-		std::cerr << "GL_ERROR: 0x" << std::hex << err << std::endl;
-		good = false;
-	}
-
-	return good;
-}
-
-static char* str_from_file(const char* path)
-{
-	char* str = NULL;
-
-	int fd = open(path, O_RDONLY);
-	assert(fd);
-
-	size_t file_size = lseek(fd, SEEK_END, 0);
-	str = (char*)malloc(file_size);
-	assert(str);
-
-	assert(read(fd, str, file_size) == file_size);
-	close(fd);
-
-	return str;
-}
+bool gl_get_error();
 
 }

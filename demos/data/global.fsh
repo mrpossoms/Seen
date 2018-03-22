@@ -106,12 +106,12 @@ void main() {
 
 	vec3 ibl = vec3(0.0);
 
-	for(int i = 0; i < 16; ++i)
-	{
-		ibl += texture(envd, N + kernel[i] * 0.5).xyz;
-	}
-
-	ibl /= 16.0;
+	// for(int i = 0; i < 16; ++i)
+	// {
+	// 	ibl += texture(envd, N + kernel[i] * 0.5).xyz;
+	// }
+	//
+	// ibl /= 16.0;
 
 	vec3 base_color = texture(tex, texcoord).xyz;
 	vec3 result = base_color * ibl * 0.9 + 0.1;

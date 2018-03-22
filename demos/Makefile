@@ -33,5 +33,8 @@ demo0: obj
 demo1: obj/sky.o obj/demo1.o
 	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
 
+demo2: obj/sky.o obj/demo2.o
+	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
+
 clean:
 	rm -rf ./obj $(DEMOS) *.dSYM

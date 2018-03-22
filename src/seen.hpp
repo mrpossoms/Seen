@@ -10,3 +10,4 @@
 #include "texture.hpp"
 #include "renderergl.hpp"
 #include "listscene.hpp"
+#include "custompass.hpp"
