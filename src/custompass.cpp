@@ -3,17 +3,18 @@
 
 using namespace seen;
 
-CustomPass::CustomPass() {};
+CustomPass::CustomPass()
+{
+	std::function<void()> nop = [&](){};
+	preparation_function = nop;
+};
 
 CustomPass::~CustomPass() {};
 
 
 void CustomPass::prepare()
 {
-	if (preparation_function)
-	{
-		(*preparation_function)();
-	}
+	preparation_function();
 }
 
 

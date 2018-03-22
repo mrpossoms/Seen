@@ -51,10 +51,13 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 }
 //------------------------------------------------------------------------------
 
-RendererGL::RendererGL(const char* data_path, const char* title)
+RendererGL::RendererGL(const char* data_path,
+                       const char* title,
+		       int win_w,
+		       int win_h)
 {
-	width = 640;
-	height = 480;
+	width = win_w;
+	height = win_h;
 
 	DATA_PATH = std::string(data_path);
 

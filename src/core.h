@@ -16,6 +16,7 @@
 #include <iostream>
 #include <streambuf>
 #include <algorithm>
+#include <functional>
 
 // project libs
 #ifdef __linux__

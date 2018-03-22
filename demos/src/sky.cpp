@@ -39,7 +39,7 @@ void Sky::draw(Viewer* viewer)
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-    glEnableVertexAttribArray(0);
+    	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);

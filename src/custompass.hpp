@@ -16,7 +16,7 @@ public:
 	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) {}
 	void draw(Viewer* viewer);
 
-	std::function<void (void)>* preparation_function;
+	std::function<void (void)> preparation_function;
 	std::vector<Drawable*>* drawables;
 };
 

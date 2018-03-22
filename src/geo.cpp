@@ -20,7 +20,7 @@ void Mesh::compute_tangents()
 {
 	Vertex* v = verts();
 
-	for(int i = 0; i < vert_count(); i += 3)
+	for(unsigned int i = 0; i < vert_count(); i += 3)
 	{
 		vec3_sub(v[i + 0].tangent, v[i].position, v[i + 1].position);
 		vec3_sub(v[i + 1].tangent, v[i].position, v[i + 1].position);
@@ -121,7 +121,7 @@ STLMesh::STLMesh(int fd)
 	assert(this->tris && all_positions && all_normals);
 
 	// read all the geometry
-	for(int i = 0; i < this->tri_count; ++i)
+	for(unsigned int i = 0; i < this->tri_count; ++i)
 	{
 		STLTri* tri = this->tris + i;
 
@@ -490,18 +490,12 @@ Model* MeshFactory::get_model(std::string path)
 
 Model::Model(Mesh* mesh)
 {
-    glGenBuffers(1, &vbo);
+	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    assert(mesh);
+	assert(mesh);
 
-    vertices = mesh->vert_count();
-
-    printf("mesh: %lx with %d vertices vbo: %d\n",
-    (unsigned long)mesh,
-    mesh->vert_count(),
-    vbo);
-
+	vertices = mesh->vert_count();
 	glBufferData(
 		GL_ARRAY_BUFFER,
 		mesh->vert_count() * sizeof(Vertex),
@@ -521,7 +515,7 @@ void Model::draw(Viewer* viewer)
 {
 	assert(gl_get_error());
 
-    glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
@@ -549,7 +543,6 @@ void Model::draw(Viewer* viewer)
 
 	assert(gl_get_error());
 
-	printf("%d\n", vertices);
 	glDrawArrays(GL_TRIANGLES, 0, vertices);
 
 	assert(gl_get_error());

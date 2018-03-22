@@ -9,7 +9,7 @@ namespace seen
 class RendererGL : public Renderer
 {
 public:
-	RendererGL(const char* data_path, const char* title);
+	RendererGL(const char* data_path, const char* title, int win_w=640, int win_h=480);
 
 	void prepare();
 

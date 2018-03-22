@@ -104,9 +104,8 @@ GLuint TextureFactory::load_texture(std::string path)
 	png_infop info_ptr;
 	png_bytep* row_pointers;
 	png_byte color_type;
-	png_byte bit_depth;
+	//png_byte bit_depth;
 	int width, height;
-	int number_of_passes;
 	GLuint tex;
 	GLenum gl_color_type;
 
@@ -148,9 +147,9 @@ GLuint TextureFactory::load_texture(std::string path)
 	width = png_get_image_width(png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
 	color_type = png_get_color_type(png_ptr, info_ptr);
-	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+	//bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
-	number_of_passes = png_set_interlace_handling(png_ptr);
+	//number_of_passes = png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
 

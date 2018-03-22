@@ -22,7 +22,7 @@ all: $(DEMOS)
 	make -C .. static
 
 obj: ../lib/seen.a
-	mkdir obj || True
+	mkdir obj || true 
 
 obj/%.o: src/%.cpp obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
