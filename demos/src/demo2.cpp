@@ -79,9 +79,9 @@ void save_fb(std::string path, int width, int height)
 }
 
 
-int main(int arc, const char* argv[])
+int main(int argc, const char* argv[])
 {
-	seen::RendererGL renderer("./data/", argv[0], 16, 16);
+	seen::RendererGL renderer("./data/", argv[0], 32, 32);
 	seen::ListScene scene;
 	seen::Sky sky;
 	seen::Camera camera(M_PI / 5, renderer.width, renderer.height);
@@ -127,7 +127,7 @@ int main(int arc, const char* argv[])
 	bale_pass.preparation_function = [&]()
 	{
 
-		vec3 light_dir = { rf() - 0.5f, 0, rf() - 0.5f };
+		vec3 light_dir = { rf() - 0.5f, -0.25, rf() * 2 - 1 };
 		vec3 axis = { 0.0, 1.0, 0.0 };
 		vec3_norm(axis, axis);
 		quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], rf() * 2 * M_PI);
@@ -146,7 +146,7 @@ int main(int arc, const char* argv[])
 		vec4 albedo = { 1, 1, 1, 1 };
 
 		glUniform1f(uv_rot_uniform, rf() * 2 * M_PI);
-		glUniform1f(green_uniform, 0.5 + rf() * 1.5);
+		glUniform1f(green_uniform, 0.75 + rf() * 0.25);
 		glUniform4fv(material_uniform, 1, (GLfloat*)material);
 		glUniform4fv(albedo_uniform, 1, (GLfloat*)albedo);
 		glUniform3fv(light_dir_uniform, 1, (GLfloat*)light_dir);
@@ -189,14 +189,23 @@ int main(int arc, const char* argv[])
 	scene.drawables().push_back(&bale_pass);
 
 	//while(renderer.is_running())
-	for(int i = atoi(argv[2]); i--;)
+	int i = argc >= 3 ? atoi(argv[2]) : 100;
+	for(; renderer.is_running() && i--;)
 	{
 		glClearColor(rf(), rf(), rf(), 1);
 
 		camera.fov(M_PI / (2 + (rf() * 16)));
 
 		renderer.draw(&camera, &scene);
-		save_fb(argv[1], 32, 32);
+
+		if (argc >= 2)
+		{
+			save_fb(argv[1], 32, 32);
+		}
+		else
+		{
+			sleep(1);
+		}
 	}
 
 	return 0;
