@@ -1,20 +1,98 @@
 #include "seen.hpp"
 #include "sky.hpp"
+#include <png.h>
+
 
 float rf()
 {
 	return (rand() % 2048) / 2048.f;
 }
 
+
+static void write_png_file_rgb(
+	const char* path,
+	int width,
+	int height,
+	const GLchar* buffer){
+
+	int y;
+	FILE *fp = fopen(path, "wb");
+
+	if(!fp) abort();
+
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png) abort();
+
+	png_infop info = png_create_info_struct(png);
+	if (!info) abort();
+
+	if (setjmp(png_jmpbuf(png))) abort();
+
+	png_init_io(png, fp);
+
+	// Output is 8bit depth, RGB format.
+	png_set_IHDR(
+		png,
+		info,
+		width, height,
+		8,
+		PNG_COLOR_TYPE_RGB,
+		PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_DEFAULT,
+		PNG_FILTER_TYPE_DEFAULT
+	);
+	png_write_info(png, info);
+
+	png_bytep rows[height];
+	for(int i = height; i--;)
+	{
+		rows[i] = (png_bytep)(buffer + i * (width * 3));
+	}
+
+	png_write_image(png, rows);
+	png_write_end(png, NULL);
+
+	fclose(fp);
+}
+
+
+void save_fb(std::string path, int width, int height)
+{
+	size_t buf_len = width * height * 3;
+	GLchar color_buffer[buf_len];
+	bzero(color_buffer, buf_len);
+
+	glReadPixels(
+		0, 0,
+		width, height,
+		GL_RGB, GL_UNSIGNED_BYTE,
+		(void*)color_buffer
+	);
+
+	uint64_t num = rand();
+	char name[17] = {};
+	sprintf(name, "%lx", num);
+
+	path += "/" + std::string(name);
+
+	write_png_file_rgb(path.c_str(), width, height, color_buffer);
+}
+
+
 int main(int arc, const char* argv[])
 {
-	seen::RendererGL renderer("./data/", argv[0], 32, 32);
+	seen::RendererGL renderer("./data/", argv[0], 16, 16);
 	seen::ListScene scene;
 	seen::Sky sky;
-	seen::Camera camera(M_PI / 6, renderer.width, renderer.height);
+	seen::Camera camera(M_PI / 5, renderer.width, renderer.height);
 	seen::Model* bale = seen::MeshFactory::get_model("mutable_cube.obj");
 	seen::Material* bale_mat = seen::TextureFactory::get_material("hay");
 	seen::CustomPass bale_pass, sky_pass;
+
+	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
+
+	srand(time(NULL));
 
 	// define the sky shader
 	seen::ShaderConfig sky_shader = {
@@ -48,12 +126,12 @@ int main(int arc, const char* argv[])
 	float rot = 0;
 	bale_pass.preparation_function = [&]()
 	{
-		
-		vec3 light_dir = { rf() - 0.5f, -1.0, rf() - 0.5f };
-		vec3 axis = { rf() - 0.5f, 1.0, rf() - 0.5f };
+
+		vec3 light_dir = { rf() - 0.5f, 0, rf() - 0.5f };
+		vec3 axis = { 0.0, 1.0, 0.0 };
 		vec3_norm(axis, axis);
 		quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], rf() * 2 * M_PI);
-		
+
 		seen::ShaderProgram* shader = seen::Shaders[bale_shader];
 		seen::ShaderProgram::active(shader);
 		bale_mat->use(&seen::ShaderProgram::active()->draw_params.material_uniforms.tex);
@@ -62,11 +140,13 @@ int main(int arc, const char* argv[])
 		GLint albedo_uniform = glGetUniformLocation(shader->program, "albedo");
 		GLint light_dir_uniform = glGetUniformLocation(shader->program, "light_dir");
 		GLint uv_rot_uniform = glGetUniformLocation(shader->program, "u_texcoord_rotation");
+		GLint green_uniform = glGetUniformLocation(shader->program, "u_green");
 
 		vec4 material = { 0.1, 0.01, 1, 0.01 };
 		vec4 albedo = { 1, 1, 1, 1 };
 
 		glUniform1f(uv_rot_uniform, rf() * 2 * M_PI);
+		glUniform1f(green_uniform, 0.5 + rf() * 1.5);
 		glUniform4fv(material_uniform, 1, (GLfloat*)material);
 		glUniform4fv(albedo_uniform, 1, (GLfloat*)albedo);
 		glUniform3fv(light_dir_uniform, 1, (GLfloat*)light_dir);
@@ -75,18 +155,19 @@ int main(int arc, const char* argv[])
 		mat3x3 rot;
 
 		mat4x4_from_quat(world, q_bale_ori.v);
+		mat4x4_translate(world, rf() * 2 - 1, rf() * 2 - 1, rf() * 2 - 1);
 
 		for(int i = 3; i--;)
 		for(int j = 3; j--;)
 		{
 			rot[i][j] = world[i][j];
 		}
-		
+
 		seen::DrawParams& params = seen::ShaderProgram::active()->draw_params;
 		glUniformMatrix4fv(params.world_uniform, 1, GL_FALSE, (GLfloat*)world);
 		glUniformMatrix3fv(params.norm_uniform,  1, GL_FALSE, (GLfloat*)rot);
 
-		glDisable(GL_CULL_FACE);
+		// glDisable(GL_CULL_FACE);
 	};
 
 	sky_pass.preparation_function = [&]
@@ -104,12 +185,18 @@ int main(int arc, const char* argv[])
 	sky_pass.drawables = new std::vector<seen::Drawable*>();
 	sky_pass.drawables->push_back(&sky);
 
-	scene.drawables().push_back(&sky_pass);
+	// scene.drawables().push_back(&sky_pass);
 	scene.drawables().push_back(&bale_pass);
 
-	while(renderer.is_running())
+	//while(renderer.is_running())
+	for(int i = atoi(argv[2]); i--;)
 	{
+		glClearColor(rf(), rf(), rf(), 1);
+
+		camera.fov(M_PI / (2 + (rf() * 16)));
+
 		renderer.draw(&camera, &scene);
+		save_fb(argv[1], 32, 32);
 	}
 
 	return 0;

@@ -36,6 +36,13 @@ Vec3 Camera::position()
 	return _position;
 }
 
+Viewer* Camera::fov(float f)
+{
+	float aspect = width / (float)height;
+
+	mat4x4_perspective(_projection, f, aspect, 0.01, 1000);
+}
+
 
 Positionable* Camera::position(Vec3& pos)
 {

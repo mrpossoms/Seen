@@ -23,6 +23,8 @@ public:
 	Viewer* view(mat4x4 v);
 	Viewer* projection(mat4x4 p);
 
+	Viewer* fov(float f);
+
 	// mat4x4 view();
 	// mat4x4 projection();
 
