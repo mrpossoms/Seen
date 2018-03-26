@@ -31,7 +31,7 @@ void main()
 		vec2(-sin(t), cos(t))
 	);
 
-	v_texcoord = uv_rot * ((texcoord.xy - 0.5) * 2.0);
+	v_texcoord = uv_rot * ((texcoord.xy - 0.5) * 4.0);
 	v_normal   = normalize(normal_matrix * normal);
 	v_tangent  = normalize(normal_matrix * tangent);
 	v_binormal = cross(v_normal, v_tangent);

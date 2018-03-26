@@ -64,6 +64,7 @@ class Renderer : public RenderingPass
 {
 public:
 	virtual bool is_running() = 0;
+	virtual bool capture(std::string path) = 0;
 };
 
 }

@@ -21,6 +21,8 @@ public:
 
 	void finish();
 
+	bool capture(std::string path);
+
 	GLFWwindow* win;
 	int width, height;
 

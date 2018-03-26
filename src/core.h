@@ -36,10 +36,15 @@
 #include <linmath.h>
 #include "interfaces.hpp"
 
+#define SEEN_RAND_F_DENOMINATOR 2048
+
 namespace seen {
 
 extern std::string DATA_PATH;
 
 bool gl_get_error();
+
+float rf();
+float rf(float min, float max);
 
 }

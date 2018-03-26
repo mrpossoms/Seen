@@ -4,6 +4,8 @@
 #include "geo.hpp"
 #include "shader.hpp"
 
+#include <png.h>
+
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
 #endif
@@ -46,6 +48,9 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 	glEnable(GL_DEPTH_TEST);
 
 	assert(gl_get_error());
+
+	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	glfwWindowHint(GLFW_SAMPLES, 4);
 
 	return win;
 }
@@ -144,4 +149,69 @@ void RendererGL::draw(Viewer* viewer, Scene* scene)
 void RendererGL::finish()
 {
 
+}
+//------------------------------------------------------------------------------
+
+static void write_png_file_rgb(
+	const char* path,
+	int width,
+	int height,
+	const GLchar* buffer){
+
+	FILE *fp = fopen(path, "wb");
+
+	if(!fp) abort();
+
+	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png) abort();
+
+	png_infop info = png_create_info_struct(png);
+	if (!info) abort();
+
+	if (setjmp(png_jmpbuf(png))) abort();
+
+	png_init_io(png, fp);
+
+	// Output is 8bit depth, RGB format.
+	png_set_IHDR(
+		png,
+		info,
+		width, height,
+		8,
+		PNG_COLOR_TYPE_RGB,
+		PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_DEFAULT,
+		PNG_FILTER_TYPE_DEFAULT
+	);
+	png_write_info(png, info);
+
+	png_bytep rows[height];
+	for(int i = height; i--;)
+	{
+		rows[i] = (png_bytep)(buffer + i * (width * 3));
+	}
+
+	png_write_image(png, rows);
+	png_write_end(png, NULL);
+
+	fclose(fp);
+}
+//------------------------------------------------------------------------------
+
+bool RendererGL::capture(std::string path)
+{
+	size_t buf_len = width * height * 3;
+	GLchar color_buffer[buf_len];
+	bzero(color_buffer, buf_len);
+
+	glReadPixels(
+		0, 0,
+		width, height,
+		GL_RGB, GL_UNSIGNED_BYTE,
+		(void*)color_buffer
+	);
+
+	write_png_file_rgb(path.c_str(), width, height, color_buffer);
+
+	return true;
 }
