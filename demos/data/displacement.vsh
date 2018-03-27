@@ -36,7 +36,7 @@ void main()
 	v_tangent  = normalize(normal_matrix * tangent);
 	v_binormal = cross(v_normal, v_tangent);
 
-	vec3 displacement = 0.25 * normal * (texture(u_displacement, v_texcoord).x - 0.8);
+	vec3 displacement = 0.05 * normal * (texture(u_displacement, v_texcoord).x - 0.8);
 	vec4 world_space = world_matrix * vec4(position + displacement, 1.0);
 	vec4 view_space = view_matrix * world_space;
 	gl_Position = v_screen_space = proj_matrix * view_space;

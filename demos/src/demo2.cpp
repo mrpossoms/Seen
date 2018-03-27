@@ -3,7 +3,7 @@
 #include <png.h>
 #include <sstream>
 
-int main(int arc, const char* argv[])
+int main(int argc, const char* argv[])
 {
 	seen::RendererGL renderer("./data/", argv[0], 256, 256);
 	seen::ListScene scene;
@@ -112,7 +112,8 @@ int main(int arc, const char* argv[])
 	//while(renderer.is_running())
 	//
 
-	for(int i = atoi(argv[2]); i--;)
+	int i = argc >= 3 ? atoi(argv[2]) : 100;
+	for(; renderer.is_running() && i--;)
 	{
 		std::stringstream path_ss;
 		path_ss << argv[1] << "/" << std::hex << random();
@@ -121,7 +122,15 @@ int main(int arc, const char* argv[])
 
 		camera.fov(M_PI / (2 + (seen::rf() * 16)));
 		renderer.draw(&camera, &scene);
-		renderer.capture(path_ss.str());
+
+		if (argc >= 2)
+		{
+			renderer.capture(path_ss.str());
+		}
+		else
+		{
+			sleep(1);
+		}
 	}
 
 	return 0;
