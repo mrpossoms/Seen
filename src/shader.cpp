@@ -216,6 +216,51 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 }
 //------------------------------------------------------------------------------
 
+ShaderParam* ShaderProgram::operator[](std::string name)
+{
+	if (_params.count(name) == 0)
+	{
+		_params[name] = new ShaderParam(program, name.c_str());
+	}
+
+	return _params[name];
+}
+//------------------------------------------------------------------------------
+
+ShaderParam::ShaderParam(GLint program, const char* name)
+{
+	uniform = glGetUniformLocation(program, name);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(float f)
+{
+	glUniform1f(uniform, f);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(vec3_t v)
+{
+	glUniform3fv(uniform, 1, (GLfloat*)v.v);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(vec4_t v)
+{
+	glUniform4fv(uniform, 1, (GLfloat*)v.v);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(mat3x3_t m)
+{
+	glUniform3fv(uniform, 1, (GLfloat*)m.v);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(mat4x4_t m)
+{
+	glUniform4fv(uniform, 1, (GLfloat*)m.v);
+}
 // ShaderCache::ShaderCache(GLint vertex, GLint frag)
 // {
 // 	const char* attrs[] = {
