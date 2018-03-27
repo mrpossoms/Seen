@@ -47,7 +47,7 @@ struct ShaderProgram {
 
 	void init_draw_params();
 
-	ShaderParam* operator[](std::string name);
+	ShaderParam& operator[](std::string name);
 
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();

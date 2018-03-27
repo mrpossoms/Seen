@@ -48,7 +48,7 @@ int main(int argc, const char* argv[])
 	bale_pass.preparation_function = [&]()
 	{
 
-		vec3 light_dir = { seen::rf(-1, 1), 0, seen::rf(-1, 1) };
+		vec3_t light_dir = { seen::rf(-1, 1), 0, seen::rf(-1, 1) };
 		vec3 axis = { 0.0, 1.0, 0.0 };
 		vec3_norm(axis, axis);
 		quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
@@ -70,7 +70,9 @@ int main(int argc, const char* argv[])
 		glUniform1f(green_uniform,  seen::rf(0.5, 2));
 		glUniform4fv(material_uniform, 1, (GLfloat*)material);
 		glUniform4fv(albedo_uniform, 1, (GLfloat*)albedo);
-		glUniform3fv(light_dir_uniform, 1, (GLfloat*)light_dir);
+		//glUniform3fv(light_dir_uniform, 1, (GLfloat*)light_dir);
+		
+		((*shader)["light_dir"]) << light_dir;
 
 		mat4x4 world;
 		mat3x3 rot;

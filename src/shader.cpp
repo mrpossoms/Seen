@@ -204,9 +204,9 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 		GLint fsh = _shader_cache[fsh_path];
 		GLint program = link_program(vsh, fsh, config.vertex_attributes);
 
-		ShaderProgram shader = {
-			.program = program,
-		};
+		ShaderProgram shader = {};
+		
+		shader.program = program;
 		shader.init_draw_params();
 
 		_program_cache[name] = shader;
@@ -216,14 +216,14 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 }
 //------------------------------------------------------------------------------
 
-ShaderParam* ShaderProgram::operator[](std::string name)
+ShaderParam& ShaderProgram::operator[](std::string name)
 {
 	if (_params.count(name) == 0)
 	{
 		_params[name] = new ShaderParam(program, name.c_str());
 	}
 
-	return _params[name];
+	return *_params[name];
 }
 //------------------------------------------------------------------------------
 
