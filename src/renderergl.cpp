@@ -105,10 +105,12 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 
 	if(viewer)
 	{
-		DrawParams& params = ShaderProgram::active()->draw_params;
+		//DrawParams& params = ShaderProgram::active()->draw_params;
 
-		glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
-		glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
+		//glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
+		//glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
+		//(*ShaderProgram::active())["u_view_matrix"] << ((mat4x4_t)viewer->_view);
+
 
 		assert(gl_get_error());
 	}

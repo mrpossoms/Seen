@@ -11,7 +11,7 @@ out vec4 color;
 uniform sampler2D tex;     // base texture (albedo)
 uniform sampler2D norm;
 
-uniform vec3 light_dir;
+uniform vec3 u_light_dir;
 uniform float u_green;
 
 void main()
@@ -23,7 +23,7 @@ void main()
     vec3 normal = tbn * tn;
     //vec3 normal = tbn * vec3(0.0, 0.0, 1.0);
 
-    float shade = (dot(normalize(-light_dir), normal) + 1.0) / 2.0;
+    float shade = (dot(normalize(-u_light_dir), normal) + 1.0) / 2.0;
     float l = shade * 0.75 +  0.25;
     // color = vec4(vec3(v_texcoord, 1.0), 1.0);
     color = vec4(rgb * l, 1.0);

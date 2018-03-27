@@ -12,10 +12,10 @@ out vec3 v_binormal; // binormal (for TBN basis calc)
 out vec3 v_pos;      // pixel view space position
 out vec4 v_screen_space;
 
-uniform mat4 view_matrix;
-uniform mat4 proj_matrix;
-uniform mat3 normal_matrix;
-uniform mat4 world_matrix;
+uniform mat4 u_view_matrix;
+uniform mat4 u_proj_matrix;
+uniform mat3 u_normal_matrix;
+uniform mat4 u_world_matrix;
 
 uniform sampler2D u_displacement;     // base texture (albedo)
 
@@ -32,14 +32,14 @@ void main()
 	);
 
 	v_texcoord = uv_rot * ((texcoord.xy - 0.5) * 4.0);
-	v_normal   = normalize(normal_matrix * normal);
-	v_tangent  = normalize(normal_matrix * tangent);
+	v_normal   = normalize(u_normal_matrix * normal);
+	v_tangent  = normalize(u_normal_matrix * tangent);
 	v_binormal = cross(v_normal, v_tangent);
 
 	vec3 displacement = 0.05 * normal * (texture(u_displacement, v_texcoord).x - 0.8);
-	vec4 world_space = world_matrix * vec4(position + displacement, 1.0);
-	vec4 view_space = view_matrix * world_space;
-	gl_Position = v_screen_space = proj_matrix * view_space;
+	vec4 world_space = u_world_matrix * vec4(position + displacement, 1.0);
+	vec4 view_space = u_view_matrix * world_space;
+	gl_Position = v_screen_space = u_proj_matrix * view_space;
 
-	v_pos = normalize(normal_matrix * position); //view_space.xyz;
+	v_pos = normalize(u_normal_matrix * position); //view_space.xyz;
 }

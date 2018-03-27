@@ -26,6 +26,8 @@ int main(int argc, const char* argv[])
 		.fragment = "basic.fsh"
 	};
 
+	seen::Shaders[bale_shader];
+
 	camera.position(0, 0, -3);
 
 	// callback for camera looking
@@ -42,55 +44,42 @@ int main(int argc, const char* argv[])
 		q_bale_ori = pitch * q_bale_ori;
 	};
 
-	//vec3 light_dir = { 0, 1, 0 };
-	//vec3 light_dir = { rf() - 0.5f, rf() - 0.5f, rf() - 0.5f };
 	float rot = 0;
 	bale_pass.preparation_function = [&]()
 	{
-
 		vec3_t light_dir = { seen::rf(-1, 1), 0, seen::rf(-1, 1) };
 		vec3 axis = { 0.0, 1.0, 0.0 };
 		vec3_norm(axis, axis);
 		quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
 
-		seen::ShaderProgram* shader = seen::Shaders[bale_shader];
-		seen::ShaderProgram::active(shader);
-		bale_mat->use(&seen::ShaderProgram::active()->draw_params.material_uniforms.tex);
+		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
+		bale_mat->use(&shader.draw_params.material_uniforms.tex);
 
-		GLint material_uniform = glGetUniformLocation(shader->program, "material");
-		GLint albedo_uniform = glGetUniformLocation(shader->program, "albedo");
-		GLint light_dir_uniform = glGetUniformLocation(shader->program, "light_dir");
-		GLint uv_rot_uniform = glGetUniformLocation(shader->program, "u_texcoord_rotation");
-		GLint green_uniform = glGetUniformLocation(shader->program, "u_green");
+		assert(seen::gl_get_error());
+		vec4_t material = { 0.1, 0.01, 1, 0.01 };
+		vec4_t albedo = { 1, 1, 1, 1 };
 
-		vec4 material = { 0.1, 0.01, 1, 0.01 };
-		vec4 albedo = { 1, 1, 1, 1 };
+		mat4x4_t world;
+		mat3x3_t rot;
 
-		glUniform1f(uv_rot_uniform, seen::rf(0, 2 * M_PI));
-		glUniform1f(green_uniform,  seen::rf(0.5, 2));
-		glUniform4fv(material_uniform, 1, (GLfloat*)material);
-		glUniform4fv(albedo_uniform, 1, (GLfloat*)albedo);
-		//glUniform3fv(light_dir_uniform, 1, (GLfloat*)light_dir);
-		
-		((*shader)["light_dir"]) << light_dir;
-
-		mat4x4 world;
-		mat3x3 rot;
-
-		mat4x4_from_quat(world, q_bale_ori.v);
-		mat4x4_translate(world, seen::rf(-1, 1), seen::rf(-1, 1), seen::rf(-1, 1));
+		mat4x4_from_quat(world.v, q_bale_ori.v);
+		mat4x4_translate(world.v, seen::rf(-1, 1), seen::rf(-1, 1), seen::rf(-1, 1));
 
 		for(int i = 3; i--;)
 		for(int j = 3; j--;)
 		{
-			rot[i][j] = world[i][j];
+			rot.v[i][j] = world.v[i][j];
 		}
 
-		seen::DrawParams& params = seen::ShaderProgram::active()->draw_params;
-		glUniformMatrix4fv(params.world_uniform, 1, GL_FALSE, (GLfloat*)world);
-		glUniformMatrix3fv(params.norm_uniform,  1, GL_FALSE, (GLfloat*)rot);
+		shader["u_world_matrix"] << world;
+		shader["u_normal_matrix"] << rot;
 
-		// glDisable(GL_CULL_FACE);
+		shader["u_material"] << material;
+		shader["u_light_dir"] << light_dir;
+		shader["u_albedo"] << albedo;
+		shader["u_texcoord_rotation"] << seen::rf(0, 2 * M_PI);
+		shader["u_green"] << seen::rf(0.5, 2);
+
 	};
 
 	sky_pass.preparation_function = [&]
@@ -105,14 +94,7 @@ int main(int argc, const char* argv[])
 	bale_pass.drawables = new std::vector<seen::Drawable*>();
 	bale_pass.drawables->push_back(bale);
 
-	sky_pass.drawables = new std::vector<seen::Drawable*>();
-	sky_pass.drawables->push_back(&sky);
-
-	// scene.drawables().push_back(&sky_pass);
 	scene.drawables().push_back(&bale_pass);
-
-	//while(renderer.is_running())
-	//
 
 	int i = argc >= 3 ? atoi(argv[2]) : 100;
 	for(; renderer.is_running() && i--;)

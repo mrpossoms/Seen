@@ -31,10 +31,10 @@ struct ShaderParam {
 	ShaderParam(GLint program, const char* name);
 
 	void operator<<(float f);
-	void operator<<(vec3_t v);
-	void operator<<(vec4_t v);
-	void operator<<(mat3x3_t m);
-	void operator<<(mat4x4_t m);
+	void operator<<(vec3_t& v);
+	void operator<<(vec4_t& v);
+	void operator<<(mat3x3_t& m);
+	void operator<<(mat4x4_t& m);
 private:
 	GLint uniform;
 };
@@ -46,6 +46,7 @@ struct ShaderProgram {
 	DrawParams draw_params;
 
 	void init_draw_params();
+	ShaderProgram* use();
 
 	ShaderParam& operator[](std::string name);
 

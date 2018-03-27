@@ -119,10 +119,22 @@ static GLint link_program(GLint vertex, GLint frag, const char** attributes)
 
 void ShaderProgram::init_draw_params()
 {
-	draw_params.world_uniform = glGetUniformLocation(program, "world_matrix");
-	draw_params.norm_uniform  = glGetUniformLocation(program, "normal_matrix");
-	draw_params.view_uniform  = glGetUniformLocation(program, "view_matrix");
-	draw_params.proj_uniform  = glGetUniformLocation(program, "proj_matrix");
+	//draw_params.world_uniform = glGetUniformLocation(program, "u_world_matrix");
+	//draw_params.norm_uniform  = glGetUniformLocation(program, "u_normal_matrix");
+	//draw_params.view_uniform  = glGetUniformLocation(program, "view_matrix");
+	//draw_params.proj_uniform  = glGetUniformLocation(program, "proj_matrix");
+
+	std::string uniforms[] = {
+		"u_world_matrix",
+		"u_normal_matrix",
+		"u_view_matrix",
+		"u_proj_matrix"
+	};
+
+	for (auto uniform : uniforms)
+	{
+		(*this)[uniform];
+	}
 
 	draw_params.material_uniforms.tex  = glGetUniformLocation(program, "tex");
 	draw_params.material_uniforms.norm = glGetUniformLocation(program, "norm");
@@ -155,6 +167,13 @@ ShaderProgram* ShaderProgram::active(ShaderProgram* shader)
 ShaderProgram* ShaderProgram::active()
 {
 	return ShaderProgram::active(NULL);
+}
+//------------------------------------------------------------------------------
+
+ShaderProgram* ShaderProgram::use()
+{
+	ShaderProgram::active(this);
+	return this;
 }
 //------------------------------------------------------------------------------
 
@@ -205,12 +224,15 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 		GLint program = link_program(vsh, fsh, config.vertex_attributes);
 
 		ShaderProgram shader = {};
-		
 		shader.program = program;
+		
+		ShaderProgram::active(&shader);
 		shader.init_draw_params();
 
 		_program_cache[name] = shader;
 	}
+
+	ShaderProgram::active(&_program_cache[name]);
 
 	return &_program_cache[name];
 }
@@ -229,7 +251,9 @@ ShaderParam& ShaderProgram::operator[](std::string name)
 
 ShaderParam::ShaderParam(GLint program, const char* name)
 {
+	assert(gl_get_error());
 	uniform = glGetUniformLocation(program, name);
+	assert(gl_get_error());
 }
 //------------------------------------------------------------------------------
 
@@ -239,27 +263,27 @@ void ShaderParam::operator<<(float f)
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(vec3_t v)
+void ShaderParam::operator<<(vec3_t& v)
 {
 	glUniform3fv(uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(vec4_t v)
+void ShaderParam::operator<<(vec4_t& v)
 {
 	glUniform4fv(uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(mat3x3_t m)
+void ShaderParam::operator<<(mat3x3_t& m)
 {
-	glUniform3fv(uniform, 1, (GLfloat*)m.v);
+	glUniformMatrix3fv(uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(mat4x4_t m)
+void ShaderParam::operator<<(mat4x4_t& m)
 {
-	glUniform4fv(uniform, 1, (GLfloat*)m.v);
+	glUniformMatrix4fv(uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }
 // ShaderCache::ShaderCache(GLint vertex, GLint frag)
 // {

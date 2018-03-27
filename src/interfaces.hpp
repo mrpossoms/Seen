@@ -28,8 +28,8 @@ public:
 	virtual Viewer* view(mat4x4 v) = 0;
 	virtual Viewer* projection(mat4x4 p) = 0;
 
-	mat4x4 _view;
-	mat4x4 _projection;
+	mat4x4_t _view;
+	mat4x4_t _projection;
 };
 
 

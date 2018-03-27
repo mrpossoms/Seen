@@ -5,7 +5,7 @@ CFLAGS=--std=c++11 -g
 INC=-I/usr/local/include -I../src
 LINK=../lib/seen.a -lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
-DEMOS=demo0 demo1
+DEMOS=demo0 demo1 demo2
 
 ifeq ($(OS),Darwin)
 	LINK +=-lpthread -lm -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo

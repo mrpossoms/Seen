@@ -13,7 +13,7 @@ Camera::Camera(float fov,
 
 	printf("%d x %d : %f\n", width, height, aspect);
 
-	mat4x4_perspective(_projection, fov, aspect, 0.01, 1000);
+	mat4x4_perspective(_projection.v, fov, aspect, 0.01, 1000);
 }
 
 
@@ -25,7 +25,7 @@ Viewer* Camera::view_projection(mat4x4 vp)
 	mat4x4_from_quat(view, orientation().v);
 	mat4x4_translate_in_place(view, -pos.x, -pos.y, -pos.z);
 
-	mat4x4_mul(vp, _projection, view);
+	mat4x4_mul(vp, _projection.v, view);
 
 	return this;
 }
@@ -40,7 +40,7 @@ Viewer* Camera::fov(float f)
 {
 	float aspect = width / (float)height;
 
-	mat4x4_perspective(_projection, f, aspect, 0.01, 1000);
+	mat4x4_perspective(_projection.v, f, aspect, 0.01, 1000);
 
 	return this;
 }
@@ -50,8 +50,8 @@ Positionable* Camera::position(Vec3& pos)
 {
 	_position = pos;
 
-	mat4x4_from_quat(_view, _orientation.v);
-	mat4x4_translate(_view, _position.x, _position.y, _position.z);
+	mat4x4_from_quat(_view.v, _orientation.v);
+	mat4x4_translate(_view.v, _position.x, _position.y, _position.z);
 
 	return this;
 }
@@ -63,8 +63,8 @@ Positionable* Camera::position(float x, float y, float z)
 		_position.y = y;
 		_position.z = z;
 
-		mat4x4_from_quat(_view, _orientation.v);
-		mat4x4_translate(_view, _position.x, _position.y, _position.z);
+		mat4x4_from_quat(_view.v, _orientation.v);
+		mat4x4_translate(_view.v, _position.x, _position.y, _position.z);
 
 		return this;
 }
@@ -80,8 +80,8 @@ Positionable* Camera::orientation(Quat& ori)
 {
 	_orientation = ori;
 
-	mat4x4_from_quat(_view, _orientation.v);
-	mat4x4_translate(_view, _position.x, _position.y, _position.z);
+	mat4x4_from_quat(_view.v, _orientation.v);
+	mat4x4_translate(_view.v, _position.x, _position.y, _position.z);
 
 	return this;
 }
@@ -93,7 +93,7 @@ void Camera::matrix(mat4x4 world) {}
 
 Viewer* Camera::view(mat4x4 v)
 {
-	mat4x4_dup(_view, v);
+	mat4x4_dup(_view.v, v);
 
 	return this;
 }
@@ -101,7 +101,7 @@ Viewer* Camera::view(mat4x4 v)
 
 Viewer* Camera::projection(mat4x4 p)
 {
-	mat4x4_dup(p, _projection);
+	mat4x4_dup(p, _projection.v);
 
 	return this;
 }
