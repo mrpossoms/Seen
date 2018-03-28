@@ -1,9 +1,11 @@
 #pragma once
 
 #include "core.h"
+#include "texture.hpp"
 
 namespace seen
 {
+struct ShaderProgram;
 
 struct DrawParams {
 	GLint world_uniform;
@@ -28,20 +30,24 @@ struct ShaderConfig {
 
 
 struct ShaderParam {
-	ShaderParam(GLint program, const char* name);
+	ShaderParam(ShaderProgram* program, const char* name);
 
 	void operator<<(float f);
 	void operator<<(vec3_t& v);
 	void operator<<(vec4_t& v);
 	void operator<<(mat3x3_t& m);
 	void operator<<(mat4x4_t& m);
+	void operator<<(GLint i);
+	void operator<<(Tex t);
 private:
-	GLint uniform;
+	ShaderProgram* _program;
+	GLint _uniform;
 };
 
 
-struct ShaderProgram;
 struct ShaderProgram {
+	friend struct ShaderParam;
+
 	GLint program;
 	DrawParams draw_params;
 
@@ -50,10 +56,13 @@ struct ShaderProgram {
 
 	ShaderParam& operator[](std::string name);
 
+	void operator<<(Material* m);
+
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();
 private:
 	std::map<std::string, ShaderParam*> _params;
+	int _tex_counter;
 };
 
 

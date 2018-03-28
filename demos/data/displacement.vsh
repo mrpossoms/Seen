@@ -17,7 +17,7 @@ uniform mat4 u_proj_matrix;
 uniform mat3 u_normal_matrix;
 uniform mat4 u_world_matrix;
 
-uniform sampler2D u_displacement;     // base texture (albedo)
+uniform sampler2D us_displacement;     // base texture (albedo)
 
 uniform float u_texcoord_rotation;
 
@@ -36,7 +36,7 @@ void main()
 	v_tangent  = normalize(u_normal_matrix * tangent);
 	v_binormal = cross(v_normal, v_tangent);
 
-	vec3 displacement = 0.05 * normal * (texture(u_displacement, v_texcoord).x - 0.8);
+	vec3 displacement = 0.1 * normal * (texture(us_displacement, v_texcoord).x - 0.8);
 	vec4 world_space = u_world_matrix * vec4(position + displacement, 1.0);
 	vec4 view_space = u_view_matrix * world_space;
 	gl_Position = v_screen_space = u_proj_matrix * view_space;

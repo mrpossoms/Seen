@@ -5,13 +5,13 @@
 namespace seen
 {
 
+typedef GLuint Tex;
+
 union Material {
 	struct {
-		GLuint color, normal, specular;
+		Tex color, normal, specular;
 	} textures;
-	GLuint v[3];
-
-	void use(GLint* material_uniforms);
+	Tex v[3];
 };
 
 struct Framebuffer {
@@ -27,8 +27,8 @@ class TextureFactory
 {
 public:
 	static Framebuffer create_framebuffer(int width, int height, int flags);
-	static GLuint create_texture(int width, int height, GLenum format, void* data);
-	static GLuint load_texture(std::string path);
+	static Tex create_texture(int width, int height, GLenum format, void* data);
+	static Tex load_texture(std::string path);
 	static Material* get_material(const std::string path);
 };
 

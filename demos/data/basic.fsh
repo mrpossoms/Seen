@@ -8,16 +8,16 @@ in vec3 v_pos;      // pixel view space position
 
 out vec4 color;
 
-uniform sampler2D tex;     // base texture (albedo)
-uniform sampler2D norm;
+uniform sampler2D us_color;     // base texture (albedo)
+uniform sampler2D us_normal;
 
 uniform vec3 u_light_dir;
 uniform float u_green;
 
 void main()
 {
-    vec3 rgb = texture(tex, v_texcoord).xyz;// * vec3(u_green, 1.0, 1.0);
-    vec3 tn = normalize((texture(norm, v_texcoord).xyz * 2.0) - 1.0);
+    vec3 rgb = texture(us_color, v_texcoord).xyz;// * vec3(u_green, 1.0, 1.0);
+    vec3 tn = normalize((texture(us_normal, v_texcoord).xyz * 2.0) - 1.0);
     mat3 tbn = mat3(v_tangent, v_binormal, v_normal);
 
     vec3 normal = tbn * tn;

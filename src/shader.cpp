@@ -172,8 +172,27 @@ ShaderProgram* ShaderProgram::active()
 
 ShaderProgram* ShaderProgram::use()
 {
+	_tex_counter = 0; // reset texture location
 	ShaderProgram::active(this);
 	return this;
+}
+//------------------------------------------------------------------------------
+
+void ShaderProgram::operator<<(Material* m)
+{
+	const std::string uniform_names[] = {
+		"us_color",
+		"us_normal",
+		"us_specular"
+	};
+
+	for(int i = 3; i--;)
+	{
+		glActiveTexture(GL_TEXTURE0 + _tex_counter);
+		glBindTexture(GL_TEXTURE_2D, m->v[i]);
+		(*this)[uniform_names[i]] << _tex_counter;
+		_tex_counter++;
+	}
 }
 //------------------------------------------------------------------------------
 
@@ -225,7 +244,7 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 
 		ShaderProgram shader = {};
 		shader.program = program;
-		
+
 		ShaderProgram::active(&shader);
 		shader.init_draw_params();
 
@@ -242,64 +261,62 @@ ShaderParam& ShaderProgram::operator[](std::string name)
 {
 	if (_params.count(name) == 0)
 	{
-		_params[name] = new ShaderParam(program, name.c_str());
+		_params[name] = new ShaderParam(this, name.c_str());
 	}
 
 	return *_params[name];
 }
 //------------------------------------------------------------------------------
 
-ShaderParam::ShaderParam(GLint program, const char* name)
+ShaderParam::ShaderParam(ShaderProgram* program, const char* name)
 {
 	assert(gl_get_error());
-	uniform = glGetUniformLocation(program, name);
+	_program = program;
+	_uniform = glGetUniformLocation(_program->program, name);
 	assert(gl_get_error());
 }
 //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(float f)
 {
-	glUniform1f(uniform, f);
+	glUniform1f(_uniform, f);
 }
 //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(vec3_t& v)
 {
-	glUniform3fv(uniform, 1, (GLfloat*)v.v);
+	glUniform3fv(_uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(vec4_t& v)
 {
-	glUniform4fv(uniform, 1, (GLfloat*)v.v);
+	glUniform4fv(_uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(mat3x3_t& m)
 {
-	glUniformMatrix3fv(uniform, 1, GL_FALSE, (GLfloat*)m.v);
+	glUniformMatrix3fv(_uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }
 //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(mat4x4_t& m)
 {
-	glUniformMatrix4fv(uniform, 1, GL_FALSE, (GLfloat*)m.v);
+	glUniformMatrix4fv(_uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }
-// ShaderCache::ShaderCache(GLint vertex, GLint frag)
-// {
-// 	const char* attrs[] = {
-// 		"position", "normal", "tangent", "texcoord", NULL
-// 	};
-//
-// 	program = link_program(vertex, frag, attrs);
-//
-// 	draw_params.world_uniform = glGetUniformLocation(program, "world_matrix");
-// 	draw_params.norm_uniform  = glGetUniformLocation(program, "normal_matrix");
-// 	draw_params.view_uniform  = glGetUniformLocation(program, "view_matrix");
-// 	draw_params.proj_uniform  = glGetUniformLocation(program, "proj_matrix");
-//
-// 	draw_params.material_uniforms.tex  = glGetUniformLocation(program, "tex");
-// 	draw_params.material_uniforms.norm = glGetUniformLocation(program, "norm");
-// 	draw_params.material_uniforms.spec = glGetUniformLocation(program, "spec");
-// 	draw_params.material_uniforms.envd = glGetUniformLocation(program, "envd");
-// }
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(GLint i)
+{
+	glUniform1i(_uniform, i);
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(Tex t)
+{
+	glActiveTexture(GL_TEXTURE0 + _program->_tex_counter);
+	glBindTexture(GL_TEXTURE_2D, t);
+	glUniform1i(_uniform, _program->_tex_counter);
+	_program->_tex_counter++;
+}

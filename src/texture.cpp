@@ -40,7 +40,7 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 }
 //------------------------------------------------------------------------------
 
-GLuint TextureFactory::create_texture(int width, int height, GLenum format, void* data)
+Tex TextureFactory::create_texture(int width, int height, GLenum format, void* data)
 {
 	GLuint tex;
 
@@ -78,26 +78,7 @@ void abort(std::string message)
 }
 //------------------------------------------------------------------------------
 
-void Material::use(GLint* material_uniforms)
-{
-	static long bound;
-
-	long mat_id = v[0] + v[1] * 10 + v[2] * 100;
-
-	if(bound == mat_id) return;
-
-	for(int i = 3; i--;)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, v[i]);
-		glUniform1i(material_uniforms[i], i);
-	}
-
-	bound = mat_id;
-}
-//------------------------------------------------------------------------------
-
-GLuint TextureFactory::load_texture(std::string path)
+Tex TextureFactory::load_texture(std::string path)
 {
 	char header[8];    // 8 is the maximum size that can be checked
 	png_structp png_ptr = {};
