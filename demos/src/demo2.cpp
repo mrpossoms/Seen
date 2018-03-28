@@ -99,9 +99,6 @@ int main(int argc, const char* argv[])
 	int i = argc >= 3 ? atoi(argv[2]) : 100;
 	for(; renderer.is_running() && i--;)
 	{
-		std::stringstream path_ss;
-		path_ss << argv[1] << "/" << std::hex << random();
-
 		glClearColor(seen::rf(), seen::rf(), seen::rf(), 1);
 
 		camera.fov(M_PI / (2 + (seen::rf() * 16)));
@@ -109,6 +106,8 @@ int main(int argc, const char* argv[])
 
 		if (argc >= 2)
 		{
+			std::stringstream path_ss;
+			path_ss << argv[1] << "/" << std::hex << random();
 			renderer.capture(path_ss.str());
 		}
 		else
