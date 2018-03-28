@@ -24,6 +24,9 @@ uniform float u_texcoord_rotation;
 void main()
 {
 	vec3 binormal = cross(normal, tangent);
+	vec3 displacement = vec3(0.0, 0.0, 0.0);
+	vec4 world_space;
+	vec4 view_space;
 
 	float t = u_texcoord_rotation;
 	mat2 uv_rot = mat2(
@@ -36,10 +39,17 @@ void main()
 	v_tangent  = normalize(u_normal_matrix * tangent);
 	v_binormal = cross(v_normal, v_tangent);
 
-	vec3 displacement = 0.1 * normal * (texture(us_displacement, v_texcoord).x - 0.8);
-	vec4 world_space = u_world_matrix * vec4(position + displacement, 1.0);
-	vec4 view_space = u_view_matrix * world_space;
+
+
+	if (texcoord.x > 0.01 && texcoord.x < 0.99)
+	if (texcoord.y > 0.01 && texcoord.y < 0.99)
+	{
+		displacement = 0.5 * normal * (texture(us_displacement, v_texcoord).x - 0.5);
+	}
+
+	world_space = u_world_matrix * vec4(position.xyz + displacement.xyz, 1.0);
+	view_space = u_view_matrix * world_space;
 	gl_Position = v_screen_space = u_proj_matrix * view_space;
 
-	v_pos = normalize(u_normal_matrix * position); //view_space.xyz;
+	v_pos = normalize(u_normal_matrix * position);
 }

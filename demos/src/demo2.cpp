@@ -36,7 +36,7 @@ int main(int argc, const char* argv[])
 		q_bale_ori = pitch * q_bale_ori;
 	};
 
-	float rot = 0;
+	float uv_rot = 0;
 	bale_pass.preparation_function = [&]()
 	{
 		vec4_t material = { 0.1, 0.01, 1, 0.01 };
@@ -50,11 +50,16 @@ int main(int argc, const char* argv[])
 		{
 			light_dir.x = seen::rf(-1, 1);
 			light_dir.z = seen::rf(-1, 1);
+			uv_rot = seen::rf(0, 2 * M_PI);
 
 			vec3_norm(axis, axis);
 			quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
 			camera.fov(M_PI / (2 + (seen::rf() * 16)));
 			mat4x4_translate(world.v, seen::rf(-1, 1), seen::rf(-1, 1), seen::rf(-1, 1));
+		}
+		else
+		{
+			uv_rot += 0.001f;
 		}
 
 		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
@@ -72,10 +77,8 @@ int main(int argc, const char* argv[])
 		shader["u_world_matrix"] << world;
 		shader["u_normal_matrix"] << rot;
 
-		shader["u_material"] << material;
 		shader["u_light_dir"] << light_dir;
-		shader["u_albedo"] << albedo;
-		shader["u_texcoord_rotation"] << seen::rf(0, 2 * M_PI);
+		shader["u_texcoord_rotation"] << uv_rot;
 		shader["u_green"] << seen::rf(0.5, 2);
 		shader["us_displacement"] << displacement_tex;
 

@@ -26,6 +26,6 @@ void main()
     float shade = (dot(normalize(-u_light_dir), normal) + 1.0) / 2.0;
     float l = shade * 0.75 +  0.25;
     // color = vec4(vec3(v_texcoord, 1.0), 1.0);
-    color = vec4(rgb * l, 1.0);
+    color = vec4(rgb.xyz * l, 1.0);
     //color = vec4(l * ((normal.xyz / 2.0) + 0.5), 1.0);
 }
