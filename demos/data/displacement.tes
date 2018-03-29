@@ -1,0 +1,43 @@
+#version 400 core
+
+layout(triangles, equal_spacing, ccw) in;
+
+in vec3 tc_pos[];
+in vec2 tc_texcoord[];
+in vec3 tc_normal[];
+in vec3 tc_tangent[];
+in float tc_displacement_weight[];
+
+out vec3 te_pos;
+out vec2 te_texcoord;
+out vec3 te_normal;
+out vec3 te_tangent;
+out vec3 te_patch_distance;
+// uniform mat4 Projection;
+// uniform mat4 Modelview;
+
+uniform mat4 u_view_matrix;
+uniform mat4 u_proj_matrix;
+uniform mat3 u_normal_matrix;
+uniform mat4 u_world_matrix;
+
+uniform sampler2D us_displacement;
+
+#define TRI_LERP(attr) (attr[0] * gl_TessCoord.x + attr[1] * gl_TessCoord.y + attr[2] * gl_TessCoord.z);
+
+void main()
+{
+    te_patch_distance = gl_TessCoord;
+	te_texcoord = TRI_LERP(tc_texcoord);
+	te_normal = TRI_LERP(tc_normal)
+	te_tangent = TRI_LERP(tc_tangent);
+	float disp_weight = TRI_LERP(tc_displacement_weight);
+
+	vec3 displacement = (texture(us_displacement, te_texcoord).x * disp_weight) * te_normal;
+	te_pos = TRI_LERP(tc_pos);
+	te_pos += displacement;
+
+	vec4 world_space = u_world_matrix * vec4(te_pos.xyz, 1.0);
+	vec4 view_space = u_view_matrix * world_space;
+	gl_Position = u_proj_matrix * view_space;
+}

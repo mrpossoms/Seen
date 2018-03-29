@@ -16,13 +16,13 @@ static GLint load_shader(const char* path, GLenum type)
 
 	if (fd < 0)
 	{
-		fprintf(stderr, "Failed to load vertex shader '%s' %d\n", path, errno);
+		fprintf(stderr, SEEN_TERM_RED "Failed to load vertex shader '%s' %d\n" SEEN_TERM_COLOR_OFF, path, errno);
 		exit(-1);
 	}
 
 	// Load the shader source code
 	size_t total_size = lseek(fd, 0, SEEK_END);
-	source = (GLchar*)calloc(total_size, 1);
+	source = (GLchar*)calloc(1, total_size);
 	lseek(fd, 0, SEEK_SET);
 	read(fd, source, total_size);
 
@@ -32,6 +32,7 @@ static GLint load_shader(const char* path, GLenum type)
 	shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, NULL);
 	glCompileShader(shader);
+	free(source);
 
 	assert(gl_get_error());
 
@@ -42,7 +43,7 @@ static GLint load_shader(const char* path, GLenum type)
 	{
 		GLchar *log_str = (GLchar *)malloc(log_length);
 		glGetShaderInfoLog(shader, log_length, &log_length, log_str);
-		std::cerr << "Shader compile log for '" <<  path << "' " << log_length << std::endl << log_str << std::endl;
+		std::cerr << SEEN_TERM_RED "Shader compile log for '" <<  path << "' " << log_length << std::endl << log_str << SEEN_TERM_COLOR_OFF << std::endl;
 		write(1, log_str, log_length);
 		free(log_str);
 	}
@@ -53,35 +54,35 @@ static GLint load_shader(const char* path, GLenum type)
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 	if (status == GL_FALSE)
 	{
-		std::cerr << "Compiling '" << path << "' failed: " << status << std::endl;
+		std::cerr << SEEN_TERM_RED "Compiling '" << path << "' failed: " << status << SEEN_TERM_COLOR_OFF << std::endl;
 		glDeleteShader(shader);
 		exit(-2);
 	}
 
 	assert(gl_get_error());
-
-	free(source);
-
-	std::cerr << "ok" << std::endl;
+	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
 
 	return shader;
 }
 //------------------------------------------------------------------------------
 
-static GLint link_program(GLint vertex, GLint frag, const char** attributes)
+static GLint link_program(const GLint* shaders, const char** attributes)
 {
 	GLint status;
 	GLint prog = glCreateProgram();
 
 	assert(gl_get_error());
 
-	glAttachShader(prog, vertex);
-	glAttachShader(prog, frag);
+	// Attach all shaders
+	for (int i = 0; shaders[i]; ++i)
+	{
+		glAttachShader(prog, shaders[i]);
+	}
 
 	assert(gl_get_error());
 
 	const char** attr = attributes;
-	for(int i = 0; *attr; ++i)
+	for (int i = 0; *attr; ++i)
 	{
 		glBindAttribLocation(prog, i, *attr);
 		++attr;
@@ -105,13 +106,18 @@ static GLint link_program(GLint vertex, GLint frag, const char** attributes)
 		}
 		exit(-1);
 	}
+	else
+	{
+		std::cerr << SEEN_TERM_GREEN "Linked program " << prog << SEEN_TERM_COLOR_OFF << std::endl;
+	}
 
 	assert(gl_get_error());
 
-	glDetachShader(prog, vertex);
-	glDetachShader(prog, frag);
-	glDeleteShader(vertex);
-	glDeleteShader(frag);
+	// Detach all
+	for (int i = 0; shaders[i]; ++i)
+	{
+		glDetachShader(prog, shaders[i]);
+	}
 
 	return prog;
 }
@@ -151,7 +157,7 @@ ShaderProgram* ShaderProgram::active(ShaderProgram* shader)
 
 	assert(gl_get_error());
 
-	if(shader)
+	if (shader)
 	{
 		glUseProgram(shader->program);
 		active = shader;
@@ -186,7 +192,7 @@ void ShaderProgram::operator<<(Material* m)
 		"us_specular"
 	};
 
-	for(int i = 3; i--;)
+	for (int i = 3; i--;)
 	{
 		glActiveTexture(GL_TEXTURE0 + _tex_counter);
 		glBindTexture(GL_TEXTURE_2D, m->v[i]);
@@ -212,35 +218,60 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 {
 	std::string name = config.vertex + config.fragment;
 
-	if(_program_cache.count(name) <= 0)
+	if (_program_cache.count(name) <= 0)
 	{
-		std::string vsh_path = DATA_PATH + "/" + config.vertex;
-		std::string fsh_path = DATA_PATH + "/" + config.fragment;
+		std::string shader_names[] = {
+			config.vertex,
+			config.tessalation.control,
+			config.tessalation.evaluation,
+			config.geometry,
+			config.fragment
+		};
 
-		// Load, compile and store the vertex shader if needed
-		if(_shader_cache.count(vsh_path) <= 0)
+		GLenum shader_types[] = {
+			GL_VERTEX_SHADER,
+			GL_TESS_CONTROL_SHADER,
+			GL_TESS_EVALUATION_SHADER,
+			GL_GEOMETRY_SHADER,
+			GL_FRAGMENT_SHADER
+		};
+
+		// Iterate over all specified shader names
+		for (unsigned int i = 0; i < sizeof(shader_types) / sizeof(GLenum); ++i)
 		{
-			_shader_cache[vsh_path] = load_shader(vsh_path.c_str(), GL_VERTEX_SHADER);
+			std::string& name = shader_names[i];
+			if (name.length() == 0) continue;
+
+			std::string path = DATA_PATH + "/" + name;
+
+			// Load, compile and store the vertex shader if needed
+			if (_shader_cache.count(path) <= 0)
+			{
+				_shader_cache[name] = load_shader(path.c_str(), shader_types[i]);
+			}
 		}
 
-		// Load, compile and store the fragment shader if needed
-		if(_shader_cache.count(fsh_path) <= 0)
-		{
-			_shader_cache[fsh_path] = load_shader(fsh_path.c_str(), GL_FRAGMENT_SHADER);
-		}
-
+		// If no attributes were provided, use the defaults
 		if (!config.vertex_attributes)
 		{
 			const char* attrs[] = {
-				"position", "normal", "tangent", "texcoord", NULL
+				"a_position", "a_normal", "a_tangent", "a_texcoord", NULL
 			};
 
 			config.vertex_attributes = attrs;
 		}
 
-		GLint vsh = _shader_cache[vsh_path];
-		GLint fsh = _shader_cache[fsh_path];
-		GLint program = link_program(vsh, fsh, config.vertex_attributes);
+		int si = 0;
+		GLint shaders[6] = {};
+		for (unsigned int i = 0; i < sizeof(shader_types) / sizeof(GLenum); ++i)
+		{
+			if (shader_names[i].length())
+			{
+				shaders[si++] = _shader_cache[shader_names[i]];
+			}
+		}
+
+		GLint program = link_program(shaders, config.vertex_attributes);
 
 		ShaderProgram shader = {};
 		shader.program = program;
@@ -270,7 +301,13 @@ ShaderParam& ShaderProgram::operator[](std::string name)
 
 ShaderParam::ShaderParam(ShaderProgram* program, const char* name)
 {
-	assert(gl_get_error());
+	bool is_good = gl_get_error();
+	if(!is_good)
+	{
+		std::cerr << SEEN_TERM_RED "Error befor setting: " << name << SEEN_TERM_COLOR_OFF << '\n';
+	}
+	assert(is_good);
+
 	_program = program;
 	_uniform = glGetUniformLocation(_program->program, name);
 	assert(gl_get_error());

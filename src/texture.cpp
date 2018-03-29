@@ -97,13 +97,13 @@ Tex TextureFactory::load_texture(std::string path)
 	FILE *fp = fopen(full_path.c_str(), "rb");
 	if (!fp)
 	{
-		fprintf(stderr, "[read_png_file] File %s could not be opened for reading", path.c_str());
+		fprintf(stderr, SEEN_TERM_RED "[read_png_file] File %s could not be opened for reading" SEEN_TERM_COLOR_OFF, path.c_str());
 	}
 
 	fread(header, 1, 8, fp);
 	if (png_sig_cmp((png_const_bytep)header, 0, 8))
 	{
-		fprintf(stderr, "[read_png_file] File %s is not recognized as a PNG file", path.c_str());
+		fprintf(stderr, SEEN_TERM_RED "[read_png_file] File %s is not recognized as a PNG file" SEEN_TERM_COLOR_OFF, path.c_str());
 	}
 
 
@@ -111,14 +111,14 @@ Tex TextureFactory::load_texture(std::string path)
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
 	if (!png_ptr)
-		abort("[read_png_file] png_create_read_struct failed");
+		abort(SEEN_TERM_RED "[read_png_file] png_create_read_struct failed" SEEN_TERM_COLOR_OFF);
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr)
-		abort("[read_png_file] png_create_info_struct failed");
+		abort(SEEN_TERM_RED "[read_png_file] png_create_info_struct failed" SEEN_TERM_COLOR_OFF);
 
 	if (setjmp(png_jmpbuf(png_ptr)))
-		abort("[read_png_file] Error during init_io");
+		abort(SEEN_TERM_RED "[read_png_file] Error during init_io" SEEN_TERM_COLOR_OFF);
 
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
@@ -137,7 +137,7 @@ Tex TextureFactory::load_texture(std::string path)
 	/* read file */
 	if (setjmp(png_jmpbuf(png_ptr)))
 	{
-		abort("[read_png_file] Error during read_image");
+		abort(SEEN_TERM_RED "[read_png_file] Error during read_image" SEEN_TERM_COLOR_OFF);
 	}
 
 	int color_components;
@@ -178,7 +178,7 @@ Tex TextureFactory::load_texture(std::string path)
 
 	assert(gl_get_error());
 
-	std::cerr << "OK" << std::endl;
+	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
 
 	return tex;
 }

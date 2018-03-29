@@ -5,7 +5,7 @@
 
 int main(int argc, const char* argv[])
 {
-	seen::RendererGL renderer("./data/", argv[0]);//, 256, 256);
+	seen::RendererGL renderer("./data/", argv[0], 1440, 720);//, 256, 256);
 	seen::ListScene scene;
 	seen::Sky sky;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
@@ -15,10 +15,17 @@ int main(int argc, const char* argv[])
 	seen::CustomPass bale_pass, sky_pass;
 	Quat q_bale_ori;
 
+	GLuint good = glCreateShader(GL_TESS_CONTROL_SHADER);
+
 	srand(time(NULL));
 
 	seen::ShaderConfig bale_shader = {
 		.vertex = "displacement.vsh",
+		.tessalation = {
+			.control = "displacement.tcs",
+			.evaluation = "displacement.tes",
+		},
+		.geometry = "displacement.ges",
 		.fragment = "basic.fsh"
 	};
 
@@ -59,7 +66,7 @@ int main(int argc, const char* argv[])
 		}
 		else
 		{
-			uv_rot += 0.001f;
+			uv_rot += 0.0001f;
 		}
 
 		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
@@ -82,6 +89,10 @@ int main(int argc, const char* argv[])
 		shader["u_green"] << seen::rf(0.5, 2);
 		shader["us_displacement"] << displacement_tex;
 
+		shader["TessLevelInner"] << 3.0f;
+		shader["TessLevelOuter"] << 2.0f;
+
+		glDisable(GL_CULL_FACE);
 	};
 
 	// seen::ShaderProgram::active(seen::Shaders[sky_shader]);

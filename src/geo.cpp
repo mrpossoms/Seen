@@ -543,7 +543,8 @@ void Model::draw(Viewer* viewer)
 
 	assert(gl_get_error());
 
-	glDrawArrays(GL_TRIANGLES, 0, vertices);
+	glPatchParameteri(GL_PATCH_VERTICES, 3);
+	glDrawArrays(GL_PATCHES, 0, vertices);
 
 	assert(gl_get_error());
 
