@@ -15,6 +15,7 @@ out float v_displacement_weight;
 // out vec4 v_screen_space;
 
 uniform float u_texcoord_rotation;
+uniform sampler2D us_displacement;
 
 void main()
 {
@@ -28,23 +29,17 @@ void main()
 		vec2(-sin(t), cos(t))
 	);
 
-	// if (a_texcoord.x < 0.02 && a_texcoord.x > 0.98)
-	// if (a_texcoord.y < 0.02 && a_texcoord.y > 0.98)
-	// {
-	// 	v_displacement_weight = 0.0;
-	// }
-	// else
-	// {
-	// 	v_displacement_weight = 0.5;
-	// }
-
-	const float strength = 12.0;
+	const float strength = 1.0;
 	float x = pow(2.0 * (a_texcoord.x - 0.5), strength);
 	float y = pow(2.0 * (a_texcoord.y - 0.5), strength);
 
-	v_displacement_weight = 1.0;//((1.0 - x) * (1.0 - y)) - 0.5;
+	v_displacement_weight = 0.5;//((1.0 - x) * (1.0 - y)) - 0.5;
 
 	// v_pos *= ((1.0 - (x * y)) * 0.01 + 0.99);
 
-	v_texcoord = uv_rot * ((a_texcoord.xy - 0.5) * 4.0);
+	const float scale = 1.0;
+	v_texcoord = uv_rot * ((a_texcoord.xy * scale) - (0.5 * scale));
+	v_texcoord += vec2(0.5 * scale);
+
+	// v_pos = a_position + (texture(us_displacement, v_texcoord).x - 0.35) * v_displacement_weight * a_normal;
 }

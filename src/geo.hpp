@@ -36,7 +36,9 @@ struct Vertex
 struct Mesh
 {
 	unsigned int vert_count();
+	unsigned int index_count();
 	Vertex* verts();
+	uint16_t* inds();
 
 	Vec3 *_min, *_max;
 
@@ -52,7 +54,7 @@ protected:
 	std::vector<vec3_t> normals;
 
 	std::vector<vec3_t> params;
-	std::vector<int> indices;
+	std::vector<uint16_t> indices;
 	std::vector<Vertex> vertices;
 };
 
@@ -66,8 +68,8 @@ public:
 
 	void draw(Viewer* viewer);
 private:
-	GLuint vbo;
-	int vertices;
+	GLuint vbo, ibo;
+	unsigned int vertices, indices;
 };
 
 //------------------------------------------------------------------------------

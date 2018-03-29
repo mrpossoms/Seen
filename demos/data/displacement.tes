@@ -29,13 +29,15 @@ void main()
 {
     te_patch_distance = gl_TessCoord;
 	te_texcoord = TRI_LERP(tc_texcoord);
-	te_normal = TRI_LERP(tc_normal)
+	te_normal = TRI_LERP(tc_normal);
 	te_tangent = TRI_LERP(tc_tangent);
 	float disp_weight = TRI_LERP(tc_displacement_weight);
 
-	vec3 displacement = (texture(us_displacement, te_texcoord).x * disp_weight) * te_normal;
+	vec3 displacement = (texture(us_displacement, te_texcoord).x - 0.35) * disp_weight * te_normal;
 	te_pos = TRI_LERP(tc_pos);
 	te_pos += displacement;
+
+	te_pos = mix(te_pos, normalize(te_pos), 0.1);
 
 	vec4 world_space = u_world_matrix * vec4(te_pos.xyz, 1.0);
 	vec4 view_space = u_view_matrix * world_space;

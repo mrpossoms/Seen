@@ -10,9 +10,21 @@ unsigned int Mesh::vert_count()
 }
 
 //------------------------------------------------------------------------------
+unsigned int Mesh::index_count()
+{
+	return indices.size();
+}
+
+//------------------------------------------------------------------------------
 Vertex* Mesh::verts()
 {
 	return vertices.data();
+}
+
+//------------------------------------------------------------------------------
+uint16_t* Mesh::inds()
+{
+	return indices.data();
 }
 
 //------------------------------------------------------------------------------
@@ -344,6 +356,8 @@ OBJMesh::OBJMesh(int fd)
 {
 	_min = _max = NULL;
 
+	std::map<std::string, uint16_t> index_map;
+
 	ObjLine l = {};
 	while(parse_line(fd, l))
 	{
@@ -379,9 +393,6 @@ OBJMesh::OBJMesh(int fd)
 				break;
 			case FACE:
 			{
-				// printf("FACE\n");
-
-
 				for(int i = 0; i < 3; ++i)
 				{
 					Vertex v = {};
@@ -389,8 +400,23 @@ OBJMesh::OBJMesh(int fd)
 					if(l.face.tex_idx[i])  vec3_copy(v.texture,  tex_coords[l.face.tex_idx[i] - 1].v);
 					if(l.face.norm_idx[i]) vec3_copy(v.normal,   normals[l.face.norm_idx[i] - 1].v);
 
-					vertices.push_back(v);
-					indices.push_back(l.face.pos_idx[i]);
+					char token[21] = {};
+
+					snprintf(token, sizeof(token), "%u/%u/%u",
+					         l.face.pos_idx[i],
+							 l.face.tex_idx[i],
+							 l.face.norm_idx[i]
+					);
+
+					std::string vert_token(token);
+
+					if (index_map.count(vert_token) == 0)
+					{
+						vertices.push_back(v);
+						index_map[vert_token] = (uint16_t)(vertices.size() - 1);
+					}
+
+					indices.push_back(index_map[vert_token]);
 				}
 			}
 				break;
@@ -490,18 +516,27 @@ Model* MeshFactory::get_model(std::string path)
 
 Model::Model(Mesh* mesh)
 {
-	glGenBuffers(1, &vbo);
+	glGenBuffers(2, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	assert(mesh);
-
-	vertices = mesh->vert_count();
 	glBufferData(
 		GL_ARRAY_BUFFER,
 		mesh->vert_count() * sizeof(Vertex),
 		mesh->verts(),
 		GL_STATIC_DRAW
 	);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(
+		GL_ELEMENT_ARRAY_BUFFER,
+		mesh->index_count() * sizeof(uint16_t),
+		mesh->inds(),
+		GL_STATIC_DRAW
+	);
+
+	vertices = mesh->vert_count();
+	indices  = mesh->index_count();
 }
 //------------------------------------------------------------------------------
 
@@ -515,12 +550,12 @@ void Model::draw(Viewer* viewer)
 {
 	assert(gl_get_error());
 
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
 	for(int i = 4; i--;)
 	{
@@ -543,8 +578,11 @@ void Model::draw(Viewer* viewer)
 
 	assert(gl_get_error());
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
-	glDrawArrays(GL_PATCHES, 0, vertices);
+	// glDrawArrays(GL_PATCHES, 0, vertices);
+	glDrawElements(GL_PATCHES, indices, GL_UNSIGNED_SHORT, 0);
 
 	assert(gl_get_error());
 
