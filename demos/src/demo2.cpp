@@ -5,10 +5,10 @@
 
 int main(int argc, const char* argv[])
 {
-	seen::RendererGL renderer("./data/", argv[0], 1440, 720);//, 256, 256);
+	seen::RendererGL renderer("./data/", argv[0], 256, 256);//, 256, 256);
 	seen::ListScene scene;
 	seen::Sky sky;
-	seen::Camera camera(M_PI / 3, renderer.width, renderer.height);
+	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
 	seen::Model* bale = seen::MeshFactory::get_model("cube.obj");
 	seen::Material* bale_mat = seen::TextureFactory::get_material("hay");
 	seen::Tex displacement_tex = seen::TextureFactory::load_texture("hay.displacement.png");
@@ -25,7 +25,7 @@ int main(int argc, const char* argv[])
 			.control = "displacement.tcs",
 			.evaluation = "displacement.tes",
 		},
-		.geometry = "displacement.ges",
+		.geometry = "",
 		.fragment = "basic.fsh"
 	};
 
@@ -61,12 +61,12 @@ int main(int argc, const char* argv[])
 
 			vec3_norm(axis, axis);
 			quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
-			camera.fov(M_PI / (2 + (seen::rf() * 16)));
-			mat4x4_translate(world.v, seen::rf(-1, 1), seen::rf(-1, 1), seen::rf(-1, 1));
+			camera.fov(M_PI / seen::rf(1,3));
+			mat4x4_translate(world.v, seen::rf(-0.5, 0.5), seen::rf(-1, 1), seen::rf(-1, 1));
 		}
 		else
 		{
-			uv_rot += 0.01f;
+			uv_rot += 0.0001f;
 		}
 
 		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
@@ -89,8 +89,8 @@ int main(int argc, const char* argv[])
 		shader["u_green"] << seen::rf(0.5, 2);
 		shader["us_displacement"] << displacement_tex;
 
-		shader["TessLevelInner"] << 7.0f;
-		shader["TessLevelOuter"] << 7.0f;
+		shader["TessLevelInner"] << 5.0f;
+		shader["TessLevelOuter"] << 13.0f;
 
 		glDisable(GL_CULL_FACE);
 	};
@@ -102,6 +102,8 @@ int main(int argc, const char* argv[])
 	bale_pass.drawables->push_back(bale);
 
 	scene.drawables().push_back(&bale_pass);
+
+	glClearColor(seen::rf(), seen::rf(), seen::rf(), 1);
 
 	int i = argc >= 3 ? atoi(argv[2]) : 10e6;
 	for(; renderer.is_running() && i--;)

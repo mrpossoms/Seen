@@ -28,7 +28,8 @@ void main()
 	tc_tangent[ID]  = v_tangent[ID];
 	tc_displacement_weight[ID] = v_displacement_weight[ID];
 
-    if (ID == 0.0) {
+    //if (ID == 0.0) 
+    {
         gl_TessLevelInner[0] = TessLevelInner;
         gl_TessLevelOuter[0] = TessLevelOuter;
         gl_TessLevelOuter[1] = TessLevelOuter;

@@ -202,18 +202,21 @@ static void write_png_file_rgb(
 
 bool RendererGL::capture(std::string path)
 {
-	size_t buf_len = width * height * 3;
+	int fb_width, fb_height;
+	glfwGetFramebufferSize(win, &fb_width, &fb_height);
+
+	size_t buf_len = fb_width * fb_height * 3;
 	GLchar color_buffer[buf_len];
 	bzero(color_buffer, buf_len);
 
 	glReadPixels(
 		0, 0,
-		width, height,
+		fb_width, fb_height,
 		GL_RGB, GL_UNSIGNED_BYTE,
 		(void*)color_buffer
 	);
 
-	write_png_file_rgb(path.c_str(), width, height, color_buffer);
+	write_png_file_rgb(path.c_str(), fb_width, fb_height, color_buffer);
 
 	return true;
 }

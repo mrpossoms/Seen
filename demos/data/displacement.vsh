@@ -29,15 +29,15 @@ void main()
 		vec2(-sin(t), cos(t))
 	);
 
-	const float strength = 1.0;
-	float x = pow(2.0 * (a_texcoord.x - 0.5), strength);
-	float y = pow(2.0 * (a_texcoord.y - 0.5), strength);
+	// const float strength = 1.0;
+	// float x = pow(2.0 * (a_texcoord.x - 0.5), strength);
+	// float y = pow(2.0 * (a_texcoord.y - 0.5), strength);
 
 	v_displacement_weight = 0.5;//((1.0 - x) * (1.0 - y)) - 0.5;
 
 	// v_pos *= ((1.0 - (x * y)) * 0.01 + 0.99);
 
-	const float scale = 1.0;
+	const float scale = 4.0;
 	v_texcoord = uv_rot * ((a_texcoord.xy * scale) - (0.5 * scale));
 	v_texcoord += vec2(0.5 * scale);
 
