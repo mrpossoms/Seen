@@ -20,7 +20,7 @@ public:
 	void draw(Viewer* viewer, Scene* scene);
 
 	void finish();
-
+	void clear_color(float r, float g, float b, float a);
 	bool capture(std::string path);
 
 	GLFWwindow* win;

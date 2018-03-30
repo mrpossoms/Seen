@@ -7,15 +7,12 @@ int main(int argc, const char* argv[])
 {
 	seen::RendererGL renderer("./data/", argv[0], 256, 256);//, 256, 256);
 	seen::ListScene scene;
-	seen::Sky sky;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
 	seen::Model* bale = seen::MeshFactory::get_model("cube.obj");
 	seen::Material* bale_mat = seen::TextureFactory::get_material("hay");
 	seen::Tex displacement_tex = seen::TextureFactory::load_texture("hay.displacement.png");
-	seen::CustomPass bale_pass, sky_pass;
+	seen::CustomPass bale_pass, bale_tess_pass;
 	Quat q_bale_ori;
-
-	GLuint good = glCreateShader(GL_TESS_CONTROL_SHADER);
 
 	srand(time(NULL));
 
@@ -84,26 +81,42 @@ int main(int argc, const char* argv[])
 		shader["u_world_matrix"] << world;
 		shader["u_normal_matrix"] << rot;
 
+		vec3_t tint = { 0.75, 0.75, 0.75 };
+
 		shader["u_light_dir"] << light_dir;
 		shader["u_texcoord_rotation"] << uv_rot;
-		shader["u_green"] << seen::rf(0.5, 2);
-		shader["us_displacement"] << displacement_tex;
-
-		shader["TessLevelInner"] << 5.0f;
-		shader["TessLevelOuter"] << 13.0f;
-
-		glDisable(GL_CULL_FACE);
+		shader["u_displacement_weight"] << 0.0f;
+		shader["TessLevelInner"] << 1.0f;
+		shader["TessLevelOuter"] << 1.0f;
+		shader["u_tint"] << tint;
+		// glDisable(GL_CULL_FACE);
 	};
 
-	// seen::ShaderProgram::active(seen::Shaders[sky_shader]);
+	bale_tess_pass.preparation_function = [&]()
+	{
+		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
+
+		shader["us_displacement"] << displacement_tex;
+
+		vec3_t tint = { 1.0, 1.0, 1.0 };
+
+		shader["u_displacement_weight"] << 0.5f;
+		shader["TessLevelInner"] << 5.0f;
+		shader["TessLevelOuter"] << 13.0f;
+		shader["u_tint"] << tint;
+	};
 
 	// Add all things to be drawn to the scene
 	bale_pass.drawables = new std::vector<seen::Drawable*>();
 	bale_pass.drawables->push_back(bale);
 
-	scene.drawables().push_back(&bale_pass);
+	bale_tess_pass.drawables = new std::vector<seen::Drawable*>();
+	bale_tess_pass.drawables->push_back(bale);
 
-	glClearColor(seen::rf(), seen::rf(), seen::rf(), 1);
+	scene.drawables().push_back(&bale_pass);
+	scene.drawables().push_back(&bale_tess_pass);
+
+	renderer.clear_color(seen::rf(), seen::rf(), seen::rf(), 1);
 
 	int i = argc >= 3 ? atoi(argv[2]) : 10e6;
 	for(; renderer.is_running() && i--;)
@@ -116,7 +129,7 @@ int main(int argc, const char* argv[])
 			path_ss << argv[1] << "/" << std::hex << random();
 			renderer.capture(path_ss.str());
 
-			glClearColor(seen::rf(), seen::rf(), seen::rf(), 1);
+			renderer.clear_color(seen::rf(), seen::rf(), seen::rf(), 1);
 		}
 	}
 

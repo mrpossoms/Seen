@@ -12,11 +12,11 @@ uniform sampler2D us_normal;
 uniform sampler2D us_displacement;
 
 uniform vec3 u_light_dir;
-uniform float u_green;
+uniform vec3 u_tint;
 
 void main()
 {
-    vec3 rgb = texture(us_color, te_texcoord).xyz;// * vec3(u_green, 1.0, 1.0);
+    vec3 rgb = texture(us_color, te_texcoord).xyz * u_tint;
     vec3 tn = normalize((texture(us_normal, te_texcoord).xyz * 2.0) - 1.0);
     mat3 tbn = mat3(te_binormal, te_tangent, te_normal);
 

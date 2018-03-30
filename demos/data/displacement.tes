@@ -6,7 +6,6 @@ in vec3 tc_pos[];
 in vec2 tc_texcoord[];
 in vec3 tc_normal[];
 in vec3 tc_tangent[];
-in float tc_displacement_weight[];
 
 out vec3 te_pos;
 out vec2 te_texcoord;
@@ -21,6 +20,7 @@ uniform mat4 u_proj_matrix;
 uniform mat3 u_normal_matrix;
 uniform mat4 u_world_matrix;
 
+uniform float u_displacement_weight;
 uniform sampler2D us_displacement;
 
 #define TRI_LERP(attr) (attr[0] * gl_TessCoord.x + attr[1] * gl_TessCoord.y + attr[2] * gl_TessCoord.z)
@@ -31,8 +31,7 @@ void main()
 	te_texcoord = TRI_LERP(tc_texcoord);
 	te_normal = TRI_LERP(tc_normal);
 	te_tangent = TRI_LERP(tc_tangent);
-	float disp_weight = TRI_LERP(tc_displacement_weight);
-	vec3 displacement = texture(us_displacement, te_texcoord).x * disp_weight * te_normal;
+	vec3 displacement = texture(us_displacement, te_texcoord).x * u_displacement_weight * te_normal;
 	te_pos = TRI_LERP(tc_pos) + displacement;
 	// te_pos += displacement;
 	// te_pos = mix(te_pos, normalize(te_pos), 0.1);

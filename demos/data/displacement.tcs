@@ -6,7 +6,6 @@ in vec3 v_pos[];      // pixel view space position
 in vec2 v_texcoord[]; // texture coords
 in vec3 v_normal[];   // normal
 in vec3 v_tangent[];
-in float v_displacement_weight[];
 
 out vec3 tc_pos[];
 out vec2 tc_texcoord[];
@@ -26,9 +25,8 @@ void main()
 	tc_texcoord[ID] = v_texcoord[ID];
     tc_normal[ID]   = v_normal[ID];
 	tc_tangent[ID]  = v_tangent[ID];
-	tc_displacement_weight[ID] = v_displacement_weight[ID];
 
-    //if (ID == 0.0) 
+    //if (ID == 0.0)
     {
         gl_TessLevelInner[0] = TessLevelInner;
         gl_TessLevelOuter[0] = TessLevelOuter;
