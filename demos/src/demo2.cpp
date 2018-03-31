@@ -8,9 +8,12 @@ int main(int argc, const char* argv[])
 	seen::RendererGL renderer("./data/", argv[0], 256, 256);//, 256, 256);
 	seen::ListScene scene;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
-	seen::Model* bale = seen::MeshFactory::get_model("cube.obj");
-	seen::Material* bale_mat = seen::TextureFactory::get_material("hay");
-	seen::Tex displacement_tex = seen::TextureFactory::load_texture("hay.displacement.png");
+	seen::Model* bale = seen::MeshFactory::get_model(std::string(argv[1]) + ".obj");
+	seen::Material* bale_mat = seen::TextureFactory::get_material(argv[1]);
+
+	std::string disp_name = std::string(argv[1]) + ".displacement.png";
+
+	seen::Tex displacement_tex = seen::TextureFactory::load_texture(disp_name);
 	seen::CustomPass bale_pass, bale_tess_pass;
 	Quat q_bale_ori;
 
@@ -50,7 +53,7 @@ int main(int argc, const char* argv[])
 		vec3_t light_dir = { 1, 0, 1 };
 		vec3 axis = { 0.0, 1.0, 0.0 };
 
-		if (argc > 1)
+		if (argc > 2)
 		{
 			light_dir.x = seen::rf(-1, 1);
 			light_dir.z = seen::rf(-1, 1);
@@ -118,15 +121,15 @@ int main(int argc, const char* argv[])
 
 	renderer.clear_color(seen::rf(), seen::rf(), seen::rf(), 1);
 
-	int i = argc >= 3 ? atoi(argv[2]) : 10e6;
+	int i = argc >= 3 ? atoi(argv[3]) : 10e6;
 	for(; renderer.is_running() && i--;)
 	{
 		renderer.draw(&camera, &scene);
 
-		if (argc >= 2)
+		if (argc > 2)
 		{
 			std::stringstream path_ss;
-			path_ss << argv[1] << "/" << std::hex << random();
+			path_ss << argv[2] << "/" << std::hex << random();
 			renderer.capture(path_ss.str());
 
 			renderer.clear_color(seen::rf(), seen::rf(), seen::rf(), 1);

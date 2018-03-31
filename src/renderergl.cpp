@@ -190,7 +190,7 @@ static void write_png_file_rgb(
 	png_bytep rows[height];
 	for(int i = height; i--;)
 	{
-		rows[i] = (png_bytep)(buffer + i * (width * 3));
+		rows[(height - 1) - i] = (png_bytep)(buffer + i * (width * 3));
 	}
 
 	png_write_image(png, rows);
