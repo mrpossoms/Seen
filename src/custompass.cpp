@@ -9,6 +9,11 @@ CustomPass::CustomPass()
 	preparation_function = nop;
 };
 
+CustomPass::CustomPass(std::function<void()> prep)
+{
+	preparation_function = prep;
+};
+
 CustomPass::~CustomPass() {};
 
 
@@ -28,7 +33,7 @@ void CustomPass::draw(Viewer* viewer)
 	}
 
 	prepare();
-	
+
 	if(!gl_get_error())
 	{
 		std::cerr << "ERROR: GL error produced in preparation_function" << std::endl;
@@ -47,7 +52,7 @@ void CustomPass::draw(Viewer* viewer)
 
 	}
 
-	for(auto drawable : *drawables)
+	for(auto drawable : drawables)
 	{
 		drawable->draw(viewer);
 	}

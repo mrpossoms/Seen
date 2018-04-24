@@ -54,6 +54,7 @@ struct ShaderProgram {
 	friend struct ShaderParam;
 
 	GLint program;
+	GLint primative;
 	DrawParams draw_params;
 
 	void init_draw_params();

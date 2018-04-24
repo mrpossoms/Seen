@@ -275,6 +275,12 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 
 		ShaderProgram shader = {};
 		shader.program = program;
+		shader.primative = GL_TRIANGLES;
+
+		if (config.tessalation.evaluation.length() > 0)
+		{
+			shader.primative = GL_PATCHES;
+		}
 
 		ShaderProgram::active(&shader);
 		shader.init_draw_params();

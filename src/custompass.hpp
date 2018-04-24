@@ -10,6 +10,7 @@ class CustomPass : public RenderingPass
 {
 public:
 	CustomPass();
+	CustomPass(std::function<void (void)> prep);
 	~CustomPass();
 
 	void prepare();
@@ -17,7 +18,7 @@ public:
 	void draw(Viewer* viewer);
 
 	std::function<void (void)> preparation_function;
-	std::vector<Drawable*>* drawables;
+	std::vector<Drawable*> drawables;
 };
 
 }

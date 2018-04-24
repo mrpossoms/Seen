@@ -582,7 +582,7 @@ void Model::draw(Viewer* viewer)
 
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
 	// glDrawArrays(GL_PATCHES, 0, vertices);
-	glDrawElements(GL_PATCHES, indices, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(ShaderProgram::active()->primative, indices, GL_UNSIGNED_SHORT, 0);
 
 	assert(gl_get_error());
 
