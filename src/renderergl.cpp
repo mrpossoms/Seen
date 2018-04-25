@@ -14,6 +14,24 @@ using namespace seen;
 
 std::string seen::DATA_PATH;
 
+static RendererGL* SINGLTON;
+
+static void key_callback(GLFWwindow* window,
+                         int key,
+                         int scancode,
+                         int action,
+                         int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		SINGLTON->keys_down[key] = 1;
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		SINGLTON->keys_down[key] = 0;
+	}
+}
+
 //------------------------------------------------------------------------------
 static GLFWwindow* init_glfw(int width, int height, const char* title)
 {
@@ -38,6 +56,7 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 
 	glfwMakeContextCurrent(win);
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetKeyCallback(win, key_callback);
 
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -70,8 +89,11 @@ RendererGL::RendererGL(const char* data_path,
 
 	// NOP by default
 	mouse_moved = [&](double x, double y, double dx, double dy) { };
+	key_pressed = [&](int key) { };
 
 	assert(gl_get_error());
+
+	SINGLTON = this;
 }
 //------------------------------------------------------------------------------
 
@@ -119,6 +141,14 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (int key = 1024; key--;)
+	{
+		if (keys_down[key] == 1)
+		{
+			key_pressed(key);
+		}
+	}
 
 	if (scene)
 	for(auto drawable : scene->drawables())

@@ -27,9 +27,11 @@ public:
 	int width, height;
 
 	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
+	std::function<void(int key)> key_pressed;
+
+	char keys_down[1024] = {};
 private:
 	double mouse_last_x, mouse_last_y;
-
 };
 
 }
