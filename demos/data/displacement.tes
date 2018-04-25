@@ -58,7 +58,7 @@ void main()
     te_tangent = u_normal_matrix * te_tangent;
     te_binormal = cross(te_normal, te_tangent);
 
-	vec4 world_space = u_world_matrix * vec4(te_pos.xyz, 1.0);
+	vec4 world_space = vec4(te_pos.xyz, 1.0);
 	vec4 view_space = u_view_matrix * world_space;
 	gl_Position = u_proj_matrix * view_space;
 }

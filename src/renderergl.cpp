@@ -68,6 +68,9 @@ RendererGL::RendererGL(const char* data_path,
 
 	win = init_glfw(width, height, title);
 
+	// NOP by default
+	mouse_moved = [&](double x, double y, double dx, double dy) { };
+
 	assert(gl_get_error());
 }
 //------------------------------------------------------------------------------

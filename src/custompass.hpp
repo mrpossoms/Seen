@@ -11,6 +11,7 @@ class CustomPass : public RenderingPass
 public:
 	CustomPass();
 	CustomPass(std::function<void (void)> prep);
+	CustomPass(std::function<void (void)> prep, ...);
 	~CustomPass();
 
 	void prepare();

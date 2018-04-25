@@ -14,6 +14,7 @@ Camera::Camera(float fov,
 	printf("%d x %d : %f\n", width, height, aspect);
 
 	mat4x4_perspective(_projection.v, fov, aspect, 0.01, 1000);
+	position(0, 0, 0);
 }
 
 

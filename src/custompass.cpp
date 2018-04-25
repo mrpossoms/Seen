@@ -14,6 +14,22 @@ CustomPass::CustomPass(std::function<void()> prep)
 	preparation_function = prep;
 };
 
+CustomPass::CustomPass(std::function<void()> prep, ...)
+{
+	va_list args;
+	
+	va_start(args, prep);
+	while(true)
+	{
+		Drawable* d = va_arg(args, Drawable*);
+		if (!d) break;
+		drawables.push_back(d);
+	}
+	va_end(args);
+
+	preparation_function = prep;
+};
+
 CustomPass::~CustomPass() {};
 
 
