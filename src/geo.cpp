@@ -581,6 +581,7 @@ void Model::draw(Viewer* viewer)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
+	assert(gl_get_error());
 	// glDrawArrays(GL_PATCHES, 0, vertices);
 	glDrawElements(ShaderProgram::active()->primative, indices, GL_UNSIGNED_SHORT, 0);
 

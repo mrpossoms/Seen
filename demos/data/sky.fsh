@@ -18,9 +18,9 @@ void main()
     float l = (dot(light_dir, norm) + 1.0) / 2.0;
 
 
-    float horizon = dot(norm, normalize(norm * vec3(1.0, 1.0, 0.0)));
+    float horizon = dot(norm, normalize(norm * vec3(1.0, 0.0, 1.0)));
     float haze = ((dot(light_dir, norm) + horizon) + 1.0) / 2.0;
-    vec3 blue = mix(dark_blue, light_blue, pow(haze, 2.0));
+    vec3 blue = mix(dark_blue, light_blue, pow(horizon, 2.0));
     vec3 sun = sun_color * (10.0 * pow(l, 64.0));
 
     color = vec4(mix(blue, sun, pow(l, 32.0)), 1.0);
