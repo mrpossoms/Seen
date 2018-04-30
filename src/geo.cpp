@@ -556,6 +556,8 @@ void Model::draw(Viewer* viewer)
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
+	
+	assert(gl_get_error());
 
 	for(int i = 4; i--;)
 	{

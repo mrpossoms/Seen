@@ -28,6 +28,7 @@ public:
 
 	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
 	std::function<void(int key)> key_pressed;
+	std::function<void(int key)> key_released;
 
 	char keys_down[1024] = {};
 private:

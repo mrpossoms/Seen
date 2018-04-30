@@ -28,6 +28,11 @@ static void key_callback(GLFWwindow* window,
 	}
 	else if (action == GLFW_RELEASE)
 	{
+        if (SINGLTON->keys_down[key])
+        {
+            SINGLTON->key_released(key);
+        }
+
 		SINGLTON->keys_down[key] = 0;
 	}
 }
@@ -45,10 +50,12 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 
 	GLFWwindow* win = glfwCreateWindow(width, height, title, NULL, NULL);
 
-	if (!win){
+	if (!win)
+	{
 		glfwTerminate();
 		fprintf(stderr, "glfwCreateWindow() failed\n");
 		exit(-2);
@@ -68,9 +75,6 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 
 	assert(gl_get_error());
 
-	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-
 	return win;
 }
 //------------------------------------------------------------------------------
@@ -88,8 +92,9 @@ RendererGL::RendererGL(const char* data_path,
 	win = init_glfw(width, height, title);
 
 	// NOP by default
-	mouse_moved = [&](double x, double y, double dx, double dy) { };
-	key_pressed = [&](int key) { };
+	mouse_moved  = [&](double x, double y, double dx, double dy) { };
+	key_pressed  = [&](int key) { };
+    key_released = [&](int key) { };
 
 	assert(gl_get_error());
 
@@ -253,6 +258,7 @@ bool RendererGL::capture(std::string path)
 
 	return true;
 }
+
 //------------------------------------------------------------------------------
 
 void RendererGL::clear_color(float r, float g, float b, float a)
