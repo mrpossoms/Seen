@@ -7,6 +7,7 @@
 
 // c libs
 #include "string.h"
+#include <stdarg.h>
 
 // c++ libs
 #include <map>

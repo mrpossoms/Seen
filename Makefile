@@ -33,6 +33,11 @@ lib:
 obj/%.o: src/%.cpp obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
 
+install-static: static
+	cp lib/*.a /usr/local/lib
+	mkdir -p /usr/local/include/seen
+	cp src/*.h* /usr/local/include/seen
+
 install: static shared
 	cp lib/* /usr/local/lib
 	mkdir -p /usr/local/include/seen
