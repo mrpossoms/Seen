@@ -50,5 +50,6 @@ bool gl_get_error();
 
 float rf();
 float rf(float min, float max);
+Vec3 rn();
 
 }
