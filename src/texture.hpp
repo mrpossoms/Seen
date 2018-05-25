@@ -34,7 +34,7 @@ public:
 		void** data,
 		int& width,
 		int& height,
-		int &depth);
+		int& depth);
 	static Material* get_material(const std::string path);
 };
 

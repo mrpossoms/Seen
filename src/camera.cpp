@@ -45,6 +45,14 @@ Viewer* Camera::fov(float f)
 }
 
 
+Vec3 Camera::left()
+{
+	Vec3 left;
+	quat_mul_vec3(left.v, _orientation.v, VEC3_LEFT.v);
+	return left;
+}
+
+
 Positionable* Camera::position(Vec3& pos)
 {
 	_position = pos;

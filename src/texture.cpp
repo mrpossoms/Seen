@@ -200,8 +200,6 @@ Tex TextureFactory::load_texture(std::string path)
 
 	assert(gl_get_error());
 
-	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
-
 	return tex;
 }
 //------------------------------------------------------------------------------

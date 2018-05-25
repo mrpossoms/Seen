@@ -38,7 +38,7 @@ static void key_callback(GLFWwindow* window,
 }
 
 //------------------------------------------------------------------------------
-static GLFWwindow* init_glfw(int width, int height, const char* title)
+static GLFWwindow* init_glfw(int width, int height, const char* title, int version[2])
 {
 	if (!glfwInit()){
 		fprintf(stderr, "glfwInit() failed\n");
@@ -46,8 +46,8 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version[0]);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version[1]);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	// glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
@@ -79,17 +79,21 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 }
 //------------------------------------------------------------------------------
 
-RendererGL::RendererGL(const char* data_path,
-                       const char* title,
-		       int win_w,
-		       int win_h)
+RendererGL::RendererGL(
+	const char* data_path,
+	const char* title,
+	int win_w,
+	int win_h,
+	int gl_version_major,
+	int gl_version_minor)
 {
 	width = win_w;
 	height = win_h;
 
 	DATA_PATH = std::string(data_path);
 
-	win = init_glfw(width, height, title);
+	int version[] = { gl_version_major, gl_version_minor };
+	win = init_glfw(width, height, title, version);
 
 	// NOP by default
 	mouse_moved  = [&](double x, double y, double dx, double dy) { };
