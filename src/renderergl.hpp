@@ -14,7 +14,7 @@ public:
 		const char* title,
 		int win_w=640,
 		int win_h=480,
-		int gl_version_major=4,
+		int gl_version_major=0,
 		int gl_version_minor=0);
 
 	void prepare();

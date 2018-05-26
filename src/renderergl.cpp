@@ -46,11 +46,17 @@ static GLFWwindow* init_glfw(int width, int height, const char* title, int versi
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version[0]);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version[1]);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	// glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	
+	if (version[0] | version[1])
+	{
+		std::cerr << "Requesting GL " << version[0] << "." << version[1] << std::endl;
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version[0]);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version[1]);
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	}
+
+	//glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 
 	GLFWwindow* win = glfwCreateWindow(width, height, title, NULL, NULL);
 
@@ -65,9 +71,12 @@ static GLFWwindow* init_glfw(int width, int height, const char* title, int versi
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetKeyCallback(win, key_callback);
 
+/*
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+*/
+	assert(gl_get_error());
 
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
