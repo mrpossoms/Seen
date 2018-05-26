@@ -551,12 +551,15 @@ void Model::draw(Viewer* viewer)
 	assert(gl_get_error());
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	assert(gl_get_error());
 
 	glEnableVertexAttribArray(0);
+	assert(gl_get_error());
 	glEnableVertexAttribArray(1);
+	assert(gl_get_error());
 	glEnableVertexAttribArray(2);
+	assert(gl_get_error());
 	glEnableVertexAttribArray(3);
-	
 	assert(gl_get_error());
 
 	for(int i = 4; i--;)
