@@ -8,15 +8,17 @@ in vec3 te_binormal; // binormal (for TBN basis calc)
 out vec4 color;
 
 uniform sampler2D us_color;     // base texture (albedo)
+uniform sampler2D us_overlay;
 uniform sampler2D us_normal;
 uniform sampler2D us_displacement;
 
 uniform vec3 u_light_dir;
 uniform vec3 u_tint;
+uniform float us_overlay_scale;
 
 void main()
 {
-    vec3 rgb = texture(us_color, te_texcoord).rgb * u_tint;
+    vec3 rgb = (texture(us_color, te_texcoord).rgb + texture(us_overlay, te_texcoord * us_overlay_scale).rgb) * u_tint;
     vec3 tn = normalize((texture(us_normal, te_texcoord).xyz * 2.0) - 1.0);
     mat3 tbn = mat3(te_binormal, te_tangent, te_normal);
 
