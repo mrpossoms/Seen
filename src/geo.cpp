@@ -205,9 +205,38 @@ Plane::Plane(float size)
 }
 
 //------------------------------------------------------------------------------
-Plane::~Plane()
+Plane::Plane(float size, int subdivisions)
 {
+	float dx = size / (float)subdivisions;
+	float dy = size / (float)subdivisions;
 
+	for (int i = subdivisions; i--;)
+	for (int j = subdivisions; j--;)
+	{
+		float x = dx * i - 0.5f, y = dy * j - 0.5f;
+		Vertex v = {
+			.position = { x * size, y * size, 0 },
+			.normal = { 0, 0, 1 },
+			.tangent = { 1, 0, 0 },
+			.texture = { dx * i, dy * j, 0 }
+		};
+
+		vertices.push_back(v);
+	}
+
+	for (int y = 0; y < subdivisions - 1; y++)
+	for (int x = 0; x < subdivisions - 1; x++)
+	{
+		int i = x + y * subdivisions;
+		int j = x + (y + 1) * subdivisions;
+		indices.push_back(i);
+		indices.push_back(i + 1);
+		indices.push_back(j);
+
+		indices.push_back(j + 1);
+		indices.push_back(j);
+		indices.push_back(i + 1);
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -241,7 +270,7 @@ struct ObjLine {
 	};
 };
 
-
+//------------------------------------------------------------------------------
 static int get_line(int fd, char* line)
 {
 	int size = 0;
