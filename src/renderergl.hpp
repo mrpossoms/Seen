@@ -9,7 +9,13 @@ namespace seen
 class RendererGL : public Renderer
 {
 public:
-	RendererGL(const char* data_path, const char* title, int win_w=640, int win_h=480);
+	RendererGL(
+		const char* data_path,
+		const char* title,
+		int win_w=640,
+		int win_h=480,
+		int gl_version_major=0,
+		int gl_version_minor=0);
 
 	void prepare();
 
@@ -28,6 +34,7 @@ public:
 
 	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
 	std::function<void(int key)> key_pressed;
+	std::function<void(int key)> key_released;
 
 	char keys_down[1024] = {};
 private:

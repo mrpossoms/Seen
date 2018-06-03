@@ -25,3 +25,11 @@ float seen::rf(float min, float max)
 {
 	return rf() * (max - min) + min;
 }
+
+
+Vec3 seen::rn()
+{
+	Vec3 n(rf() - 0.5f, rf() - 0.5f, rf() - 0.5f);
+	n.normalize();
+	return n;
+}

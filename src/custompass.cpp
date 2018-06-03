@@ -43,8 +43,6 @@ void CustomPass::prepare()
 
 void CustomPass::draw(Viewer* viewer)
 {
-	assert(viewer);
-
 	if (!gl_get_error())
 	{
 		std::cerr << "Something bad happend before drawing" << std::endl;

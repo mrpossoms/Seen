@@ -78,17 +78,18 @@ void abort(std::string message)
 }
 //------------------------------------------------------------------------------
 
-Tex TextureFactory::load_texture(std::string path)
+int TextureFactory::load_texture_buffer(
+	std::string path,
+	void** data,
+	int& width,
+	int& height,
+	int& depth)
 {
 	char header[8];    // 8 is the maximum size that can be checked
 	png_structp png_ptr = {};
 	png_infop info_ptr;
 	png_bytep* row_pointers;
 	png_byte color_type;
-	//png_byte bit_depth;
-	int width, height;
-	GLuint tex;
-	GLenum gl_color_type;
 
 	std::cerr << "loading texture '" <<  path << "'... ";
 
@@ -133,28 +134,24 @@ Tex TextureFactory::load_texture(std::string path)
 	//number_of_passes = png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
-
 	/* read file */
 	if (setjmp(png_jmpbuf(png_ptr)))
 	{
 		abort(SEEN_TERM_RED "[read_png_file] Error during read_image" SEEN_TERM_COLOR_OFF);
 	}
 
-	int color_components;
 	switch (color_type) {
 		case PNG_COLOR_TYPE_RGBA:
-			gl_color_type = GL_RGBA;
-			color_components = 4;
+			depth = 4;
 			break;
 		case PNG_COLOR_TYPE_PALETTE:
 		case PNG_COLOR_TYPE_RGB:
-			gl_color_type = GL_RGB;
-			color_components = 3;
+			depth = 3;
 			break;
 	}
 
 	row_pointers = (png_bytep*) malloc(sizeof(png_bytep) * height);
-	char pixel_buf[color_components * width * height];
+	char* pixel_buf = (char*)calloc(depth * width * height, sizeof(char));
 
 	for (int y = 0; y < height; y++)
 	{
@@ -171,14 +168,37 @@ Tex TextureFactory::load_texture(std::string path)
 		free(row_pointers[y]);
 	}
 	free(row_pointers);
-
 	fclose(fp);
 
-	tex = create_texture(width, height, gl_color_type, pixel_buf);
-
-	assert(gl_get_error());
+	*data = (void*)pixel_buf;
 
 	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
+
+	return 0;
+}
+//------------------------------------------------------------------------------
+
+Tex TextureFactory::load_texture(std::string path)
+{
+	int width, height, depth;
+	void* pixel_buf = NULL;
+
+	load_texture_buffer(path, &pixel_buf, width, height, depth);
+
+	GLenum gl_color_type;
+	switch (depth)
+	{
+		case 4:
+			gl_color_type = GL_RGBA;
+			break;
+		case 3:
+			gl_color_type = GL_RGB;
+			break;
+	}
+
+	Tex tex = create_texture(width, height, gl_color_type, pixel_buf);
+
+	assert(gl_get_error());
 
 	return tex;
 }

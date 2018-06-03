@@ -32,5 +32,6 @@ void Sky::draw(Viewer* viewer)
 
     glDisable(GL_CULL_FACE);
     model->draw(viewer);
-    // glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+    assert(gl_get_error());
 }

@@ -28,12 +28,17 @@ static void key_callback(GLFWwindow* window,
 	}
 	else if (action == GLFW_RELEASE)
 	{
+        if (SINGLTON->keys_down[key])
+        {
+            SINGLTON->key_released(key);
+        }
+
 		SINGLTON->keys_down[key] = 0;
 	}
 }
 
 //------------------------------------------------------------------------------
-static GLFWwindow* init_glfw(int width, int height, const char* title)
+static GLFWwindow* init_glfw(int width, int height, const char* title, int version[2])
 {
 	if (!glfwInit()){
 		fprintf(stderr, "glfwInit() failed\n");
@@ -41,14 +46,31 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	if (version[0] | version[1])
+	{
+		std::cerr << "Requesting GL " << version[0] << "." << version[1] << std::endl;
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version[0]);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version[1]);
+
+		if (version[0] >= 3)
+		{
+			glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		}
+		else
+		{
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+		}
+
+	}
+
+	//glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 
 	GLFWwindow* win = glfwCreateWindow(width, height, title, NULL, NULL);
 
-	if (!win){
+	if (!win)
+	{
 		glfwTerminate();
 		fprintf(stderr, "glfwCreateWindow() failed\n");
 		exit(-2);
@@ -58,9 +80,13 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetKeyCallback(win, key_callback);
 
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	if (version[0] >= 3)
+	{
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+		assert(gl_get_error());
+	}
 
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
@@ -68,28 +94,30 @@ static GLFWwindow* init_glfw(int width, int height, const char* title)
 
 	assert(gl_get_error());
 
-	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-
 	return win;
 }
 //------------------------------------------------------------------------------
 
-RendererGL::RendererGL(const char* data_path,
-                       const char* title,
-		       int win_w,
-		       int win_h)
+RendererGL::RendererGL(
+	const char* data_path,
+	const char* title,
+	int win_w,
+	int win_h,
+	int gl_version_major,
+	int gl_version_minor)
 {
 	width = win_w;
 	height = win_h;
 
 	DATA_PATH = std::string(data_path);
 
-	win = init_glfw(width, height, title);
+	int version[] = { gl_version_major, gl_version_minor };
+	win = init_glfw(width, height, title, version);
 
 	// NOP by default
-	mouse_moved = [&](double x, double y, double dx, double dy) { };
-	key_pressed = [&](int key) { };
+	mouse_moved  = [&](double x, double y, double dx, double dy) { };
+	key_pressed  = [&](int key) { };
+    key_released = [&](int key) { };
 
 	assert(gl_get_error());
 
@@ -253,6 +281,7 @@ bool RendererGL::capture(std::string path)
 
 	return true;
 }
+
 //------------------------------------------------------------------------------
 
 void RendererGL::clear_color(float r, float g, float b, float a)

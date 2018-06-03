@@ -29,6 +29,12 @@ public:
 	static Framebuffer create_framebuffer(int width, int height, int flags);
 	static Tex create_texture(int width, int height, GLenum format, void* data);
 	static Tex load_texture(std::string path);
+	static int load_texture_buffer(
+		std::string path,
+		void** data,
+		int& width,
+		int& height,
+		int& depth);
 	static Material* get_material(const std::string path);
 };
 

@@ -25,6 +25,8 @@ public:
 
 	Viewer* fov(float f);
 
+	Vec3 left();
+
 	// mat4x4 view();
 	// mat4x4 projection();
 
