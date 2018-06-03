@@ -1,6 +1,8 @@
 #include "custompass.hpp"
 #include "shader.hpp"
 
+#include <stdarg.h>
+
 using namespace seen;
 
 CustomPass::CustomPass()
