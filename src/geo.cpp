@@ -210,13 +210,13 @@ Plane::Plane(float size, int subdivisions)
 	float dx = size / (float)subdivisions;
 	float dy = size / (float)subdivisions;
 
-	for (int i = subdivisions; i--;)
-	for (int j = subdivisions; j--;)
+	for (int i = subdivisions + 1; i--;)
+	for (int j = subdivisions + 1; j--;)
 	{
 		float x = dx * i - 0.5f, y = dy * j - 0.5f;
 		Vertex v = {
-			.position = { x * size, y * size, 0 },
-			.normal = { 0, 0, 1 },
+			.position = { x * size, 0, y * size },
+			.normal = { 0, 1, 0 },
 			.tangent = { 1, 0, 0 },
 			.texture = { dx * i, dy * j, 0 }
 		};
@@ -224,11 +224,11 @@ Plane::Plane(float size, int subdivisions)
 		vertices.push_back(v);
 	}
 
-	for (int y = 0; y < subdivisions - 1; y++)
-	for (int x = 0; x < subdivisions - 1; x++)
+	for (int y = 0; y < subdivisions; y++)
+	for (int x = 0; x < subdivisions; x++)
 	{
-		int i = x + y * subdivisions;
-		int j = x + (y + 1) * subdivisions;
+		int i = x + y * (subdivisions + 1);
+		int j = x + (y + 1) * (subdivisions + 1);
 		indices.push_back(i);
 		indices.push_back(i + 1);
 		indices.push_back(j);
