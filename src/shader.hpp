@@ -71,6 +71,37 @@ private:
 	int _tex_counter;
 };
 
+struct PipeVariable {
+	std::string type;
+	std::string name;
+
+	bool operator ==(PipeVariable& var);
+};
+
+struct Pipe {
+	struct {
+		std::vector<PipeVariable> provides;
+		std::vector<PipeVariable> needs;
+	} variables;
+
+	struct {
+		std::vector<PipeVariable> provides;
+	} parameters;
+
+	bool is_satisfied();
+
+protected:
+	Pipe *prev, *next;
+};
+
+
+struct GeometryPipe {
+
+	static GeometryPipe* vertex();
+
+
+}
+
 
 class ShaderCache {
 public:

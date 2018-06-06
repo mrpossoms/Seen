@@ -3,7 +3,7 @@ $(eval OS := $(shell uname))
 CXX=g++
 CFLAGS=--std=c++11 -g
 INC=-I/usr/local/include -I../src
-LINK=../lib/seen.a -lode -lpng
+LINK=../lib/libseen.a -lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
 DEMOS=demo0 demo1 demo2
 
@@ -18,11 +18,11 @@ endif
 all: $(DEMOS)
 	@echo "Built all"
 
-../lib/seen.a:
-	make -C .. static
+../lib/libseen.a:
+	make -C .. static -j4
 
-obj: ../lib/seen.a
-	mkdir obj || true 
+obj: ../lib/libseen.a
+	mkdir obj || true
 
 obj/%.o: src/%.cpp obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@

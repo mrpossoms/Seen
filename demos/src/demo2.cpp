@@ -5,7 +5,7 @@
 
 int main(int argc, const char* argv[])
 {
-	seen::RendererGL renderer("./data/", argv[0], 256, 256);//, 256, 256);
+	seen::RendererGL renderer("./data/", argv[0], 256, 256, 4, 0);//, 256, 256);
 	seen::ListScene scene;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
 	seen::Model* bale = seen::MeshFactory::get_model(std::string(argv[1]) + ".obj");
@@ -110,11 +110,8 @@ int main(int argc, const char* argv[])
 	};
 
 	// Add all things to be drawn to the scene
-	bale_pass.drawables = new std::vector<seen::Drawable*>();
-	bale_pass.drawables->push_back(bale);
-
-	bale_tess_pass.drawables = new std::vector<seen::Drawable*>();
-	bale_tess_pass.drawables->push_back(bale);
+	bale_pass.drawables.push_back(bale);
+	bale_tess_pass.drawables.push_back(bale);
 
 	scene.drawables().push_back(&bale_pass);
 	scene.drawables().push_back(&bale_tess_pass);
