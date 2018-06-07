@@ -72,6 +72,7 @@ private:
 };
 
 struct PipeVariable {
+	std::string layout;
 	std::string type;
 	std::string name;
 
@@ -82,25 +83,88 @@ struct Pipe {
 	struct {
 		std::vector<PipeVariable> provides;
 		std::vector<PipeVariable> needs;
-	} variables;
+	} in;
 
 	struct {
 		std::vector<PipeVariable> provides;
+		std::vector<PipeVariable> needs;
+	} out;
+
+	struct {
+		std::vector<PipeVariable> provides;
+		std::vector<PipeVariable> needs;
+	} locals;
+
+	struct {
+		std::vector<PipeVariable> provides;
+		std::vector<PipeVariable> needs;
 	} parameters;
+
+	std::string code;
 
 	bool is_satisfied();
 
+	GLint compile();
+
 protected:
 	Pipe *prev, *next;
+	GLenum shader_type;
 };
 
 
-struct GeometryPipe {
+struct FragmentPipe : public Pipe {
+	FragmentPipe* position();
+	FragmentPipe* normal();
+	FragmentPipe* tangent();
+	FragmentPipe* binormal();
+	FragmentPipe* texture();
+};
 
-	static GeometryPipe* vertex();
+
+struct RasterPipe : public Pipe {
+	RasterPipe(FragmentPipe* fragment);
+	RasterPipe* lit();
+	RasterPipe* specular();
+	RasterPipe* colored(Vec3 color);
+	RasterPipe* textured();
+};
 
 
-}
+struct TessallationPipe : public Pipe {
+	TessallationPipe* transformed();
+	TessallationPipe* projected();
+};
+
+
+struct VertexPipe : public Pipe {
+	VertexPipe* position();
+	VertexPipe* normal();
+	VertexPipe* tangent();
+	VertexPipe* texture();
+};
+
+
+struct GeomertyPipe : public Pipe {
+	GeomertyPipe(VertexPipe* vertex);
+
+	GeomertyPipe* transformed();
+	GeomertyPipe* projected();
+
+	TessallationPipe* tessalated();
+
+	RasterPipe* yeilds_fragment(FragmentPipe* frag);
+};
+
+// auto vertex = Shader::vertex().position().texture().normal().tangent()
+// auto pipeline = vertex.transformed().projected()
+// or..
+// auto pipeline = vertex.tessalated().transformed().projected()
+
+// auto pipeline = Shader::vertex(Shader::position().texture().normal().tangent())
+//                 .tessalated().transformed().projected()
+
+// auto pipeline = Shader::vertex(Position | Texture | Normal | Tangent)
+//                 .tessalated().transformed().projected()
 
 
 class ShaderCache {
