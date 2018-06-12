@@ -71,6 +71,7 @@ private:
 	int _tex_counter;
 };
 
+
 struct PipeVariable {
 	std::string layout;
 	std::string type;
@@ -79,16 +80,10 @@ struct PipeVariable {
 	bool operator ==(PipeVariable& var);
 };
 
-struct Pipe {
-	struct {
-		std::vector<PipeVariable> provides;
-		std::vector<PipeVariable> needs;
-	} in;
 
-	struct {
-		std::vector<PipeVariable> provides;
-		std::vector<PipeVariable> needs;
-	} out;
+struct Pipe {
+	std::vector<PipeVariable> in;
+	std::vector<PipeVariable> out;
 
 	struct {
 		std::vector<PipeVariable> provides;
@@ -109,6 +104,8 @@ struct Pipe {
 protected:
 	Pipe *prev, *next;
 	GLenum shader_type;
+
+	void append(Pipe* p);
 };
 
 
@@ -141,6 +138,9 @@ struct VertexPipe : public Pipe {
 	VertexPipe* normal();
 	VertexPipe* tangent();
 	VertexPipe* texture();
+
+protected:
+
 };
 
 
@@ -166,6 +166,23 @@ struct GeomertyPipe : public Pipe {
 // auto pipeline = Shader::vertex(Position | Texture | Normal | Tangent)
 //                 .tessalated().transformed().projected()
 
+
+// auto vsh = Shader::Vertex("basic_vsh");
+// auto position = vsh.input("position_in").as(Shader::vec(3));
+// auto uv_in = vsh.input("texcoord_in").as(Shader::vec(2));
+// auto uv_out = vsh.output("texcoord_vsh").as(Shader::vec(2));
+// auto mvp = vsh.parameter("uModelViewProjection").as(Shader::mat(4));
+// vsh.next() << uv_out = uv_in;
+// vsh.next() << vsh.builtin("gl_Position") = mvp * position;
+// vsh.compile()
+//
+// auto fsh = Shader::Fragment("basic_fsh");
+// auto tex = fsh.parameter("uTexture").as(Shader::tex2d);
+// auto uv_in = fsh.input("texcoord_vsh").as(Shader::vec(2));
+// fsh.next() << fsh.builtin("gl_Color")["rgba"] = fsh.call("texture", tex, uv_in);
+// fsh.compile()
+
+// auto program = Shader::compile(vsh, fsh);
 
 class ShaderCache {
 public:

@@ -363,3 +363,75 @@ void ShaderParam::operator<<(Tex t)
 	glUniform1i(_uniform, _program->_tex_counter);
 	_program->_tex_counter++;
 }
+
+
+// Shader generation
+bool PipeVariable::operator==(PipeVariable& var)
+{
+	return layout == var.layout && type == var.type && name == var.name;
+}
+
+
+bool Pipe::is_satisfied()
+{
+	for (PipeVariable need : locals.needs)
+	{
+		for (Pipe* p = prev; p; p = p->prev)
+		{
+			for (PipeVariable var : p->locals.provides)
+			{
+				if (var == need) { goto local_found; }
+			}
+		}
+
+		return false;
+
+local_found: continue;
+	}
+
+	for (PipeVariable need : parameters.needs)
+	{
+		for (Pipe* p = prev; p; p = p->prev)
+		{
+			for (PipeVariable var : p->parameters.provides)
+			{
+				if (var == need) { goto parameter_found; }
+			}
+		}
+
+		return false;
+
+parameter_found: continue;
+	}
+}
+
+
+void Pipe::append(Pipe* p)
+{
+	next = p;
+	p->prev = this;
+}
+
+
+VertexPipe* VertexPipe::position()
+{
+	return this;
+}
+
+
+VertexPipe* VertexPipe::normal()
+{
+	return this;
+}
+
+
+VertexPipe* VertexPipe::tangent()
+{
+	return this;
+}
+
+
+VertexPipe* VertexPipe::texture()
+{
+	return this;
+}
