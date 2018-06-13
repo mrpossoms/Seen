@@ -365,73 +365,236 @@ void ShaderParam::operator<<(Tex t)
 }
 
 
-// Shader generation
-bool PipeVariable::operator==(PipeVariable& var)
+std::string Shader::mat(int rank) { return "mat"; }
+std::string Shader::vec(int rank)
 {
-	return layout == var.layout && type == var.type && name == var.name;
-}
-
-
-bool Pipe::is_satisfied()
-{
-	for (PipeVariable need : locals.needs)
+	if (rank == 1)
 	{
-		for (Pipe* p = prev; p; p = p->prev)
-		{
-			for (PipeVariable var : p->locals.provides)
-			{
-				if (var == need) { goto local_found; }
-			}
-		}
-
-		return false;
-
-local_found: continue;
+		return "float";
 	}
 
-	for (PipeVariable need : parameters.needs)
+	return "vec";
+}
+std::string Shader::integer() { return "int"; }
+std::string Shader::shortint() { return "short"; }
+
+Shader::Expression Shader::Expression::operator+ (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " + " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator+= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " += " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator- (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " - " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator-= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " -= " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator* (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " * " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator*= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " *= " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator/ (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " / " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator/= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " /= " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " = " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator== (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " == " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator< (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " < " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator> (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " > " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator<= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " <= " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator>= (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " >= " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator<< (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " << " + e.str };
+	return eo;
+}
+
+Shader::Expression Shader::Expression::operator>> (Shader::Expression e)
+{
+	Shader::Expression eo = { this->str + " >> " + e.str };
+	return eo;
+}
+
+
+Shader::Expression Shader::Expression::operator[] (std::string swizzel)
+{
+	Shader::Expression eo = { this->str + "." + swizzel };
+	return eo;
+}
+
+
+Shader::Variable& Shader::Variable::as(std::string type)
+{
+	this->type = type;
+	return *this;
+}
+
+std::string Shader::Variable::declaration()
+{
+	switch (role)
 	{
-		for (Pipe* p = prev; p; p = p->prev)
-		{
-			for (PipeVariable var : p->parameters.provides)
-			{
-				if (var == need) { goto parameter_found; }
-			}
-		}
-
-		return false;
-
-parameter_found: continue;
+		case VAR_IN:
+			return "in " + this->type + " " + this->name + "";
+			break;
+		case VAR_OUT:
+			return "out " + this->type + " " + this->name + "";
+			break;
+		case VAR_PARAM:
+			return "uniform " + this->type + " " + this->name + "";
+			break;
 	}
 }
 
 
-void Pipe::append(Pipe* p)
+void Shader::operator<<(Shader::Expression e)
 {
-	next = p;
-	p->prev = this;
+	statements.push_back(e);
 }
 
 
-VertexPipe* VertexPipe::position()
+Shader::Variable& Shader::input(std::string name)
 {
-	return this;
+	Shader::Variable var;
+	var.role = VAR_IN;
+	var.name = name;
+	inputs.push_back(var);
+	return inputs[inputs.size() - 1];
 }
 
 
-VertexPipe* VertexPipe::normal()
+Shader::Variable& Shader::output(std::string name)
 {
-	return this;
+	Shader::Variable var;
+	var.role = VAR_OUT;
+	var.name = name;
+	outputs.push_back(var);
+	return outputs[inputs.size() - 1];
 }
 
 
-VertexPipe* VertexPipe::tangent()
+Shader::Variable& Shader::parameter(std::string name)
 {
-	return this;
+	Shader::Variable var;
+	var.role = VAR_PARAM;
+	var.name = name;
+	parameters.push_back(var);
+	return parameters[inputs.size() - 1];
 }
 
 
-VertexPipe* VertexPipe::texture()
+// Shader::Variable& Shader::builtin(std::string gl_name)
+// {
+//
+// }
+//
+//
+// Shader::Expression Shader::call(std::string func_name, ...)
+// {
+//
+// }
+//
+//
+// std::string Shader::code()
+// {
+//
+// }
+//
+//
+// GLint Shader::compile()
+// {
+//
+// }
+
+
+Shader Shader::vertex(std::string name)
 {
-	return this;
+	Shader shader(name, GL_VERTEX_SHADER);
+	return shader;
+}
+
+
+Shader Shader::tessalation_control(std::string name)
+{
+	Shader shader(name, GL_TESS_CONTROL_SHADER);
+	return shader;
+}
+
+
+Shader Shader::tessalation_evaluation(std::string name)
+{
+	Shader shader(name, GL_TESS_EVALUATION_SHADER);
+	return shader;
+}
+
+
+Shader Shader::geometry(std::string name)
+{
+	Shader shader(name, GL_GEOMETRY_SHADER);
+	return shader;
+}
+
+
+Shader Shader::fragment(std::string name)
+{
+	Shader shader(name, GL_FRAGMENT_SHADER);
+	return shader;
 }

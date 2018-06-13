@@ -72,99 +72,77 @@ private:
 };
 
 
-struct PipeVariable {
-	std::string layout;
-	std::string type;
-	std::string name;
+class Shader {
+	enum VarRole {
+		VAR_IN,
+		VAR_OUT,
+		VAR_PARAM,
+	};
 
-	bool operator ==(PipeVariable& var);
-};
+	static std::string mat(int rank);
+	static std::string vec(int rank);
+	static std::string integer();
+	static std::string shortint();
 
+	struct Expression {
+		std::string str;
 
-struct Pipe {
-	std::vector<PipeVariable> in;
-	std::vector<PipeVariable> out;
+		Expression operator+ (Expression e);
+		Expression operator+= (Expression e);
+		Expression operator- (Expression e);
+		Expression operator-= (Expression e);
+		Expression operator* (Expression e);
+		Expression operator*= (Expression e);
+		Expression operator/ (Expression e);
+		Expression operator/= (Expression e);
+		Expression operator= (Expression e);
+		Expression operator== (Expression e);
+		Expression operator< (Expression e);
+		Expression operator> (Expression e);
+		Expression operator<= (Expression e);
+		Expression operator>= (Expression e);
+		Expression operator<< (Expression e);
+		Expression operator>> (Expression e);
 
-	struct {
-		std::vector<PipeVariable> provides;
-		std::vector<PipeVariable> needs;
-	} locals;
+		Expression operator[] (std::string swizzel);
+	};
 
-	struct {
-		std::vector<PipeVariable> provides;
-		std::vector<PipeVariable> needs;
-	} parameters;
+	struct Variable : protected Expression {
+		Variable() = default;
 
-	std::string code;
+		VarRole role;
+		std::string name;
+		std::string type;
 
-	bool is_satisfied();
+		Variable& as(std::string type);
+		std::string declaration();
+	};
 
+	GLenum type;
+
+	std::vector<Variable> inputs, outputs, parameters;
+	std::vector<Expression> statements;
+
+public:
+	Shader(std::string name, GLenum type);
+	~Shader();
+
+	Variable& input(std::string name);
+	Variable& output(std::string name);
+	Variable& parameter(std::string name);
+	Variable& builtin(std::string gl_name);
+	Expression call(std::string func_name, ...);
+	std::string code();
 	GLint compile();
 
-protected:
-	Pipe *prev, *next;
-	GLenum shader_type;
+	void operator<<(Expression e);
 
-	void append(Pipe* p);
+	static Shader vertex(std::string name);
+	static Shader tessalation_control(std::string name);
+	static Shader tessalation_evaluation(std::string name);
+	static Shader geometry(std::string name);
+	static Shader fragment(std::string name);
 };
-
-
-struct FragmentPipe : public Pipe {
-	FragmentPipe* position();
-	FragmentPipe* normal();
-	FragmentPipe* tangent();
-	FragmentPipe* binormal();
-	FragmentPipe* texture();
-};
-
-
-struct RasterPipe : public Pipe {
-	RasterPipe(FragmentPipe* fragment);
-	RasterPipe* lit();
-	RasterPipe* specular();
-	RasterPipe* colored(Vec3 color);
-	RasterPipe* textured();
-};
-
-
-struct TessallationPipe : public Pipe {
-	TessallationPipe* transformed();
-	TessallationPipe* projected();
-};
-
-
-struct VertexPipe : public Pipe {
-	VertexPipe* position();
-	VertexPipe* normal();
-	VertexPipe* tangent();
-	VertexPipe* texture();
-
-protected:
-
-};
-
-
-struct GeomertyPipe : public Pipe {
-	GeomertyPipe(VertexPipe* vertex);
-
-	GeomertyPipe* transformed();
-	GeomertyPipe* projected();
-
-	TessallationPipe* tessalated();
-
-	RasterPipe* yeilds_fragment(FragmentPipe* frag);
-};
-
-// auto vertex = Shader::vertex().position().texture().normal().tangent()
-// auto pipeline = vertex.transformed().projected()
-// or..
-// auto pipeline = vertex.tessalated().transformed().projected()
-
-// auto pipeline = Shader::vertex(Shader::position().texture().normal().tangent())
-//                 .tessalated().transformed().projected()
-
-// auto pipeline = Shader::vertex(Position | Texture | Normal | Tangent)
-//                 .tessalated().transformed().projected()
 
 
 // auto vsh = Shader::Vertex("basic_vsh");
