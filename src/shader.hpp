@@ -74,7 +74,7 @@ private:
 
 class Shader {
 	enum VarRole {
-		VAR_IN,
+		VAR_IN = 0,
 		VAR_OUT,
 		VAR_PARAM,
 	};
@@ -109,13 +109,24 @@ class Shader {
 
 	struct Variable : protected Expression {
 		Variable() = default;
+		Variable(VarRole role, std::string type, std::string name);
 
 		VarRole role;
 		std::string name;
 		std::string type;
 
 		Variable& as(std::string type);
+		Variable& array();
 		std::string declaration();
+
+		Expression at_index(int i);
+
+		Variable& operator<< (Variable property);
+		Expression operator[] (std::string lookup);
+
+	private:
+		std::map<std::string, Variable> properties;
+		bool is_array;
 	};
 
 	GLenum type;
@@ -131,7 +142,7 @@ public:
 	Variable& output(std::string name);
 	Variable& parameter(std::string name);
 	Variable& builtin(std::string gl_name);
-	Expression call(std::string func_name, ...);
+	Expression call(std::string func_name, std::vector<Expression> params);
 	std::string code();
 	GLint compile();
 
