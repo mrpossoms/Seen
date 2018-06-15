@@ -16,6 +16,9 @@ std::string seen::DATA_PATH;
 
 static RendererGL* SINGLTON;
 
+int RendererGL::version_major = 0;
+int RendererGL::version_minor = 0;
+
 static void key_callback(GLFWwindow* window,
                          int key,
                          int scancode,
@@ -49,6 +52,9 @@ static GLFWwindow* init_glfw(int width, int height, const char* title, int versi
 
 	if (version[0] | version[1])
 	{
+		RendererGL::version_major = version[0];
+		RendererGL::version_minor = version[1];
+
 		std::cerr << "Requesting GL " << version[0] << "." << version[1] << std::endl;
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, version[0]);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, version[1]);

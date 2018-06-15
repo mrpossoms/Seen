@@ -111,7 +111,7 @@ struct Shader {
 		std::string type;
 
 		Variable& as(std::string type);
-		Variable& array();
+		Variable& array(int dims);
 		std::string declaration();
 
 		Expression at_index(int i);
@@ -123,7 +123,7 @@ struct Shader {
 
 	private:
 		std::map<std::string, Variable> properties;
-		bool is_array;
+		int array_size;
 	};
 
 	GLenum type;
@@ -143,7 +143,7 @@ struct Shader {
 	std::string code();
 	GLint compile();
 
-	void operator<<(Expression e);
+	void next(Expression e);
 
 	static Shader vertex(std::string name);
 	static Shader tessalation_control(std::string name);

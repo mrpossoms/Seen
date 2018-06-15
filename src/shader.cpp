@@ -1,4 +1,6 @@
 #include "shader.hpp"
+#include "renderergl.hpp"
+#include <iomanip>
 
 seen::ShaderCache seen::Shaders;
 
@@ -498,25 +500,32 @@ Shader::Variable& Shader::Variable::as(std::string type)
 }
 
 
-Shader::Variable& Shader::Variable::array()
+Shader::Variable& Shader::Variable::array(int dims)
 {
-	is_array = true;
+	array_size = dims;
 	return *this;
 }
 
 
 std::string Shader::Variable::declaration()
 {
+	std::string rank = "";
+
+	if (array_size > 0)
+	{
+		rank = "[" + std::to_string(array_size) + "]";
+	}
+
 	switch (role)
 	{
 		case VAR_IN:
-			return "in " + this->type + " " + this->name + "";
+			return "in " + this->type + " " + this->name + rank;
 			break;
 		case VAR_OUT:
-			return "out " + this->type + " " + this->name + "";
+			return "out " + this->type + " " + this->name + rank;
 			break;
 		case VAR_PARAM:
-			return "uniform " + this->type + " " + this->name + "";
+			return "uniform " + this->type + " " + this->name + rank;
 			break;
 	}
 }
@@ -524,13 +533,13 @@ std::string Shader::Variable::declaration()
 
 Shader::Expression Shader::Variable::at_index(int i)
 {
-	assert(is_array);
+	assert(array_size > 0);
 
 	return { str + "[" + std::to_string(i) + "]" };
 }
 
 
-void Shader::operator<<(Shader::Expression e)
+void Shader::next(Shader::Expression e)
 {
 	statements.push_back(e);
 }
@@ -618,53 +627,52 @@ Shader::Expression Shader::builtin(std::string gl_name)
 
 		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
 		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
-		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array() },
 	};
 
 	static std::map<std::string, Shader::Variable> tess_control_builtin_map = {
 		{ "gl_PatchVerticesIn", Shader::Variable(VAR_IN, "int", "gl_PatchVerticesIn") },
 		{ "gl_PrimitiveID",     Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
 		{ "gl_InvocationID",    Shader::Variable(VAR_IN, "int", "gl_InvocationID") },
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array()
+		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
 		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
 	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array()},
+		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
 
-		{ "gl_TessLevelOuter",     Shader::Variable(VAR_OUT, "float", "gl_TessLevelOuter").array() },
-		{ "gl_TessLevelInner",    Shader::Variable(VAR_OUT, "float", "gl_TessLevelInner").array() },
-		{ "gl_out", Shader::Variable(VAR_OUT, "struct", "gl_out").array()
+		{ "gl_TessLevelOuter",     Shader::Variable(VAR_OUT, "float", "gl_TessLevelOuter").array(4) },
+		{ "gl_TessLevelInner",    Shader::Variable(VAR_OUT, "float", "gl_TessLevelInner").array(2) },
+		{ "gl_out", Shader::Variable(VAR_OUT, "struct", "gl_out").array(32)
 		                                                       << Shader::Variable(VAR_OUT, "vec4", "gl_Position")
 	 	                                                       << Shader::Variable(VAR_OUT, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array()},
+		                                                       << Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32)},
 	};
 
 	static std::map<std::string, Shader::Variable> tess_eval_builtin_map = {
 		{ "gl_TessCoord", Shader::Variable(VAR_IN, "vec3", "gl_TessCoord") },
 		{ "gl_PatchVerticesIn",     Shader::Variable(VAR_IN, "int", "gl_PatchVerticesIn") },
 		{ "gl_PrimitiveID",    Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
-		{ "gl_TessLevelOuter",     Shader::Variable(VAR_IN, "float", "gl_TessLevelOuter").array() },
-		{ "gl_TessLevelInner",    Shader::Variable(VAR_IN, "float", "gl_TessLevelInner").array() },
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array()
+		{ "gl_TessLevelOuter",     Shader::Variable(VAR_IN, "float", "gl_TessLevelOuter").array(4) },
+		{ "gl_TessLevelInner",    Shader::Variable(VAR_IN, "float", "gl_TessLevelInner").array(2) },
+		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
 		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
 	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array()},
+		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
 
 		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
 		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
-		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array() },
+		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32) },
 	};
 
 	static std::map<std::string, Shader::Variable> geometry_builtin_map = {
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array()
+		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
 		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
 	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array()},
+		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
 		{ "gl_PrimitiveIDIn",     Shader::Variable(VAR_IN, "int", "gl_PrimitiveIDIn") },
 		{ "gl_InvocationID",    Shader::Variable(VAR_IN, "int", "gl_InvocationID") },
 
 		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
 		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
-		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array() },
+		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32) },
 	};
 
 	static std::map<std::string, Shader::Variable> fragment_builtin_map = {
@@ -674,14 +682,14 @@ Shader::Expression Shader::builtin(std::string gl_name)
 		{ "gl_SampleID",      Shader::Variable(VAR_IN, "int", "gl_SampleID") },
 		{ "gl_PointCoord",    Shader::Variable(VAR_IN, "vec2", "gl_PointCoord") },
 		{ "gl_SampleMaskIn",  Shader::Variable(VAR_IN, "int", "gl_SampleMaskIn") },
-		{ "gl_ClipDistance",  Shader::Variable(VAR_IN, "vec2", "gl_ClipDistance").array() },
+		{ "gl_ClipDistance",  Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32) },
 		{ "gl_PrimitiveID",   Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
 		{ "gl_Layer",         Shader::Variable(VAR_IN, "int", "gl_Layer") },
 		{ "gl_ViewportIndex", Shader::Variable(VAR_IN, "int", "gl_ViewportIndex") },
 
 		{ "gl_FragDepth",     Shader::Variable(VAR_OUT, "float", "gl_FragDepth") },
 		{ "gl_Color",         Shader::Variable(VAR_OUT, "vec4", "gl_Color") },
-		{ "gl_SampleMask",    Shader::Variable(VAR_IN, "int", "gl_SampleMask").array() },
+		{ "gl_SampleMask",    Shader::Variable(VAR_OUT, "int", "gl_SampleMask").array(32) },
 	};
 
 	switch (type)
@@ -727,6 +735,19 @@ std::string Shader::code()
 {
 	std::stringstream src;
 
+	if (RendererGL::version_major || RendererGL::version_minor)
+	{
+		src << "#version " << RendererGL::version_major << std::setfill('0') << std::setw(2) << (RendererGL::version_minor * 10) << std::endl;
+		src << std::endl;
+	}
+
+	auto emit_standard_inputs = [&] {
+		for (int i = 0; i < inputs.size(); i++)
+		{
+			src << inputs[i].declaration() << ";" << std::endl;
+		}
+	};
+
 	switch (type)
 	{
 		case GL_VERTEX_SHADER:
@@ -734,6 +755,25 @@ std::string Shader::code()
 			{
 				src << "layout(location = " << std::to_string(i) << ") " << inputs[i].declaration() << ";" << std::endl;
 			}
+			break;
+		case GL_TESS_CONTROL_SHADER:
+			src << "layout(vertices = 3) out;" << std::endl;
+			src << std::endl;
+			emit_standard_inputs();
+			break;
+		case GL_TESS_EVALUATION_SHADER:
+			src << "layout(triangles, equal_spacing, ccw) in;" << std::endl;
+			src << std::endl;
+			emit_standard_inputs();
+			break;
+		case GL_GEOMETRY_SHADER:
+			src << "layout(triangles) in;" << std::endl;
+			src << "layout(triangle_strip, max_vertices = MAX_VERTS) out;" << std::endl;
+			src << std::endl;
+			emit_standard_inputs();
+			break;
+		case GL_FRAGMENT_SHADER:
+			emit_standard_inputs();
 			break;
 	}
 

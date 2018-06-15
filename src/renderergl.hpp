@@ -37,6 +37,9 @@ public:
 	std::function<void(int key)> key_released;
 
 	char keys_down[1024] = {};
+
+	static int version_major, version_minor;
+
 private:
 	double mouse_last_x, mouse_last_y;
 };
