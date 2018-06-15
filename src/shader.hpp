@@ -79,11 +79,6 @@ class Shader {
 		VAR_PARAM,
 	};
 
-	static std::string mat(int rank);
-	static std::string vec(int rank);
-	static std::string integer();
-	static std::string shortint();
-
 	struct Expression {
 		std::string str;
 
@@ -107,7 +102,7 @@ class Shader {
 		Expression operator[] (std::string swizzel);
 	};
 
-	struct Variable : protected Expression {
+	struct Variable : public Expression {
 		Variable() = default;
 		Variable(VarRole role, std::string type, std::string name);
 
@@ -123,6 +118,7 @@ class Shader {
 
 		Variable& operator<< (Variable property);
 		Expression operator[] (std::string lookup);
+		Expression operator= (Expression e);
 
 	private:
 		std::map<std::string, Variable> properties;
@@ -130,6 +126,7 @@ class Shader {
 	};
 
 	GLenum type;
+	std::string name;
 
 	std::vector<Variable> inputs, outputs, parameters;
 	std::vector<Expression> statements;
@@ -141,7 +138,7 @@ public:
 	Variable& input(std::string name);
 	Variable& output(std::string name);
 	Variable& parameter(std::string name);
-	Variable& builtin(std::string gl_name);
+	Expression builtin(std::string gl_name);
 	Expression call(std::string func_name, std::vector<Expression> params);
 	std::string code();
 	GLint compile();
@@ -153,6 +150,11 @@ public:
 	static Shader tessalation_evaluation(std::string name);
 	static Shader geometry(std::string name);
 	static Shader fragment(std::string name);
+
+	static std::string mat(int rank);
+	static std::string vec(int rank);
+	static std::string integer();
+	static std::string shortint();
 };
 
 

@@ -429,6 +429,7 @@ Shader::Expression Shader::Expression::operator/= (Shader::Expression e)
 Shader::Expression Shader::Expression::operator= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " = " + e.str };
+	std::cout << eo.str << std::endl;
 	return eo;
 }
 
@@ -487,6 +488,7 @@ Shader::Variable::Variable(VarRole role, std::string type, std::string name)
 	this->role = role;
 	this->type = type;
 	this->name = name;
+	this->str = name;
 }
 
 
@@ -531,15 +533,14 @@ Shader::Expression Shader::Variable::at_index(int i)
 
 void Shader::operator<<(Shader::Expression e)
 {
+	std::cerr << "statement: " << e.str << '\n';
 	statements.push_back(e);
 }
 
 
 Shader::Variable& Shader::input(std::string name)
 {
-	Shader::Variable var;
-	var.role = VAR_IN;
-	var.name = name;
+	Shader::Variable var(VAR_IN, "", name);
 	inputs.push_back(var);
 	return inputs[inputs.size() - 1];
 }
@@ -547,21 +548,17 @@ Shader::Variable& Shader::input(std::string name)
 
 Shader::Variable& Shader::output(std::string name)
 {
-	Shader::Variable var;
-	var.role = VAR_OUT;
-	var.name = name;
+	Shader::Variable var(VAR_OUT, "", name);
 	outputs.push_back(var);
-	return outputs[inputs.size() - 1];
+	return outputs[outputs.size() - 1];
 }
 
 
 Shader::Variable& Shader::parameter(std::string name)
 {
-	Shader::Variable var;
-	var.role = VAR_PARAM;
-	var.name = name;
+	Shader::Variable var(VAR_PARAM, "", name);
 	parameters.push_back(var);
-	return parameters[inputs.size() - 1];
+	return parameters[parameters.size() - 1];
 }
 
 
@@ -587,7 +584,26 @@ Shader::Expression Shader::Variable::operator[] (std::string lookup)
 }
 
 
-Shader::Variable& Shader::builtin(std::string gl_name)
+Shader::Expression Shader::Variable::operator= (Shader::Expression e)
+{
+	return { str + " = " + e.str };
+}
+
+
+Shader::Shader(std::string name, GLenum type)
+{
+	this->name = name;
+	this->type = type;
+}
+
+
+Shader::~Shader()
+{
+
+}
+
+
+Shader::Expression Shader::builtin(std::string gl_name)
 {
 	static std::map<std::string, Shader::Variable> vertex_builtin_map = {
 		{ "gl_VertexID",     Shader::Variable(VAR_IN, "int", "gl_VertexID") },
@@ -702,11 +718,39 @@ Shader::Expression Shader::call(std::string func_name, std::vector<Expression> p
 	return call;
 }
 
-//
-// std::string Shader::code()
-// {
-//
-// }
+
+std::string Shader::code()
+{
+	std::stringstream src;
+
+	switch (type)
+	{
+		case GL_VERTEX_SHADER:
+			for (int i = 0; i < inputs.size(); i++)
+			{
+				src << "layout(location = " << std::to_string(i) << ") " << inputs[i].declaration() << ";" << std::endl;
+			}
+			break;
+	}
+
+	src << std::endl;
+
+	for (auto param : parameters)
+	{
+		src << "uniform " << param.declaration() << ";" << std::endl;
+	}
+
+	src << std::endl;
+	src << "void main()" << std::endl;
+	src << "{" << std::endl;
+	for (auto statement : statements)
+	{
+		src << "\t" << statement.str << ";" << std::endl;
+	}
+	src << "}" << std::endl;
+
+	return src.str();
+}
 //
 //
 // GLint Shader::compile()

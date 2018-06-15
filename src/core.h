@@ -16,6 +16,7 @@
 #include <string>
 #include <iostream>
 #include <streambuf>
+#include <sstream>
 #include <algorithm>
 #include <functional>
 

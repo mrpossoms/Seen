@@ -2,10 +2,12 @@ $(eval OS := $(shell uname))
 
 CXX=g++
 CFLAGS=--std=c++11 -g -Wall -fPIC
-INC=-I/usr/local/include
+INC=-I/usr/local/include -I./src
 SRCS=camera.cpp envmap.cpp geo.cpp texture.cpp shader.cpp renderergl.cpp listscene.cpp core.cpp custompass.cpp
 LINK=-lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
+
+TST_SRC=shader_def
 
 ifeq ($(OS),Darwin)
 	LINK +=-lpthread -lm -lglfw3 -framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
@@ -18,8 +20,11 @@ endif
 all: static shared
 	@echo "Built all"
 
-static: lib $(addprefix obj/,$(SRCS:.cpp=.o))
+lib/libseen.a: lib $(addprefix obj/,$(SRCS:.cpp=.o))
 	$(AR) rcs lib/libseen.a $(OBJS)
+
+static: lib $(addprefix obj/,$(SRCS:.cpp=.o))
+	@echo "Built static"
 
 shared: lib $(OBJS)
 	gcc $(CFLAGS) -shared -o ./lib/libseen.so $(OBJS)
@@ -32,6 +37,18 @@ lib:
 
 obj/%.o: src/%.cpp obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
+
+bin/tests:
+	mkdir -p bin/tests
+
+tests: bin/tests lib/libseen.a
+	@echo "Building tests..."
+	@for source in $(TST_SRC); do\
+		($(CXX) $(INC) $(CFLAGS) src/tests/$$source.cpp  -o bin/tests/$${source%.*}.bin ./lib/libseen.a $(LINK)) || (exit 1);\
+	done
+
+test: tests
+	@./test_runner.py
 
 install-static: static
 	cp lib/*.a /usr/local/lib
