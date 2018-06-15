@@ -365,7 +365,7 @@ void ShaderParam::operator<<(Tex t)
 }
 
 
-std::string Shader::mat(int rank) { return "mat"; }
+std::string Shader::mat(int rank) { return "mat" + std::to_string(rank); }
 std::string Shader::vec(int rank)
 {
 	if (rank == 1)
@@ -429,7 +429,6 @@ Shader::Expression Shader::Expression::operator/= (Shader::Expression e)
 Shader::Expression Shader::Expression::operator= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " = " + e.str };
-	std::cout << eo.str << std::endl;
 	return eo;
 }
 
@@ -533,7 +532,6 @@ Shader::Expression Shader::Variable::at_index(int i)
 
 void Shader::operator<<(Shader::Expression e)
 {
-	std::cerr << "statement: " << e.str << '\n';
 	statements.push_back(e);
 }
 
@@ -585,6 +583,12 @@ Shader::Expression Shader::Variable::operator[] (std::string lookup)
 
 
 Shader::Expression Shader::Variable::operator= (Shader::Expression e)
+{
+	return { str + " = " + e.str };
+}
+
+
+Shader::Expression Shader::Variable::operator= (Shader::Variable e)
 {
 	return { str + " = " + e.str };
 }
@@ -737,7 +741,7 @@ std::string Shader::code()
 
 	for (auto param : parameters)
 	{
-		src << "uniform " << param.declaration() << ";" << std::endl;
+		src << param.declaration() << ";" << std::endl;
 	}
 
 	src << std::endl;

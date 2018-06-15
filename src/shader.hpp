@@ -72,7 +72,7 @@ private:
 };
 
 
-class Shader {
+struct Shader {
 	enum VarRole {
 		VAR_IN = 0,
 		VAR_OUT,
@@ -119,6 +119,7 @@ class Shader {
 		Variable& operator<< (Variable property);
 		Expression operator[] (std::string lookup);
 		Expression operator= (Expression e);
+		Expression operator= (Variable v);
 
 	private:
 		std::map<std::string, Variable> properties;
@@ -131,7 +132,6 @@ class Shader {
 	std::vector<Variable> inputs, outputs, parameters;
 	std::vector<Expression> statements;
 
-public:
 	Shader(std::string name, GLenum type);
 	~Shader();
 
