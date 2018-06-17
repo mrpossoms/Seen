@@ -50,28 +50,6 @@ private:
 };
 
 
-struct ShaderProgram {
-	friend struct ShaderParam;
-
-	GLint program;
-	GLint primative;
-	DrawParams draw_params;
-
-	void init_draw_params();
-	ShaderProgram* use();
-
-	ShaderParam& operator[](std::string name);
-
-	void operator<<(Material* m);
-
-	static ShaderProgram* active(ShaderProgram* program);
-	static ShaderProgram* active();
-private:
-	std::map<std::string, ShaderParam*> _params;
-	int _tex_counter;
-};
-
-
 struct Shader {
 	enum VarRole {
 		VAR_IN = 0,
@@ -128,6 +106,7 @@ struct Shader {
 		int array_size;
 	};
 
+	GLint compiled_shader;
 	GLenum type;
 	std::string name;
 
@@ -163,6 +142,29 @@ struct Shader {
 };
 
 
+struct ShaderProgram {
+	friend struct ShaderParam;
+
+	GLint program;
+	GLint primative;
+	DrawParams draw_params;
+
+	void init_draw_params();
+	ShaderProgram* use();
+
+	ShaderParam& operator[](std::string name);
+
+	void operator<<(Material* m);
+
+	static ShaderProgram* active(ShaderProgram* program);
+	static ShaderProgram* active();
+
+	static ShaderProgram* compile(std::vector<Shader> shaders);
+private:
+	std::map<std::string, ShaderParam*> _params;
+	int _tex_counter;
+};
+
 // auto vsh = Shader::Vertex("basic_vsh");
 // auto position = vsh.input("position_in").as(Shader::vec(3));
 // auto uv_in = vsh.input("texcoord_in").as(Shader::vec(2));
@@ -181,6 +183,7 @@ struct Shader {
 // auto program = Shader::compile(vsh, fsh);
 
 class ShaderCache {
+	friend struct Shader;
 public:
 	ShaderCache();
 	~ShaderCache();

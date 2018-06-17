@@ -193,6 +193,43 @@ ShaderProgram* ShaderProgram::active()
 }
 //------------------------------------------------------------------------------
 
+ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
+{
+	const char* attributes[16] = {};
+	GLint gs_shaders[6] = {};
+	ShaderProgram* program = new ShaderProgram();
+
+	// compile, cache and include each shader
+	int si = 0;
+	for (auto shader : shaders)
+	{
+		if (shader.type == GL_VERTEX_SHADER)
+		{
+			for (int i = 0; i < shader.inputs.size(); i++)
+			{
+				attributes[i] = shader.inputs[i].name.c_str();
+			}
+		}
+
+		gs_shaders[si += 1] = shader.compile();
+	}
+
+	program->program = link_program(gs_shaders, attributes);
+
+	// preload the uniforms
+	for (auto shader : shaders)
+	{
+		for (auto param : shader.parameters)
+		{
+			(*program)[param.name];
+		}
+	}
+
+	std::cerr << "prog: " << program->program << std::endl;
+
+	return program;
+}
+
 ShaderProgram* ShaderProgram::use()
 {
 	_tex_counter = 0; // reset texture location
@@ -851,7 +888,10 @@ std::string Shader::code()
 
 GLint Shader::compile()
 {
-	return compile_source(code().c_str(), type);
+	GLint shader = compile_source(code().c_str(), type);
+	Shaders._shader_cache[name] = shader;
+
+	return shader;
 }
 
 
