@@ -6,15 +6,60 @@ seen::ShaderCache seen::Shaders;
 
 using namespace seen;
 
-static GLint load_shader(const char* path, GLenum type)
+
+static GLint compile_source(const char* src, GLenum type)
 {
 	GLuint shader;
 	GLint status = GL_TRUE;
+	GLchar *source = (GLchar*)src;
+
+	std::cerr << "compiling... ";
+
+	// Create the GL shader and attempt to compile it
+	shader = glCreateShader(type);
+	glShaderSource(shader, 1, &source, NULL);
+	glCompileShader(shader);
+
+	assert(gl_get_error());
+
+	// Print the compilation log if there's anything in there
+	GLint log_length;
+	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
+	if (log_length > 0)
+	{
+		GLchar *log_str = (GLchar *)malloc(log_length);
+		glGetShaderInfoLog(shader, log_length, &log_length, log_str);
+		std::cerr << SEEN_TERM_RED "Shader compile log: " << log_length << std::endl << log_str << SEEN_TERM_COLOR_OFF << std::endl;
+		write(1, log_str, log_length);
+		free(log_str);
+	}
+
+	assert(gl_get_error());
+
+	// Check the status and exit on failure
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+	if (status == GL_FALSE)
+	{
+		std::cerr << SEEN_TERM_RED "Compiling failed: " << status << SEEN_TERM_COLOR_OFF << std::endl;
+		glDeleteShader(shader);
+		exit(-2);
+	}
+
+	assert(gl_get_error());
+	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
+
+	return shader;
+}
+
+
+static GLint load_shader(const char* path, GLenum type)
+{
+	GLuint shader;
 	GLchar *source;
 
-	int fd = open(path, O_RDONLY);
+	std::cerr << path << ": ";
 
-	std::cerr << "compiling '" << path << "'... ";
+	int fd = open(path, O_RDONLY);
 
 	if (fd < 0)
 	{
@@ -28,41 +73,11 @@ static GLint load_shader(const char* path, GLenum type)
 	lseek(fd, 0, SEEK_SET);
 	read(fd, source, total_size);
 
+	// compile it
 	assert(gl_get_error());
+	shader = compile_source(source, type);
 
-	// Create the GL shader and attempt to compile it
-	shader = glCreateShader(type);
-	glShaderSource(shader, 1, &source, NULL);
-	glCompileShader(shader);
 	free(source);
-
-	assert(gl_get_error());
-
-	// Print the compilation log if there's anything in there
-	GLint log_length;
-	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
-	if (log_length > 0)
-	{
-		GLchar *log_str = (GLchar *)malloc(log_length);
-		glGetShaderInfoLog(shader, log_length, &log_length, log_str);
-		std::cerr << SEEN_TERM_RED "Shader compile log for '" <<  path << "' " << log_length << std::endl << log_str << SEEN_TERM_COLOR_OFF << std::endl;
-		write(1, log_str, log_length);
-		free(log_str);
-	}
-
-	assert(gl_get_error());
-
-	// Check the status and exit on failure
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	if (status == GL_FALSE)
-	{
-		std::cerr << SEEN_TERM_RED "Compiling '" << path << "' failed: " << status << SEEN_TERM_COLOR_OFF << std::endl;
-		glDeleteShader(shader);
-		exit(-2);
-	}
-
-	assert(gl_get_error());
-	std::cerr << SEEN_TERM_GREEN "OK" SEEN_TERM_COLOR_OFF << std::endl;
 
 	return shader;
 }
@@ -380,6 +395,30 @@ std::string Shader::vec(int rank)
 std::string Shader::integer() { return "int"; }
 std::string Shader::shortint() { return "short"; }
 
+Shader::Expression Shader::mat(int rank, const char* fmt, ...)
+{
+	char args[128];
+
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(args, sizeof(args), fmt, ap);
+	va_end(ap);
+
+	return { Shader::mat(rank) + "(" + std::string(args) + ")" };
+}
+
+Shader::Expression Shader::vec(int rank, const char* fmt, ...)
+{
+	char args[128];
+
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(args, sizeof(args), fmt, ap);
+	va_end(ap);
+
+	return { Shader::vec(rank) + "(" + std::string(args) + ")" };
+}
+
 Shader::Expression Shader::Expression::operator+ (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " + " + e.str };
@@ -482,6 +521,9 @@ Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 	Shader::Expression eo = { this->str + "." + swizzel };
 	return eo;
 }
+
+
+const char* Shader::Expression::cstr() { return str.c_str(); }
 
 
 Shader::Variable::Variable(VarRole role, std::string type, std::string name)
@@ -741,10 +783,10 @@ std::string Shader::code()
 		src << std::endl;
 	}
 
-	auto emit_standard_inputs = [&] {
-		for (int i = 0; i < inputs.size(); i++)
+	auto emit_var_list = [&](std::vector<Variable> vars) {
+		for (int i = 0; i < vars.size(); i++)
 		{
-			src << inputs[i].declaration() << ";" << std::endl;
+			src << vars[i].declaration() << ";" << std::endl;
 		}
 	};
 
@@ -755,25 +797,35 @@ std::string Shader::code()
 			{
 				src << "layout(location = " << std::to_string(i) << ") " << inputs[i].declaration() << ";" << std::endl;
 			}
+			src << std::endl;
+			emit_var_list(outputs);
 			break;
 		case GL_TESS_CONTROL_SHADER:
 			src << "layout(vertices = 3) out;" << std::endl;
 			src << std::endl;
-			emit_standard_inputs();
+			emit_var_list(inputs);
+			src << std::endl;
+			emit_var_list(outputs);
 			break;
 		case GL_TESS_EVALUATION_SHADER:
 			src << "layout(triangles, equal_spacing, ccw) in;" << std::endl;
 			src << std::endl;
-			emit_standard_inputs();
+			emit_var_list(inputs);
+			src << std::endl;
+			emit_var_list(outputs);
 			break;
 		case GL_GEOMETRY_SHADER:
 			src << "layout(triangles) in;" << std::endl;
 			src << "layout(triangle_strip, max_vertices = MAX_VERTS) out;" << std::endl;
 			src << std::endl;
-			emit_standard_inputs();
+			emit_var_list(inputs);
+			src << std::endl;
+			emit_var_list(outputs);
 			break;
 		case GL_FRAGMENT_SHADER:
-			emit_standard_inputs();
+			emit_var_list(inputs);
+			src << std::endl;
+			emit_var_list(outputs);
 			break;
 	}
 
@@ -795,12 +847,12 @@ std::string Shader::code()
 
 	return src.str();
 }
-//
-//
-// GLint Shader::compile()
-// {
-//
-// }
+
+
+GLint Shader::compile()
+{
+	return compile_source(code().c_str(), type);
+}
 
 
 Shader Shader::vertex(std::string name)

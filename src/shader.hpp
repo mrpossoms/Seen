@@ -100,6 +100,8 @@ struct Shader {
 		Expression operator>> (Expression e);
 
 		Expression operator[] (std::string swizzel);
+
+		const char* cstr();
 	};
 
 	struct Variable : public Expression {
@@ -153,6 +155,9 @@ struct Shader {
 
 	static std::string mat(int rank);
 	static std::string vec(int rank);
+	static Expression mat(int rank, const char* fmt, ...);
+	static Expression vec(int rank, const char* fmt, ...);
+
 	static std::string integer();
 	static std::string shortint();
 };
