@@ -92,6 +92,8 @@ struct Shader {
 	};
 
 	struct Variable : public Expression {
+		friend struct Shader;
+
 		Variable() = default;
 		Variable(VarRole role, std::string type, std::string name);
 
@@ -128,17 +130,19 @@ struct Shader {
 	Variable& input(std::string name);
 	Variable& output(std::string name);
 	Variable& parameter(std::string name);
-
 	Variable& local(std::string name);
 
 	Variable* has_variable(std::string name, std::vector<Variable>& vars);
 	Variable* has_input(std::string name);
 
 	// high level shader describers
+	Shader& preceded_by(Shader& shader);
+
 	Shader& vertex(int feature_flags);
 	Shader& viewed();
 	Shader& projected();
 	Shader& transformed();
+	Shader& pass_through(std::string name);
 
 	Shader& color_textured();
 
@@ -168,6 +172,9 @@ struct Shader {
 
 	static std::string integer();
 	static std::string shortint();
+
+private:
+	std::string suffix();
 };
 
 

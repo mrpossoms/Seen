@@ -417,9 +417,11 @@ void ShaderParam::operator<<(Tex t)
 	glUniform1i(_uniform, _program->_tex_counter);
 	_program->_tex_counter++;
 }
-
+//------------------------------------------------------------------------------
 
 std::string Shader::mat(int rank) { return "mat" + std::to_string(rank); }
+//------------------------------------------------------------------------------
+
 std::string Shader::vec(int rank)
 {
 	if (rank == 1)
@@ -429,8 +431,13 @@ std::string Shader::vec(int rank)
 
 	return "vec" + std::to_string(rank);
 }
+//------------------------------------------------------------------------------
+
 std::string Shader::integer() { return "int"; }
+//------------------------------------------------------------------------------
+
 std::string Shader::shortint() { return "short"; }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::mat(int rank, const char* fmt, ...)
 {
@@ -443,6 +450,7 @@ Shader::Expression Shader::mat(int rank, const char* fmt, ...)
 
 	return { Shader::mat(rank) + "(" + std::string(args) + ")" };
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::vec(int rank, const char* fmt, ...)
 {
@@ -455,6 +463,7 @@ Shader::Expression Shader::vec(int rank, const char* fmt, ...)
 
 	return { Shader::vec(rank) + "(" + std::string(args) + ")" };
 }
+//------------------------------------------------------------------------------
 
 std::string Shader::tex(int rank)
 {
@@ -468,113 +477,129 @@ std::string Shader::tex(int rank)
 			return "";
 	}
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator+ (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " + " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator+= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " += " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator- (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " - " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator-= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " -= " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator* (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " * " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator*= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " *= " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator/ (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " / " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator/= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " /= " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " = " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator== (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " == " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator< (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " < " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator> (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " > " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator<= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " <= " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator>= (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " >= " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator<< (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " << " + e.str };
 	return eo;
 }
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator>> (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " >> " + e.str };
 	return eo;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 {
 	Shader::Expression eo = { this->str + "." + swizzel };
 	return eo;
 }
-
+//------------------------------------------------------------------------------
 
 const char* Shader::Expression::cstr() { return str.c_str(); }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable::Variable(VarRole role, std::string type, std::string name)
 {
@@ -584,21 +609,21 @@ Shader::Variable::Variable(VarRole role, std::string type, std::string name)
 	this->str = name;
 	this->array_size = 0;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::Variable::as(std::string type)
 {
 	this->type = type;
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::Variable::array(int dims)
 {
 	array_size = dims;
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 std::string Shader::Variable::declaration()
 {
@@ -623,7 +648,7 @@ std::string Shader::Variable::declaration()
 			return  this->type + " " + this->name + rank;
 	}
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Variable::at_index(int i)
 {
@@ -631,13 +656,13 @@ Shader::Expression Shader::Variable::at_index(int i)
 
 	return { str + "[" + std::to_string(i) + "]" };
 }
-
+//------------------------------------------------------------------------------
 
 void Shader::next(Shader::Expression e)
 {
 	statements.push_back(e);
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::input(std::string name)
 {
@@ -650,7 +675,7 @@ Shader::Variable& Shader::input(std::string name)
 
 	return inputs[inputs.size() - 1];
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::output(std::string name)
 {
@@ -663,7 +688,7 @@ Shader::Variable& Shader::output(std::string name)
 
 	return outputs[outputs.size() - 1];
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::parameter(std::string name)
 {
@@ -676,7 +701,7 @@ Shader::Variable& Shader::parameter(std::string name)
 
 	return parameters[parameters.size() - 1];
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::local(std::string name)
 {
@@ -689,13 +714,28 @@ Shader::Variable& Shader::local(std::string name)
 
 	return locals[locals.size() - 1];
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& vars)
 {
+	bool wild = false;
+
+	if (name[0] == '*')
+	{
+		wild = true;
+		name = name.substr(1);
+	}
+
 	for (int i = vars.size(); i--;)
 	{
-		if (vars[i].name == name)
+		if (wild)
+		{
+			if (vars[i].name.find(name) != std::string::npos)
+			{
+				return &vars[i];
+			}
+		}
+		else if (vars[i].name == name)
 		{
 			return &vars[i];
 		}
@@ -703,45 +743,58 @@ Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& 
 
 	return NULL;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable* Shader::has_input(std::string name)
 {
 	return has_variable(name, inputs);
 }
-
+//------------------------------------------------------------------------------
 
 Shader& Shader::vertex(int feature_flags)
 {
 	if (feature_flags & Shader::VERT_POSITION)
 	{
-		input("a_position").as(Shader::vec(3));
+		input("position_in").as(Shader::vec(3));
 	}
 
 	if (feature_flags & Shader::VERT_UV)
 	{
-		input("a_texcoord").as(Shader::vec(2));
+		input("texcoord_in").as(Shader::vec(2));
 	}
 
 	if (feature_flags & Shader::VERT_NORMAL)
 	{
-		input("a_normal").as(Shader::vec(3));
+		input("normal_in").as(Shader::vec(3));
 	}
 
 	if (feature_flags & Shader::VERT_TANGENT)
 	{
-		input("a_tangent").as(Shader::vec(3));
+		input("tangent_in").as(Shader::vec(3));
 	}
 
 	return *this;
 }
+//------------------------------------------------------------------------------
 
+Shader& Shader::preceded_by(Shader& previous)
+{
+	for (auto output : previous.outputs)
+	{
+		Shader::Variable input(VAR_IN, output.type, output.name);
+		input.array(output.array_size);
+		inputs.push_back(input);
+	}
+
+	return *this;
+}
+//------------------------------------------------------------------------------
 
 Shader& Shader::transformed()
 {
-	Shader::Variable* pos  = has_input("a_position");
-	Shader::Variable* norm = has_input("a_normal");
-	Shader::Variable* tang = has_input("a_tangent");
+	Shader::Variable* pos  = has_input("position_in");
+	Shader::Variable* norm = has_input("normal_in");
+	Shader::Variable* tang = has_input("tangent_in");
 
 	assert(pos);
 
@@ -752,7 +805,7 @@ Shader& Shader::transformed()
 
 	if (norm)
 	{
-		auto l_norm_rot = output("vsh_norm").as(vec(3));
+		auto l_norm_rot = output("normal_" + suffix()).as(vec(3));
 		auto u_normal_matrix = parameter("u_normal_matrix").as(mat(3));
 
 		next(l_norm_rot = u_normal_matrix * *norm);
@@ -760,7 +813,7 @@ Shader& Shader::transformed()
 
 	if (tang)
 	{
-		auto l_tang_rot = output("vsh_tangent").as(vec(3));
+		auto l_tang_rot = output("tangent_" + suffix()).as(vec(3));
 		auto u_normal_matrix = parameter("u_normal_matrix").as(mat(3));
 
 		next(l_tang_rot = u_normal_matrix * *tang);
@@ -768,7 +821,17 @@ Shader& Shader::transformed()
 
 	return *this;
 }
+//------------------------------------------------------------------------------
 
+Shader& Shader::pass_through(std::string name)
+{
+	auto output_name = name.substr(0, name.find("_")) + "_" + suffix();
+
+	next(output(output_name).as(vec(2)) = input(name));
+
+	return *this;
+}
+//------------------------------------------------------------------------------
 
 Shader&  Shader::viewed()
 {
@@ -782,7 +845,7 @@ Shader&  Shader::viewed()
 
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 Shader& Shader::projected()
 {
@@ -796,7 +859,7 @@ Shader& Shader::projected()
 
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 Shader& Shader::color_textured()
 {
@@ -808,7 +871,7 @@ Shader& Shader::color_textured()
 
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Variable& Shader::Variable::operator<< (Shader::Variable property)
 {
@@ -819,7 +882,7 @@ Shader::Variable& Shader::Variable::operator<< (Shader::Variable property)
 
 	return *this;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Variable::operator[] (std::string lookup)
 {
@@ -830,32 +893,32 @@ Shader::Expression Shader::Variable::operator[] (std::string lookup)
 
 	return { str + "." + lookup };
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Variable::operator= (Shader::Expression e)
 {
 	return { str + " = " + e.str };
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::Variable::operator= (Shader::Variable e)
 {
 	return { str + " = " + e.str };
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Shader(std::string name, GLenum type)
 {
 	this->name = name;
 	this->type = type;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::~Shader()
 {
 
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::builtin(std::string gl_name)
 {
@@ -950,7 +1013,7 @@ Shader::Expression Shader::builtin(std::string gl_name)
 	static Shader::Variable empty{};
 	return empty;
 }
-
+//------------------------------------------------------------------------------
 
 Shader::Expression Shader::call(std::string func_name, std::vector<Expression> params)
 {
@@ -970,7 +1033,7 @@ Shader::Expression Shader::call(std::string func_name, std::vector<Expression> p
 
 	return call;
 }
-
+//------------------------------------------------------------------------------
 
 std::string Shader::code()
 {
@@ -1053,7 +1116,7 @@ std::string Shader::code()
 
 	return src.str();
 }
-
+//------------------------------------------------------------------------------
 
 GLint Shader::compile()
 {
@@ -1062,38 +1125,52 @@ GLint Shader::compile()
 
 	return shader;
 }
-
+//------------------------------------------------------------------------------
 
 Shader Shader::vertex(std::string name)
 {
 	Shader shader(name, GL_VERTEX_SHADER);
 	return shader;
 }
-
+//------------------------------------------------------------------------------
 
 Shader Shader::tessalation_control(std::string name)
 {
 	Shader shader(name, GL_TESS_CONTROL_SHADER);
 	return shader;
 }
-
+//------------------------------------------------------------------------------
 
 Shader Shader::tessalation_evaluation(std::string name)
 {
 	Shader shader(name, GL_TESS_EVALUATION_SHADER);
 	return shader;
 }
-
+//------------------------------------------------------------------------------
 
 Shader Shader::geometry(std::string name)
 {
 	Shader shader(name, GL_GEOMETRY_SHADER);
 	return shader;
 }
-
+//------------------------------------------------------------------------------
 
 Shader Shader::fragment(std::string name)
 {
 	Shader shader(name, GL_FRAGMENT_SHADER);
 	return shader;
+}
+
+
+std::string Shader::suffix()
+{
+	std::map<GLint, std::string> suffixes = {
+		{ GL_VERTEX_SHADER,          "vsh" },
+		{ GL_TESS_CONTROL_SHADER,    "tcs" },
+		{ GL_TESS_EVALUATION_SHADER, "tes" },
+		{ GL_GEOMETRY_SHADER,        "geo" },
+		{ GL_FRAGMENT_SHADER,        "fsh" },
+	};
+
+	return suffixes[type];
 }
