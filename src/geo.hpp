@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core.h"
+#include "texture.hpp"
 
 #define STL_HEADER_SIZE 80
 
@@ -118,8 +119,15 @@ struct OBJMesh : Mesh
 struct Plane : Mesh
 {
 	Plane(float size);
+	Plane(float size, int subdivisions);
 	~Plane();
 };
 
+//------------------------------------------------------------------------------
+struct Heightmap : Plane
+{
+	Heightmap(Tex texture, float size, int resolution);
+	~Heightmap();
+};
 
 }

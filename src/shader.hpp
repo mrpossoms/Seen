@@ -23,12 +23,12 @@ struct DrawParams {
 
 struct ShaderConfig {
 	std::string vertex;
+	std::string fragment;
 	struct {
 		std::string control;
 		std::string evaluation;
 	} tessalation;
 	std::string geometry;
-	std::string fragment;
 
 	const char** vertex_attributes;
 };

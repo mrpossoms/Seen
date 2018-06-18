@@ -205,9 +205,38 @@ Plane::Plane(float size)
 }
 
 //------------------------------------------------------------------------------
-Plane::~Plane()
+Plane::Plane(float size, int subdivisions)
 {
+	float dx = size / (float)subdivisions;
+	float dy = size / (float)subdivisions;
 
+	for (int i = subdivisions + 1; i--;)
+	for (int j = subdivisions + 1; j--;)
+	{
+		float x = dx * i - 0.5f, y = dy * j - 0.5f;
+		Vertex v = {
+			.position = { x * size, 0, y * size },
+			.normal = { 0, 1, 0 },
+			.tangent = { 1, 0, 0 },
+			.texture = { dx * i, dy * j, 0 }
+		};
+
+		vertices.push_back(v);
+	}
+
+	for (int y = 0; y < subdivisions; y++)
+	for (int x = 0; x < subdivisions; x++)
+	{
+		int i = x + y * (subdivisions + 1);
+		int j = x + (y + 1) * (subdivisions + 1);
+		indices.push_back(i);
+		indices.push_back(i + 1);
+		indices.push_back(j);
+
+		indices.push_back(j + 1);
+		indices.push_back(j);
+		indices.push_back(i + 1);
+	}
 }
 
 //------------------------------------------------------------------------------
@@ -241,7 +270,7 @@ struct ObjLine {
 	};
 };
 
-
+//------------------------------------------------------------------------------
 static int get_line(int fd, char* line)
 {
 	int size = 0;
@@ -598,4 +627,27 @@ void Model::draw(Viewer* viewer)
 	}
 
 	assert(gl_get_error());
+}
+
+
+Heightmap::Heightmap(Tex texture, float size, int resolution) :
+               Plane(size, resolution)
+{
+	uint8_t rgb[resolution * resolution * 3];
+	glGetTexImage(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		(void*)rgb
+	);
+
+	for (int y = 0; y < resolution; y++)
+	for (int x = 0; x < resolution; x++)
+	{
+		int ti = x + y * (resolution);
+		int vi = x + y * (resolution + 1);
+
+		verts()[vi].position[1] = rgb[ti] / 255.f;
+	}
 }
