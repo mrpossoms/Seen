@@ -120,7 +120,7 @@ struct Plane : Mesh
 {
 	Plane(float size);
 	Plane(float size, int subdivisions);
-	~Plane();
+	~Plane() = default;
 };
 
 //------------------------------------------------------------------------------

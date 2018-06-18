@@ -195,7 +195,8 @@ ShaderProgram* ShaderProgram::active()
 
 ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 {
-	char attributes[16][128] = {};
+	char attribute_store[16][128] = {};
+	char* attributes[16] = {};
 	GLint gs_shaders[6] = {};
 	ShaderProgram* program = new ShaderProgram();
 
@@ -205,13 +206,16 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 	{
 		if (shader.type == GL_VERTEX_SHADER)
 		{
+
 			for (int i = 0; i < shader.inputs.size(); i++)
 			{
-				strncpy((char*)attributes[i], shader.inputs[i].name.c_str(), sizeof(attributes[i]));
+				attributes[i] = attribute_store[i];
+				strncpy(attributes[i], shader.inputs[i].name.c_str(), sizeof(attribute_store[i]));
 			}
 		}
 
-		gs_shaders[si += 1] = shader.compile();
+		gs_shaders[si] = shader.compile();
+		si++;
 	}
 
 	program->program = link_program(gs_shaders, (const char**)attributes);
@@ -825,9 +829,10 @@ Shader& Shader::transformed()
 
 Shader& Shader::pass_through(std::string name)
 {
+	auto in = input(name);
 	auto output_name = name.substr(0, name.find("_")) + "_" + suffix();
 
-	next(output(output_name).as(vec(2)) = input(name));
+	next(output(output_name).as(in.type) = in);
 
 	return *this;
 }
