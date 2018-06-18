@@ -628,3 +628,26 @@ void Model::draw(Viewer* viewer)
 
 	assert(gl_get_error());
 }
+
+
+Heightmap::Heightmap(Tex texture, float size, int resolution) :
+               Plane(size, resolution)
+{
+	uint8_t rgb[resolution * resolution * 3];
+	glGetTexImage(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGB,
+		GL_UNSIGNED_BYTE,
+		(void*)rgb
+	);
+
+	for (int y = 0; y < resolution; y++)
+	for (int x = 0; x < resolution; x++)
+	{
+		int ti = x + y * (resolution);
+		int vi = x + y * (resolution + 1);
+
+		verts()[vi].position[1] = rgb[ti] / 255.f;
+	}
+}
