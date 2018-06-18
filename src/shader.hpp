@@ -55,6 +55,14 @@ struct Shader {
 		VAR_IN = 0,
 		VAR_OUT,
 		VAR_PARAM,
+		VAR_LOCAL,
+	};
+
+	enum FeatureFlags {
+		VERT_POSITION = 1,
+		VERT_UV       = 2,
+		VERT_NORMAL   = 4,
+		VERT_TANGENT  = 8,
 	};
 
 	struct Expression {
@@ -110,7 +118,7 @@ struct Shader {
 	GLenum type;
 	std::string name;
 
-	std::vector<Variable> inputs, outputs, parameters;
+	std::vector<Variable> inputs, outputs, parameters, locals;
 	std::vector<Expression> statements;
 
 	Shader(std::string name, GLenum type);
@@ -119,6 +127,24 @@ struct Shader {
 	Variable& input(std::string name);
 	Variable& output(std::string name);
 	Variable& parameter(std::string name);
+
+	Variable& local(std::string name);
+
+	Variable* has_variable(std::string name, std::vector<Variable>& vars);
+	Variable* has_input(std::string name);
+
+	// high level shader describers
+	Shader& vertex(int feature_flags);
+	Shader& viewed();
+	Shader& projected();
+	Shader& transformed();
+
+	Shader& textured();
+
+	struct {
+		Shader& ndl();
+	} lighting;
+
 	Expression builtin(std::string gl_name);
 	Expression call(std::string func_name, std::vector<Expression> params);
 	std::string code();

@@ -569,6 +569,7 @@ Shader::Variable::Variable(VarRole role, std::string type, std::string name)
 	this->type = type;
 	this->name = name;
 	this->str = name;
+	this->array_size = 0;
 }
 
 
@@ -599,13 +600,12 @@ std::string Shader::Variable::declaration()
 	{
 		case VAR_IN:
 			return "in " + this->type + " " + this->name + rank;
-			break;
 		case VAR_OUT:
 			return "out " + this->type + " " + this->name + rank;
-			break;
 		case VAR_PARAM:
 			return "uniform " + this->type + " " + this->name + rank;
-			break;
+		case VAR_LOCAL:
+			return  this->type + " " + this->name + rank;
 	}
 }
 
@@ -626,25 +626,160 @@ void Shader::next(Shader::Expression e)
 
 Shader::Variable& Shader::input(std::string name)
 {
-	Shader::Variable var(VAR_IN, "", name);
+	Shader::Variable* input = has_variable(name, inputs);
+
+	if (input) return *input;
+
+	Shader::Variable var = { VAR_IN, "", name };
 	inputs.push_back(var);
+
 	return inputs[inputs.size() - 1];
 }
 
 
 Shader::Variable& Shader::output(std::string name)
 {
-	Shader::Variable var(VAR_OUT, "", name);
+	Shader::Variable* output = has_variable(name, outputs);
+
+	if (output) return *output;
+
+	Shader::Variable var = { VAR_OUT, "", name };
 	outputs.push_back(var);
+
 	return outputs[outputs.size() - 1];
 }
 
 
 Shader::Variable& Shader::parameter(std::string name)
 {
-	Shader::Variable var(VAR_PARAM, "", name);
+	Shader::Variable* parameter = has_variable(name, parameters);
+
+	if (parameter) return *parameter;
+
+	Shader::Variable var = { VAR_PARAM, "", name };
 	parameters.push_back(var);
+
 	return parameters[parameters.size() - 1];
+}
+
+
+Shader::Variable& Shader::local(std::string name)
+{
+	Shader::Variable* local = has_variable(name, locals);
+
+	if (local) return *local;
+
+	Shader::Variable var = { VAR_LOCAL, "", name };
+	locals.push_back(var);
+
+	return locals[locals.size() - 1];
+}
+
+
+Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& vars)
+{
+	for (int i = vars.size(); i--;)
+	{
+		if (vars[i].name == name)
+		{
+			return &vars[i];
+		}
+	}
+
+	return NULL;
+}
+
+
+Shader::Variable* Shader::has_input(std::string name)
+{
+	return has_variable(name, inputs);
+}
+
+
+Shader& Shader::vertex(int feature_flags)
+{
+	if (feature_flags & Shader::VERT_POSITION)
+	{
+		input("a_position").as(Shader::vec(3));
+	}
+
+	if (feature_flags & Shader::VERT_UV)
+	{
+		input("a_texcoord").as(Shader::vec(2));
+	}
+
+	if (feature_flags & Shader::VERT_NORMAL)
+	{
+		input("a_normal").as(Shader::vec(3));
+	}
+
+	if (feature_flags & Shader::VERT_TANGENT)
+	{
+		input("a_tangent").as(Shader::vec(3));
+	}
+
+	return *this;
+}
+
+
+Shader& Shader::transformed()
+{
+	Shader::Variable* pos  = has_input("a_position");
+	Shader::Variable* norm = has_input("a_normal");
+	Shader::Variable* tang = has_input("a_tangent");
+
+	assert(pos);
+
+	auto l_pos_trans = local("l_pos_trans").as(vec(4));
+	auto u_world = parameter("u_world").as(mat(4));
+
+	next(l_pos_trans = u_world * vec(4, "%s, 1.0", pos->cstr()));
+
+	if (norm)
+	{
+		auto l_norm_rot = output("vsh_norm").as(vec(3));
+		auto u_normal_matrix = parameter("u_normal_matrix").as(mat(3));
+
+		next(l_norm_rot = u_normal_matrix * *norm);
+	}
+
+	if (tang)
+	{
+		auto l_tang_rot = output("vsh_tangent").as(vec(3));
+		auto u_normal_matrix = parameter("u_normal_matrix").as(mat(3));
+
+		next(l_tang_rot = u_normal_matrix * *tang);
+	}
+
+	return *this;
+}
+
+
+Shader&  Shader::viewed()
+{
+	assert(has_variable("l_pos_trans", locals));
+
+	auto l_pos_trans = local("l_pos_trans").as(vec(4));
+	auto l_pos_view = local("l_pos_view").as(vec(4));
+	auto u_view = parameter("u_view").as(mat(4));
+
+	next(l_pos_view = u_view * l_pos_trans);
+
+	return *this;
+}
+
+
+Shader&  Shader::projected()
+{
+	assert(has_variable("l_pos_view", locals));
+
+	auto l_pos_view = local("l_pos_view").as(vec(4));
+	auto l_pos_proj = local("l_pos_proj").as(vec(4));
+	auto u_proj = parameter("u_proj").as(mat(4));
+
+	next(l_pos_proj = u_proj * l_pos_view);
+
+	return *this;
 }
 
 
@@ -876,6 +1011,13 @@ std::string Shader::code()
 	src << std::endl;
 	src << "void main()" << std::endl;
 	src << "{" << std::endl;
+
+	for (auto local : locals)
+	{
+		src << "\t" << local.declaration() << ";" << std::endl;
+	}
+	src << std::endl;
+
 	for (auto statement : statements)
 	{
 		src << "\t" << statement.str << ";" << std::endl;
