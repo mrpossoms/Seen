@@ -760,7 +760,7 @@ Shader& Shader::vertex(int feature_flags)
 
 	if (feature_flags & Shader::VERT_UV)
 	{
-		input("texcoord_in").as(Shader::vec(2));
+		input("texcoord_in").as(Shader::vec(3));
 	}
 
 	if (feature_flags & Shader::VERT_NORMAL)
@@ -799,7 +799,7 @@ Shader& Shader::transformed()
 	assert(pos);
 
 	auto l_pos_trans = local("l_pos_trans").as(vec(4));
-	auto u_world = parameter("u_world").as(mat(4));
+	auto u_world = parameter("u_world_matrix").as(mat(4));
 
 	next(l_pos_trans = u_world * vec(4, "%s, 1.0", pos->cstr()));
 
@@ -839,7 +839,7 @@ Shader&  Shader::viewed()
 
 	auto l_pos_trans = local("l_pos_trans").as(vec(4));
 	auto l_pos_view = local("l_pos_view").as(vec(4));
-	auto u_view = parameter("u_view").as(mat(4));
+	auto u_view = parameter("u_view_matrix").as(mat(4));
 
 	next(l_pos_view = u_view * l_pos_trans);
 
@@ -853,7 +853,7 @@ Shader& Shader::projected()
 
 	auto l_pos_view = local("l_pos_view").as(vec(4));
 	auto l_pos_proj = local("l_pos_proj").as(vec(4));
-	auto u_proj = parameter("u_proj").as(mat(4));
+	auto u_proj = parameter("u_proj_matrix").as(mat(4));
 
 	next(l_pos_proj = u_proj * l_pos_view);
 
