@@ -54,6 +54,7 @@ struct Shader {
 	enum VarRole {
 		VAR_IN = 0,
 		VAR_OUT,
+		VAR_INOUT,
 		VAR_PARAM,
 		VAR_LOCAL,
 	};
@@ -139,7 +140,8 @@ struct Shader {
 	Shader& projected();
 	Shader& transformed();
 
-	Shader& textured();
+	Shader& color_textured();
+
 
 	struct {
 		Shader& ndl();
@@ -160,6 +162,7 @@ struct Shader {
 
 	static std::string mat(int rank);
 	static std::string vec(int rank);
+	static std::string tex(int rank);
 	static Expression mat(int rank, const char* fmt, ...);
 	static Expression vec(int rank, const char* fmt, ...);
 

@@ -456,6 +456,19 @@ Shader::Expression Shader::vec(int rank, const char* fmt, ...)
 	return { Shader::vec(rank) + "(" + std::string(args) + ")" };
 }
 
+std::string Shader::tex(int rank)
+{
+	switch(rank)
+	{
+		case 2:
+			return "sampler2D";
+		case 3:
+			return "samplerCube";
+		default:
+			return "";
+	}
+}
+
 Shader::Expression Shader::Expression::operator+ (Shader::Expression e)
 {
 	Shader::Expression eo = { this->str + " + " + e.str };
@@ -602,6 +615,8 @@ std::string Shader::Variable::declaration()
 			return "in " + this->type + " " + this->name + rank;
 		case VAR_OUT:
 			return "out " + this->type + " " + this->name + rank;
+		case VAR_INOUT:
+			return "inout " + this->type + " " + this->name + rank;
 		case VAR_PARAM:
 			return "uniform " + this->type + " " + this->name + rank;
 		case VAR_LOCAL:
@@ -769,7 +784,7 @@ Shader&  Shader::viewed()
 }
 
 
-Shader&  Shader::projected()
+Shader& Shader::projected()
 {
 	assert(has_variable("l_pos_view", locals));
 
@@ -778,6 +793,18 @@ Shader&  Shader::projected()
 	auto u_proj = parameter("u_proj").as(mat(4));
 
 	next(l_pos_proj = u_proj * l_pos_view);
+
+	return *this;
+}
+
+
+Shader& Shader::color_textured()
+{
+	auto u_color_sampler = parameter("u_color_sampler").as(tex(2));
+	auto i_texcoord = input("i_texcoord").as(Shader::vec(2));
+	auto color = output("color").as(Shader::vec(4));
+
+	next(color = call("texture", {u_color_sampler, i_texcoord}));
 
 	return *this;
 }
