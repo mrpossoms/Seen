@@ -195,7 +195,7 @@ ShaderProgram* ShaderProgram::active()
 
 ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 {
-	const char* attributes[16] = {};
+	const char attributes[16][128] = {};
 	GLint gs_shaders[6] = {};
 	ShaderProgram* program = new ShaderProgram();
 
@@ -207,7 +207,7 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 		{
 			for (int i = 0; i < shader.inputs.size(); i++)
 			{
-				attributes[i] = shader.inputs[i].name.c_str();
+				strncpy(attributes[i], shader.inputs[i].name.c_str(), sizeof(attributes[i]));
 			}
 		}
 
@@ -758,11 +758,6 @@ Shader& Shader::vertex(int feature_flags)
 		input("position_in").as(Shader::vec(3));
 	}
 
-	if (feature_flags & Shader::VERT_UV)
-	{
-		input("texcoord_in").as(Shader::vec(3));
-	}
-
 	if (feature_flags & Shader::VERT_NORMAL)
 	{
 		input("normal_in").as(Shader::vec(3));
@@ -771,6 +766,11 @@ Shader& Shader::vertex(int feature_flags)
 	if (feature_flags & Shader::VERT_TANGENT)
 	{
 		input("tangent_in").as(Shader::vec(3));
+	}
+
+	if (feature_flags & Shader::VERT_UV)
+	{
+		input("texcoord_in").as(Shader::vec(3));
 	}
 
 	return *this;
