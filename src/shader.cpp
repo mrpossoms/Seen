@@ -195,7 +195,7 @@ ShaderProgram* ShaderProgram::active()
 
 ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 {
-	const char attributes[16][128] = {};
+	char attributes[16][128] = {};
 	GLint gs_shaders[6] = {};
 	ShaderProgram* program = new ShaderProgram();
 
@@ -207,14 +207,14 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 		{
 			for (int i = 0; i < shader.inputs.size(); i++)
 			{
-				strncpy(attributes[i], shader.inputs[i].name.c_str(), sizeof(attributes[i]));
+				strncpy((char*)attributes[i], shader.inputs[i].name.c_str(), sizeof(attributes[i]));
 			}
 		}
 
 		gs_shaders[si += 1] = shader.compile();
 	}
 
-	program->program = link_program(gs_shaders, attributes);
+	program->program = link_program(gs_shaders, (const char**)attributes);
 
 	// preload the uniforms
 	for (auto shader : shaders)
