@@ -156,7 +156,7 @@ struct Shader {
 	std::string code();
 	GLint compile();
 
-	void next(Expression e);
+	Shader& next(Expression e);
 
 	static Shader vertex(std::string name);
 	static Shader tessalation_control(std::string name);

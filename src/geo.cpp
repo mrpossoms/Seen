@@ -210,8 +210,8 @@ Plane::Plane(float size, int subdivisions)
 	float dx = size / (float)subdivisions;
 	float dy = size / (float)subdivisions;
 
-	for (int i = subdivisions + 1; i--;)
-	for (int j = subdivisions + 1; j--;)
+	for (int i = 0; i < subdivisions; i++)
+	for (int j = 0; j < subdivisions; j++)
 	{
 		float x = dx * i - 0.5f, y = dy * j - 0.5f;
 		Vertex v = {
@@ -224,11 +224,11 @@ Plane::Plane(float size, int subdivisions)
 		vertices.push_back(v);
 	}
 
-	for (int y = 0; y < subdivisions; y++)
-	for (int x = 0; x < subdivisions; x++)
+	for (int y = 0; y < subdivisions - 1; y++)
+	for (int x = 0; x < subdivisions - 1; x++)
 	{
-		int i = x + y * (subdivisions + 1);
-		int j = x + (y + 1) * (subdivisions + 1);
+		int i = x + y * (subdivisions);
+		int j = x + (y + 1) * (subdivisions);
 		indices.push_back(i);
 		indices.push_back(i + 1);
 		indices.push_back(j);
@@ -526,7 +526,7 @@ Mesh* MeshFactory::get_mesh(std::string path)
 
 	return _cached_models[path];
 }
-
+//------------------------------------------------------------------------------
 
 Model* MeshFactory::get_model(std::string path)
 {
@@ -628,26 +628,34 @@ void Model::draw(Viewer* viewer)
 
 	assert(gl_get_error());
 }
-
+//------------------------------------------------------------------------------
 
 Heightmap::Heightmap(Tex texture, float size, int resolution) :
-               Plane(size, resolution)
+           Plane(size, resolution)
 {
-	uint8_t rgb[resolution * resolution * 3];
+	struct rgba_t {
+		uint8_t r, g, b, a;
+	};
+
+	struct r_t {
+		uint8_t r;
+	};
+
+	rgba_t textels[resolution * resolution];
 	glGetTexImage(
 		GL_TEXTURE_2D,
 		0,
-		GL_RGB,
+		GL_RGBA,
 		GL_UNSIGNED_BYTE,
-		(void*)rgb
+		(void*)textels
 	);
 
 	for (int y = 0; y < resolution; y++)
 	for (int x = 0; x < resolution; x++)
 	{
 		int ti = x + y * (resolution);
-		int vi = x + y * (resolution + 1);
+		int vi = x + y * (resolution);
 
-		verts()[vi].position[1] = rgb[ti] / 255.f;
+		verts()[vi].position[1] = textels[ti].r / 255.f;
 	}
 }

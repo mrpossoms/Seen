@@ -662,9 +662,10 @@ Shader::Expression Shader::Variable::at_index(int i)
 }
 //------------------------------------------------------------------------------
 
-void Shader::next(Shader::Expression e)
+Shader& Shader::next(Shader::Expression e)
 {
 	statements.push_back(e);
+	return *this;
 }
 //------------------------------------------------------------------------------
 
