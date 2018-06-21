@@ -28,25 +28,50 @@ uint16_t* Mesh::inds()
 }
 
 //------------------------------------------------------------------------------
+void Mesh::compute_normals()
+{
+	Vertex* v = verts();
+
+	for(unsigned int i = 0; i < indices.size(); i ++)
+	{
+		vec3 diff[2];
+
+		vec3_sub(diff[0], v[indices[i]].position, v[indices[i + 1]].position);
+		vec3_sub(diff[1], v[indices[i]].position, v[indices[i + 2]].position);
+		// vec3_sub(v[indices[i + 2].normal, v[indices[i].position, v[indices[i + 1].position);
+
+		// for(int j = 3; j--;)
+		{
+			Vertex* vert = v + indices[i];
+			vec3 cross;
+			vec3_mul_cross(cross, diff[0], diff[1]);
+			vec3_norm(vert->normal, cross);
+			i = (i + 1) - 1;
+		}
+	}
+}
+//------------------------------------------------------------------------------
+
 void Mesh::compute_tangents()
 {
 	Vertex* v = verts();
 
-	for(unsigned int i = 0; i < vert_count(); i += 3)
+	for(unsigned int i = 0; i < indices.size(); i += 3)
 	{
-		vec3_sub(v[i + 0].tangent, v[i].position, v[i + 1].position);
-		vec3_sub(v[i + 1].tangent, v[i].position, v[i + 1].position);
-		vec3_sub(v[i + 2].tangent, v[i].position, v[i + 1].position);
+
+		vec3_sub(v[indices[i + 0]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
+		vec3_sub(v[indices[i + 1]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
+		vec3_sub(v[indices[i + 2]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
 
 		for(int j = 3; j--;)
 		{
 			// vec3_mul_cross(v[i + j].tangent, v[i + j].tangent, v[i + j].normal);
-			vec3_norm(v[i + j].tangent, v[i + j].tangent);
+			vec3_norm(v[indices[i + j]].tangent, v[indices[i + j]].tangent);
 		}
 	}
 }
-
 //------------------------------------------------------------------------------
+
 Vec3 Mesh::min_position()
 {
 	if(_min) return *_min;
@@ -237,6 +262,39 @@ Plane::Plane(float size, int subdivisions)
 		indices.push_back(j);
 		indices.push_back(i + 1);
 	}
+}
+//------------------------------------------------------------------------------
+
+Heightmap::Heightmap(Tex texture, float size, int resolution) :
+           Plane(size, resolution)
+{
+	struct rgba_t {
+		uint8_t r, g, b, a;
+	};
+
+	struct r_t {
+		uint8_t r;
+	};
+
+	rgba_t textels[resolution * resolution];
+	glGetTexImage(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		(void*)textels
+	);
+
+	for (int y = 0; y < resolution; y++)
+	for (int x = 0; x < resolution; x++)
+	{
+		int ti = x + y * (resolution);
+		int vi = x + y * (resolution);
+
+		verts()[vi].position[1] = textels[ti].r / 255.f;
+	}
+
+	compute_normals();
 }
 
 //------------------------------------------------------------------------------
@@ -627,35 +685,4 @@ void Model::draw(Viewer* viewer)
 	}
 
 	assert(gl_get_error());
-}
-//------------------------------------------------------------------------------
-
-Heightmap::Heightmap(Tex texture, float size, int resolution) :
-           Plane(size, resolution)
-{
-	struct rgba_t {
-		uint8_t r, g, b, a;
-	};
-
-	struct r_t {
-		uint8_t r;
-	};
-
-	rgba_t textels[resolution * resolution];
-	glGetTexImage(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		(void*)textels
-	);
-
-	for (int y = 0; y < resolution; y++)
-	for (int x = 0; x < resolution; x++)
-	{
-		int ti = x + y * (resolution);
-		int vi = x + y * (resolution);
-
-		verts()[vi].position[1] = textels[ti].r / 255.f;
-	}
 }

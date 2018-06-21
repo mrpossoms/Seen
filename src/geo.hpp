@@ -43,6 +43,7 @@ struct Mesh
 
 	Vec3 *_min, *_max;
 
+	void compute_normals();
 	void compute_tangents();
 
 	Vec3 min_position();
