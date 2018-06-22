@@ -51,12 +51,15 @@ private:
 
 
 struct Shader {
+	friend struct ShaderProgram;
+
 	enum VarRole {
 		VAR_IN = 0,
 		VAR_OUT,
 		VAR_INOUT,
 		VAR_PARAM,
 		VAR_LOCAL,
+		VAR_NONE,
 	};
 
 	enum FeatureFlags {
@@ -68,6 +71,9 @@ struct Shader {
 
 	struct Expression {
 		std::string str;
+
+		Expression(std::string s);
+		Expression() = default;
 
 		Expression operator+ (Expression e);
 		Expression operator+= (Expression e);
@@ -86,7 +92,24 @@ struct Shader {
 		Expression operator<< (Expression e);
 		Expression operator>> (Expression e);
 
+		Expression operator+ (std::string e);
+		Expression operator+= (std::string e);
+		Expression operator- (std::string e);
+		Expression operator-= (std::string e);
+		Expression operator* (std::string e);
+		Expression operator*= (std::string e);
+		Expression operator/ (std::string e);
+		Expression operator/= (std::string e);
+		Expression operator= (std::string e);
+
 		Expression operator[] (std::string swizzel);
+
+		Expression normalize();
+		Expression dot(Expression e);
+		Expression cross(Expression e);
+		Expression pow(float power);
+		Expression mix(std::vector<Expression> params, float percent);
+		Expression mix(std::vector<Expression> params, Expression percent);
 
 		const char* cstr();
 	};
@@ -134,6 +157,7 @@ struct Shader {
 
 	Variable* has_variable(std::string name, std::vector<Variable>& vars);
 	Variable* has_input(std::string name);
+	Variable* has_output(std::string name);
 
 	// high level shader describers
 	Shader& preceded_by(Shader& shader);
@@ -142,6 +166,7 @@ struct Shader {
 	Shader& viewed();
 	Shader& projected();
 	Shader& transformed();
+	Shader& compute_binormal();
 	Shader& pass_through(std::string name);
 
 	Shader& color_textured();
@@ -196,6 +221,8 @@ struct ShaderProgram {
 	static ShaderProgram* active();
 
 	static ShaderProgram* compile(std::vector<Shader> shaders);
+
+	static ShaderProgram* builtin_sky();
 private:
 	std::map<std::string, ShaderParam*> _params;
 	int _tex_counter;
@@ -220,6 +247,7 @@ private:
 
 class ShaderCache {
 	friend struct Shader;
+	friend struct ShaderProgram;
 public:
 	ShaderCache();
 	~ShaderCache();

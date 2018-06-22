@@ -198,7 +198,8 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 	char attribute_store[16][128] = {};
 	char* attributes[16] = {};
 	GLint gs_shaders[6] = {};
-	ShaderProgram* program = new ShaderProgram();
+	ShaderProgram program;
+	std::string prog_name;
 
 	// compile, cache and include each shader
 	int si = 0;
@@ -216,23 +217,88 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 
 		gs_shaders[si] = shader.compile();
 		si++;
+		prog_name += shader.name;
 	}
 
-	program->program = link_program(gs_shaders, (const char**)attributes);
+	program.program = link_program(gs_shaders, (const char**)attributes);
 
 	// preload the uniforms
 	for (auto shader : shaders)
 	{
 		for (auto param : shader.parameters)
 		{
-			(*program)[param.name];
+			program[param.name];
 		}
 	}
 
-	std::cerr << "prog: " << program->program << std::endl;
+	std::cerr << "prog: " << program.program << std::endl;
 
-	return program;
+	Shaders._program_cache[prog_name] = program;
+
+	return &Shaders._program_cache[prog_name];
 }
+//------------------------------------------------------------------------------
+
+
+ShaderProgram* ShaderProgram::builtin_sky()
+{
+	const std::string prog_name = "sky_vshsky_fsh";
+
+	if (Shaders._program_cache.count(prog_name) == 1)
+	{
+		return &Shaders._program_cache[prog_name];
+	}
+
+	auto vsh = Shader::vertex("sky_vsh");
+	auto fsh = Shader::fragment("sky_fsh");
+
+	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	vsh.transformed()
+	   .next(vsh.local("l_pos_trans") *= "100.0")
+	   .viewed()
+	   .projected()
+	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"))
+	   .compute_binormal()
+	   .pass_through("texcoord_in");
+
+	vsh.next(vsh.output("view_position_" + vsh.suffix()).as(Shader::vec(3)) = vsh.local("l_pos_trans")["xyz"]);
+
+	std::cerr << vsh.code() << "-------" << '\n';
+
+	fsh.preceded_by(vsh);
+	auto color = fsh.output("color_" + fsh.suffix()).as(Shader::vec(4));
+
+	auto light_blue = fsh.local("light_blue").as(Shader::vec(3));
+	auto dark_blue = fsh.local("dark_blue").as(Shader::vec(3));
+	auto sun_color = fsh.local("sun_color").as(Shader::vec(3));
+
+	auto left_forward = fsh.local("left_forward").as(Shader::vec(3));
+	auto light_dir = fsh.local("light_dir").as(Shader::vec(3));
+	auto norm = fsh.local("norm").as(Shader::vec(3));
+	auto horizon = fsh.local("horizon").as(Shader::vec(1));
+	auto haze = fsh.local("haze").as(Shader::vec(1));
+	auto blue = fsh.local("blue").as(Shader::vec(3));
+	auto sun = fsh.local("sun").as(Shader::vec(3));
+	auto light_angle = fsh.local("light_angle").as(Shader::vec(1));
+
+	fsh.next(left_forward = fsh.call("vec3", {{"1.0"}, {"0.0"}, {"1.0"}}))
+	   .next(light_dir = fsh.call("vec3", {{"0.0"}, {"1.0"}, {"1.0"}}))
+	   .next(dark_blue = fsh.call("vec3", {{"4.0 / 255.0"}, {"39.0 / 255.0"}, {"181.0 / 255.0"}}))
+	   .next(light_blue = fsh.call("vec3", {{"131.0 / 255.0"}, {"187.0 / 255.0"}, {"248.0 / 255.0"}}))
+	   .next(sun_color = fsh.call("vec3", {{"253.0 / 255.0"}, {"184.0 / 255.0"}, {"19.0 / 255.0"}}))
+	   .next(norm = fsh.input("view_position_*").normalize())
+	   .next(light_angle = (light_dir.dot(norm) + "1.0") / "2.0")
+	   .next(horizon = norm.dot({norm * left_forward}))
+	   .next(haze = ((light_dir.dot(norm) + horizon) + "1.0" ) / "2.0")
+	   .next(blue = fsh.call("mix", {dark_blue, light_blue, horizon.pow(2.0)}))
+	   .next(sun = sun_color * (light_angle.pow(64) * "10.0"))
+	   .next(color = fsh.call("vec4", { fsh.call("mix", {blue, sun, light_angle.pow(32)}), {"1.0"}}));
+
+	std::cerr << fsh.code() << "-------" << '\n';
+
+	return seen::ShaderProgram::compile({ vsh, fsh });
+}
+//------------------------------------------------------------------------------
 
 ShaderProgram* ShaderProgram::use()
 {
@@ -443,6 +509,12 @@ std::string Shader::integer() { return "int"; }
 std::string Shader::shortint() { return "short"; }
 //------------------------------------------------------------------------------
 
+Shader::Expression::Expression(std::string s)
+{
+	str = s;
+}
+//------------------------------------------------------------------------------
+
 Shader::Expression Shader::mat(int rank, const char* fmt, ...)
 {
 	char args[128];
@@ -595,6 +667,60 @@ Shader::Expression Shader::Expression::operator>> (Shader::Expression e)
 }
 //------------------------------------------------------------------------------
 
+
+Shader::Expression Shader::Expression::operator+ (std::string e) { return *this + Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator+= (std::string e) { return *this += Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator- (std::string e) { return *this - Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator-= (std::string e) { return *this -= Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator* (std::string e) { return *this * Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator*= (std::string e) { return *this *= Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator/ (std::string e) { return *this / Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator/= (std::string e) { return *this /= Shader::Expression(e); }
+Shader::Expression Shader::Expression::operator= (std::string e) { return *this = Shader::Expression(e); }
+
+Shader::Expression Shader::Expression::normalize()
+{
+	return { "normalize(" + str + ")" };
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::Expression::dot(Shader::Expression e)
+{
+	return { "dot(" + this->str + ", " + e.str + ")" };
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::Expression::cross(Shader::Expression e)
+{
+	return { "cross(" + this->str + ", " + e.str + ")" };
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::Expression::pow(float power)
+{
+	return { "pow(" + this->str + ", " + std::to_string(power) + ")" };
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression mix(std::vector<Shader::Expression> params, float percent)
+{
+	return mix(params, { std::to_string(percent) });
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression mix(std::vector<Shader::Expression> params, Shader::Expression percent)
+{
+	std::string exp = "mix(";
+
+	for (auto p : params)
+	{
+		exp += p.str + ", ";
+	}
+
+	return { exp + percent.str + ")" };
+}
+//------------------------------------------------------------------------------
+
 Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 {
 	Shader::Expression eo = { this->str + "." + swizzel };
@@ -605,7 +731,7 @@ Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 const char* Shader::Expression::cstr() { return str.c_str(); }
 //------------------------------------------------------------------------------
 
-Shader::Variable::Variable(VarRole role, std::string type, std::string name)
+Shader::Variable::Variable(VarRole role, std::string type, std::string name) : Expression(name)
 {
 	this->role = role;
 	this->type = type;
@@ -650,6 +776,8 @@ std::string Shader::Variable::declaration()
 			return "uniform " + this->type + " " + this->name + rank;
 		case VAR_LOCAL:
 			return  this->type + " " + this->name + rank;
+		case VAR_NONE:
+			return "";
 	}
 }
 //------------------------------------------------------------------------------
@@ -730,6 +858,11 @@ Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& 
 		wild = true;
 		name = name.substr(1);
 	}
+	else if (name[name.length() - 1] == '*')
+	{
+		wild = true;
+		name = name.substr(0, name.length() - 1);
+	}
 
 	for (int i = vars.size(); i--;)
 	{
@@ -753,6 +886,12 @@ Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& 
 Shader::Variable* Shader::has_input(std::string name)
 {
 	return has_variable(name, inputs);
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable* Shader::has_output(std::string name)
+{
+	return has_variable(name, outputs);
 }
 //------------------------------------------------------------------------------
 
@@ -823,6 +962,19 @@ Shader& Shader::transformed()
 
 		next(l_tang_rot = u_normal_matrix * *tang);
 	}
+
+	return *this;
+}
+//------------------------------------------------------------------------------
+
+Shader& Shader::compute_binormal()
+{
+	Shader::Variable* norm = has_input("normal_*");
+	Shader::Variable* tang = has_input("tangent_*");
+
+	assert(norm && tang);
+
+	next(output("binormal_" + suffix()).as(vec(3)) = norm->cross(*tang));
 
 	return *this;
 }
@@ -1016,7 +1168,7 @@ Shader::Expression Shader::builtin(std::string gl_name)
 			return fragment_builtin_map[gl_name];
 	}
 
-	static Shader::Variable empty{};
+	static Shader::Variable empty(VAR_NONE, "", "");
 	return empty;
 }
 //------------------------------------------------------------------------------
