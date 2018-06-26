@@ -3,8 +3,13 @@
 #include "core.h"
 #include "texture.hpp"
 
+GLint link_program(const GLint* shaders, const char** attributes);
+GLint load_shader(const char* path, GLenum type);
+GLint compile_source(const char* src, GLenum type);
+
 namespace seen
 {
+
 struct ShaderProgram;
 
 struct DrawParams {
@@ -101,6 +106,20 @@ struct Shader {
 		Expression operator/ (std::string e);
 		Expression operator/= (std::string e);
 		Expression operator= (std::string e);
+
+		Expression operator+ (float e);
+		Expression operator+= (float e);
+		Expression operator- (float e);
+		Expression operator-= (float e);
+		Expression operator* (float e);
+		Expression operator*= (float e);
+		Expression operator/ (float e);
+		Expression operator/= (float e);
+		Expression operator= (float e);
+		Expression operator< (float e);
+		Expression operator> (float e);
+		Expression operator<= (float e);
+		Expression operator>= (float e);
 
 		Expression operator[] (std::string swizzel);
 
