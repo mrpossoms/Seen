@@ -171,6 +171,10 @@ struct Shader {
 
 	Shader& color_textured();
 
+	Expression vec2(float x, float y);
+	Expression vec3(float x, float y, float z);
+	Expression vec4(float x, float y, float z, float w);
+
 
 	struct {
 		Shader& ndl();

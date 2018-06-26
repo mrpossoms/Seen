@@ -233,6 +233,7 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 
 	std::cerr << "prog: " << program.program << std::endl;
 
+	program.primative = GL_TRIANGLES;
 	Shaders._program_cache[prog_name] = program;
 
 	return &Shaders._program_cache[prog_name];
@@ -254,7 +255,7 @@ ShaderProgram* ShaderProgram::builtin_sky()
 
 	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
 	vsh.transformed()
-	   .next(vsh.local("l_pos_trans") *= "100.0")
+	   .next(vsh.local("l_pos_trans")["xyz"] *= "100.0")
 	   .viewed()
 	   .projected()
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"))
@@ -263,7 +264,6 @@ ShaderProgram* ShaderProgram::builtin_sky()
 
 	vsh.next(vsh.output("view_position_" + vsh.suffix()).as(Shader::vec(3)) = vsh.local("l_pos_trans")["xyz"]);
 
-	std::cerr << vsh.code() << "-------" << '\n';
 
 	fsh.preceded_by(vsh);
 	auto color = fsh.output("color_" + fsh.suffix()).as(Shader::vec(4));
@@ -281,20 +281,23 @@ ShaderProgram* ShaderProgram::builtin_sky()
 	auto sun = fsh.local("sun").as(Shader::vec(3));
 	auto light_angle = fsh.local("light_angle").as(Shader::vec(1));
 
-	fsh.next(left_forward = fsh.call("vec3", {{"1.0"}, {"0.0"}, {"1.0"}}))
-	   .next(light_dir = fsh.call("vec3", {{"0.0"}, {"1.0"}, {"1.0"}}))
-	   .next(dark_blue = fsh.call("vec3", {{"4.0 / 255.0"}, {"39.0 / 255.0"}, {"181.0 / 255.0"}}))
-	   .next(light_blue = fsh.call("vec3", {{"131.0 / 255.0"}, {"187.0 / 255.0"}, {"248.0 / 255.0"}}))
-	   .next(sun_color = fsh.call("vec3", {{"253.0 / 255.0"}, {"184.0 / 255.0"}, {"19.0 / 255.0"}}))
-	   .next(norm = fsh.input("view_position_*").normalize())
-	   .next(light_angle = (light_dir.dot(norm) + "1.0") / "2.0")
-	   .next(horizon = norm.dot({norm * left_forward}))
-	   .next(haze = ((light_dir.dot(norm) + horizon) + "1.0" ) / "2.0")
-	   .next(blue = fsh.call("mix", {dark_blue, light_blue, horizon.pow(2.0)}))
-	   .next(sun = sun_color * (light_angle.pow(64) * "10.0"))
-	   .next(color = fsh.call("vec4", { fsh.call("mix", {blue, sun, light_angle.pow(32)}), {"1.0"}}));
+	fsh.next(left_forward = fsh.vec3(1.0, 0.0, 1.0))
+	   .next(light_dir = fsh.vec3(0.0, 1.0, 1.0))
+	   .next(dark_blue = fsh.vec3(4.0 / 255.0, 39.0 / 255.0, 181.0 / 255.0))
+	   .next(light_blue = fsh.vec3(131.0 / 255.0, 187.0 / 255.0, 248.0 / 255.0))
+	   .next(sun_color = fsh.vec3(253.0 / 255.0, 184.0 / 255.0, 19.0 / 255.0))
 
-	std::cerr << fsh.code() << "-------" << '\n';
+	   .next(norm = fsh.input("view_position_*").normalize())
+	   .next(light_angle = (light_dir.normalize().dot(norm) + "1.0"))
+	   .next(light_angle /= "2.0")
+
+	   .next(horizon = norm.dot((norm * left_forward).normalize()))
+	   .next(haze = ((light_dir.dot(norm) + horizon) + "1.0" ) / "2.0")
+	   .next(blue = dark_blue.mix({light_blue}, horizon.pow(2.0)))
+	   .next(sun = sun_color * (light_angle.pow(64) * "10.0"))
+
+	   .next(color = fsh.call("vec4", { blue.mix({sun}, light_angle.pow(64)), {"1.0"}}));
+
 
 	return seen::ShaderProgram::compile({ vsh, fsh });
 }
@@ -702,15 +705,18 @@ Shader::Expression Shader::Expression::pow(float power)
 }
 //------------------------------------------------------------------------------
 
-Shader::Expression mix(std::vector<Shader::Expression> params, float percent)
+Shader::Expression Shader::Expression::mix(std::vector<Shader::Expression> params, float percent)
 {
-	return mix(params, { std::to_string(percent) });
+	Shader::Expression p = { std::to_string(percent) };
+	return mix(params, p);
 }
 //------------------------------------------------------------------------------
 
-Shader::Expression mix(std::vector<Shader::Expression> params, Shader::Expression percent)
+Shader::Expression Shader::Expression::mix(std::vector<Shader::Expression> params, Shader::Expression percent)
 {
 	std::string exp = "mix(";
+
+	params.insert(params.begin(), this->str);
 
 	for (auto p : params)
 	{
@@ -1030,6 +1036,29 @@ Shader& Shader::color_textured()
 	return *this;
 }
 //------------------------------------------------------------------------------
+Shader::Expression Shader::vec2(float x, float y)
+{
+	return call("vec2", {
+		{std::to_string(x)}, {std::to_string(y)}
+	});
+}
+
+
+Shader::Expression Shader::vec3(float x, float y, float z)
+{
+	return call("vec3", {
+		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}
+	});
+}
+
+
+Shader::Expression Shader::vec4(float x, float y, float z, float w)
+{
+	return call("vec4", {
+		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}, {std::to_string(w)}
+	});
+}
+
 
 Shader::Variable& Shader::Variable::operator<< (Shader::Variable property)
 {

@@ -54,4 +54,6 @@ float rf();
 float rf(float min, float max);
 Vec3 rn();
 
+std::string get_line(std::string lines, int line_number);
+
 }
