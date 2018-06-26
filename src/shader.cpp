@@ -221,18 +221,19 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 	}
 
 	program.program = link_program(gs_shaders, (const char**)attributes);
+	program.primative = GL_TRIANGLES;
+	Shaders._program_cache[prog_name] = program;
+
+	ShaderProgram& prog_ref = Shaders._program_cache[prog_name];
 
 	// preload the uniforms
 	for (auto shader : shaders)
 	{
 		for (auto param : shader.parameters)
 		{
-			program[param.name];
+			prog_ref[param.name];
 		}
 	}
-
-	program.primative = GL_TRIANGLES;
-	Shaders._program_cache[prog_name] = program;
 
 	return &Shaders._program_cache[prog_name];
 }

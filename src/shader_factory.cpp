@@ -151,10 +151,10 @@ Shader& Shader::projected()
 Shader& Shader::color_textured()
 {
 	auto u_color_sampler = parameter("u_color_sampler").as(tex(2));
-	auto i_texcoord = input("i_texcoord").as(Shader::vec(2));
+	auto i_texcoord = input("texcoord_*").as(Shader::vec(3));
 	auto color = output("color").as(Shader::vec(4));
 
-	next(color = call("texture", {u_color_sampler, i_texcoord}));
+	next(color = call("texture", {u_color_sampler, i_texcoord["xy"]}));
 
 	return *this;
 }
