@@ -192,7 +192,7 @@ Shader& Shader::blinn()
 	auto l_ndh = local("l_ndh").as(vec(1));
 
 	next(l_light_dist = call("distance", {i_position, u_light_position}));
-	next(l_light_dir = (u_light_position - i_position).normalize());
+	next(l_light_dir = (i_position - u_light_position).normalize());
 	next(l_intensity = i_normal.dot(l_light_dir).saturate());
 	next(l_half = (l_light_dir + u_view_dir).normalize());
 
