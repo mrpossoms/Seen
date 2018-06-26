@@ -234,6 +234,12 @@ Shader::Expression Shader::Expression::mix(std::vector<Shader::Expression> param
 }
 //------------------------------------------------------------------------------
 
+Shader::Expression Shader::Expression::saturate()
+{
+	return { "clamp(" + str + ", 0.0, 1.0)" };
+}
+//------------------------------------------------------------------------------
+
 Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 {
 	Shader::Expression eo = { this->str + "." + swizzel };

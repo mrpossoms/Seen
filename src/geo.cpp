@@ -36,8 +36,8 @@ void Mesh::compute_normals()
 	{
 		vec3 diff[2];
 
-		vec3_sub(diff[0], v[indices[i]].position, v[indices[i + 1]].position);
-		vec3_sub(diff[1], v[indices[i]].position, v[indices[i + 2]].position);
+		vec3_sub(diff[0], v[indices[i + 1]].position, v[indices[i + 0]].position);
+		vec3_sub(diff[1], v[indices[i + 0]].position, v[indices[i + 2]].position);
 		// vec3_sub(v[indices[i + 2].normal, v[indices[i].position, v[indices[i + 1].position);
 
 		// for(int j = 3; j--;)
@@ -45,7 +45,9 @@ void Mesh::compute_normals()
 			Vertex* vert = v + indices[i];
 			vec3 cross;
 			vec3_mul_cross(cross, diff[0], diff[1]);
+			// vec3_add(cross, vert->normal, cross);
 			vec3_norm(vert->normal, cross);
+			// vec3_scale(vert->normal, vert->normal, -1);
 			i = (i + 1) - 1;
 		}
 	}

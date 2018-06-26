@@ -65,9 +65,9 @@ Shader& Shader::preceded_by(Shader& previous)
 
 Shader& Shader::transformed()
 {
-	Shader::Variable* pos  = has_input("position_in");
-	Shader::Variable* norm = has_input("normal_in");
-	Shader::Variable* tang = has_input("tangent_in");
+	Shader::Variable* pos  = has_input("position_*");
+	Shader::Variable* norm = has_input("normal_*");
+	Shader::Variable* tang = has_input("tangent_*");
 
 	assert(pos);
 
@@ -104,6 +104,16 @@ Shader& Shader::compute_binormal()
 	assert(norm && tang);
 
 	next(output("binormal_" + suffix()).as(vec(3)) = norm->cross(*tang));
+
+	return *this;
+}
+//------------------------------------------------------------------------------
+
+Shader& Shader::emit_position()
+{
+	assert(has_variable("l_pos_trans", locals));
+
+	next(output("position_" + suffix()).as(vec(3)) = local("l_pos_trans")["xyz"]);
 
 	return *this;
 }
@@ -159,6 +169,44 @@ Shader& Shader::color_textured()
 	return *this;
 }
 //------------------------------------------------------------------------------
+
+Shader& Shader::blinn()
+{
+	assert(has_input("normal_*"));
+
+	auto i_normal = input("normal_*");
+	auto i_position = input("position_*");
+	auto o_color = output("color").as(Shader::vec(4));
+
+	auto u_light_position = parameter("u_light_position").as(vec(3));
+	auto u_light_diffuse = parameter("u_light_diffuse").as(vec(3));
+	auto u_light_specular = parameter("u_light_specular").as(vec(3));
+	auto u_light_ambient = parameter("u_light_ambient").as(vec(3));
+	auto u_view_dir = parameter("u_view_direction").as(vec(3));
+
+	auto l_light_color = local("l_light_color").as(vec(3));
+	auto l_half = local("l_half").as(vec(3));
+	auto l_intensity = local("l_intensity").as(vec(1));
+	auto l_light_dir = local("l_light_dir").as(vec(3));
+	auto l_light_dist = local("l_light_dist").as(vec(1));
+	auto l_ndh = local("l_ndh").as(vec(1));
+
+	next(l_light_dist = call("distance", {i_position, u_light_position}));
+	next(l_light_dir = (u_light_position - i_position).normalize());
+	next(l_intensity = i_normal.dot(l_light_dir).saturate());
+	next(l_half = (l_light_dir + u_view_dir).normalize());
+
+	next(l_light_color = u_light_ambient);
+	// next(l_light_color += (l_intensity * u_light_diffuse));
+	next(l_light_color += (l_intensity * u_light_diffuse) / l_light_dist);
+
+	next(l_ndh = i_normal.dot(l_half));
+	next(l_intensity = (l_ndh * 0.5 + 0.5).pow(32));
+	next(l_light_color += (l_intensity * u_light_specular) / l_light_dist);
+	next(o_color["rgb"] *= l_light_color);
+
+	return *this;
+}
 
 Shader::Shader(std::string name, GLenum type)
 {

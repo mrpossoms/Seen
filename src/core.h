@@ -42,6 +42,7 @@
 
 #define SEEN_TERM_GREEN "\033[0;32m"
 #define SEEN_TERM_RED "\033[1;31m"
+#define SEEN_TERM_YELLOW "\033[1;33m"
 #define SEEN_TERM_COLOR_OFF "\033[0m"
 
 namespace seen {

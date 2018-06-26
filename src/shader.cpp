@@ -42,6 +42,8 @@ GLint compile_source(const char* src, GLenum type)
 	{
 		std::cerr << SEEN_TERM_RED "Compiling failed: " << status << SEEN_TERM_COLOR_OFF << std::endl;
 		glDeleteShader(shader);
+
+		std::cerr << SEEN_TERM_YELLOW << src << SEEN_TERM_COLOR_OFF << std::endl;
 		exit(-2);
 	}
 
@@ -463,6 +465,18 @@ void ShaderParam::operator<<(vec4_t& v)
 	glUniform4fv(_uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(Vec3 v)
+{
+	glUniform3fv(_uniform, 1, (GLfloat*)v.v);
+}
+//------------------------------------------------------------------------------
+// 
+// void ShaderParam::operator<<(Vec4 v)
+// {
+// 	glUniform4fv(_uniform, 1, (GLfloat*)v.v);
+// }
+// //------------------------------------------------------------------------------
 
 void ShaderParam::operator<<(mat3x3_t& m)
 {

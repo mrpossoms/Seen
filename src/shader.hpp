@@ -45,6 +45,8 @@ struct ShaderParam {
 	void operator<<(float f);
 	void operator<<(vec3_t& v);
 	void operator<<(vec4_t& v);
+	void operator<<(Vec3 v);
+	// void operator<<(Vec4 v);
 	void operator<<(mat3x3_t& m);
 	void operator<<(mat4x4_t& m);
 	void operator<<(GLint i);
@@ -129,6 +131,7 @@ struct Shader {
 		Expression pow(float power);
 		Expression mix(std::vector<Expression> params, float percent);
 		Expression mix(std::vector<Expression> params, Expression percent);
+		Expression saturate();
 
 		const char* cstr();
 	};
@@ -186,9 +189,11 @@ struct Shader {
 	Shader& projected();
 	Shader& transformed();
 	Shader& compute_binormal();
+	Shader& emit_position();
 	Shader& pass_through(std::string name);
 
 	Shader& color_textured();
+	Shader& blinn();
 
 	Expression vec2(float x, float y);
 	Expression vec3(float x, float y, float z);

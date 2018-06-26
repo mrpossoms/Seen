@@ -53,6 +53,14 @@ Vec3 Camera::left()
 }
 
 
+Vec3 Camera::forward()
+{
+	Vec3 forward;
+	quat_mul_vec3(forward.v, _orientation.v, VEC3_FORWARD.v);
+	return forward;
+}
+
+
 Positionable* Camera::position(Vec3& pos)
 {
 	_position = pos;
