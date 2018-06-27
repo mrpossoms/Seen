@@ -194,11 +194,13 @@ struct Shader {
 
 	Shader& color_textured();
 	Shader& blinn();
+	Shader& normal_map();
 
 	Expression vec2(float x, float y);
 	Expression vec3(float x, float y, float z);
 	Expression vec4(float x, float y, float z, float w);
 
+	Expression mat3(Expression c0, Expression c1, Expression c2);
 
 	struct {
 		Shader& ndl();

@@ -437,7 +437,14 @@ Shader::Expression Shader::vec4(float x, float y, float z, float w)
 		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}, {std::to_string(w)}
 	});
 }
+//------------------------------------------------------------------------------
 
+Shader::Expression Shader::mat3(Shader::Expression c0, Shader::Expression c1, Shader::Expression c2)
+{
+	return call("mat3", {
+		c0, c1, c2
+	});
+}
 
 Shader::Variable& Shader::Variable::operator<< (Shader::Variable property)
 {
