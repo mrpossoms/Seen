@@ -244,6 +244,8 @@ struct ShaderProgram {
 	ShaderParam& operator[](std::string name);
 
 	void operator<<(Material* m);
+	void operator<<(Viewer* v);
+	void operator<<(Positionable* p);
 
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();
@@ -251,6 +253,7 @@ struct ShaderProgram {
 	static ShaderProgram* compile(std::vector<Shader> shaders);
 
 	static ShaderProgram* builtin_sky();
+	static ShaderProgram* builtin_normal_colors();
 private:
 	std::map<std::string, ShaderParam*> _params;
 	int _tex_counter;

@@ -47,17 +47,25 @@ Viewer* Camera::fov(float f)
 
 Vec3 Camera::left()
 {
-	Vec3 left;
-	quat_mul_vec3(left.v, _orientation.v, VEC3_LEFT.v);
-	return left;
+	vec4 out;
+
+	quat q;
+	quat_invert(q, _orientation.v);
+	quat_mul_vec3(out, q, VEC3_LEFT.v);
+
+	return Vec3(-out[0], -out[1], -out[2]);
 }
 
 
 Vec3 Camera::forward()
 {
-	Vec3 forward;
-	quat_mul_vec3(forward.v, _orientation.v, VEC3_FORWARD.v);
-	return forward;
+	vec4 out;
+
+	quat q;
+	quat_invert(q, _orientation.v);
+	quat_mul_vec3(out, q, VEC3_FORWARD.v);
+
+	return Vec3(-out[0], -out[1], -out[2]);
 }
 
 
@@ -66,7 +74,7 @@ Positionable* Camera::position(Vec3& pos)
 	_position = pos;
 
 	mat4x4_from_quat(_view.v, _orientation.v);
-	mat4x4_translate_in_place(_view.v, _position.x, _position.y, _position.z);
+	mat4x4_translate_in_place(_view.v, -_position.x, -_position.y, -_position.z);
 
 	return this;
 }
@@ -82,7 +90,7 @@ Positionable* Camera::position(float x, float y, float z)
 		mat4x4_from_quat(rot, _orientation.v);
 
 		mat4x4_identity(trans);
-		mat4x4_translate_in_place(trans, _position.x, _position.y, _position.z);
+		mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
 
 		mat4x4_mul(_view.v, rot, trans);
 		return this;
@@ -105,7 +113,7 @@ Positionable* Camera::orientation(Quat& ori)
 	mat4x4_from_quat(rot, _orientation.v);
 
 	mat4x4_identity(trans);
-	mat4x4_translate_in_place(trans, _position.x, _position.y, _position.z);
+	mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
 
 	mat4x4_mul(_view.v, rot, trans);
 

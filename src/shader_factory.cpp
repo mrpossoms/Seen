@@ -182,8 +182,9 @@ Shader& Shader::blinn()
 	auto u_light_diffuse = parameter("u_light_diffuse").as(vec(3));
 	auto u_light_specular = parameter("u_light_specular").as(vec(3));
 	auto u_light_ambient = parameter("u_light_ambient").as(vec(3));
-	auto u_view_dir = parameter("u_view_direction").as(vec(3));
+	auto u_view_pos = parameter("u_view_position").as(vec(3));
 
+	auto l_view_dir = local("l_view_dir").as(vec(3));
 	auto l_light_color = local("l_light_color").as(vec(3));
 	auto l_half = local("l_half").as(vec(3));
 	auto l_intensity = local("l_intensity").as(vec(1));
@@ -191,17 +192,17 @@ Shader& Shader::blinn()
 	auto l_light_dist = local("l_light_dist").as(vec(1));
 	auto l_ndh = local("l_ndh").as(vec(1));
 
+	next(l_view_dir = (u_view_pos - i_position).normalize());
 	next(l_light_dist = call("distance", {i_position, u_light_position}));
-	next(l_light_dir = (i_position - u_light_position).normalize());
+	next(l_light_dir = (u_light_position - i_position).normalize());
 	next(l_intensity = i_normal.dot(l_light_dir).saturate());
-	next(l_half = (l_light_dir + u_view_dir).normalize());
+	next(l_half = (l_light_dir + l_view_dir).normalize());
 
 	next(l_light_color = u_light_ambient);
-	// next(l_light_color += (l_intensity * u_light_diffuse));
 	next(l_light_color += (l_intensity * u_light_diffuse) / l_light_dist);
 
 	next(l_ndh = i_normal.dot(l_half));
-	next(l_intensity = (l_ndh * 0.5 + 0.5).pow(32));
+	next(l_intensity = (l_ndh.saturate()).pow(16));
 	next(l_light_color += (l_intensity * u_light_specular) / l_light_dist);
 	next(o_color["rgb"] *= l_light_color);
 

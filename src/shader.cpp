@@ -304,6 +304,35 @@ ShaderProgram* ShaderProgram::builtin_sky()
 }
 //------------------------------------------------------------------------------
 
+ShaderProgram* ShaderProgram::builtin_normal_colors()
+{
+	const std::string prog_name = "default_vshnormal_color_fsh";
+
+	if (Shaders._program_cache.count(prog_name) == 1)
+	{
+		return &Shaders._program_cache[prog_name];
+	}
+
+	auto vsh = Shader::vertex("default_vsh");
+	auto fsh = Shader::fragment("normal_color_fsh");
+
+	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	vsh.transformed()
+	   .viewed()
+	   .projected()
+	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"))
+	   .pass_through("texcoord_in");
+
+	fsh.preceded_by(vsh);
+	auto color = fsh.output("color_" + fsh.suffix()).as(Shader::vec(4));
+
+	fsh.next(color["rgb"] = fsh.input("normal_*") / 2.0 + 0.5);
+	fsh.next(color["a"] = "1.0");
+
+	return seen::ShaderProgram::compile({ vsh, fsh });
+}
+//------------------------------------------------------------------------------
+
 ShaderProgram* ShaderProgram::use()
 {
 	_tex_counter = 0; // reset texture location
@@ -327,6 +356,19 @@ void ShaderProgram::operator<<(Material* m)
 		(*this)[uniform_names[i]] << _tex_counter;
 		_tex_counter++;
 	}
+}
+//------------------------------------------------------------------------------
+
+void ShaderProgram::operator<<(Viewer* v)
+{
+	(*this)["u_view_matrix"] << v->_view;
+	(*this)["u_proj_matrix"] << v->_projection;
+}
+//------------------------------------------------------------------------------
+
+void ShaderProgram::operator<<(Positionable*)
+{
+
 }
 //------------------------------------------------------------------------------
 
@@ -471,7 +513,7 @@ void ShaderParam::operator<<(Vec3 v)
 	glUniform3fv(_uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
-// 
+//
 // void ShaderParam::operator<<(Vec4 v)
 // {
 // 	glUniform4fv(_uniform, 1, (GLfloat*)v.v);
@@ -503,4 +545,3 @@ void ShaderParam::operator<<(Tex t)
 	glUniform1i(_uniform, _program->_tex_counter);
 	_program->_tex_counter++;
 }
-//------------------------------------------------------------------------------

@@ -30,7 +30,6 @@ uint16_t* Mesh::inds()
 //------------------------------------------------------------------------------
 void Mesh::compute_normals()
 {
-	vec3 xz_mirror = { -1, 1, -1 };
 	Vertex* v = verts();
 
 	for(unsigned int i = 0; i < indices.size(); i ++)
@@ -44,7 +43,7 @@ void Mesh::compute_normals()
 		vec3 cross;
 		vec3_mul_cross(cross, diff[0], diff[1]);
 		vec3_norm(vert->normal, cross);
-		vec3_hadamard(vert->normal, vert->normal, xz_mirror);
+
 		i = (i + 1) - 1;
 	}
 }
