@@ -5,19 +5,33 @@
 namespace seen
 {
 
-class Positionable
+struct Positionable
 {
-	public:
 		// Dynamic Interface
-		virtual Vec3 position() = 0;
-		virtual Positionable* position(Vec3& pos) = 0;
-		virtual Positionable* position(float x, float y, float z) = 0;
+		Vec3 position();
+		Vec3 left();
+		Vec3 forward();
+		Quat orientation();
 
-		virtual Quat orientation() = 0;
-		virtual Positionable* orientation(Quat& ori) = 0;
+		Positionable* position(Vec3& pos);
+		Positionable* position(float x, float y, float z);
 
-		virtual void rotation(mat3x3 rot) = 0;
-		virtual void matrix(mat4x4 world) = 0;
+		Positionable* orientation(Quat& ori);
+		void orientation(mat3x3 rot);
+
+		void world(mat4x4 world);
+		mat4x4_t world();
+
+		mat3x3_t normal_matrix;
+private:
+		Vec3 _position;
+		Quat _orientation = QUAT_I;
+		mat4x4_t _world = { {
+			{ 1, 0, 0, 0 },
+			{ 0, 1, 0, 0 },
+			{ 0, 0, 1, 0 },
+			{ 0, 0, 0, 1 }
+		} };
 };
 
 
@@ -46,10 +60,15 @@ public:
 	virtual std::vector<Drawable*>& drawables() = 0;
 };
 
+class RenderBatch : public std::vector<Drawable*>
+{
+
+};
+
 class RenderingPass : public Drawable
 {
 public:
-	virtual void prepare() {};
+	virtual void prepare(int index) {};
 	virtual void draw(Viewer* viewer) {};
 	virtual void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) = 0;
 	virtual void finish() {};

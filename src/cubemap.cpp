@@ -1,11 +1,29 @@
-#include "envmap.hpp"
+#include "cubemap.hpp"
 #include "shader.hpp"
 
 using namespace seen;
 
 //------------------------------------------------------------------------------
 
-EnvironmentMap::EnvironmentMap(int size)
+Cubemap::Cubemap(int size)
+{
+	init(size, Framebuffer::depth_flag | Framebuffer::color_flag);
+}
+//------------------------------------------------------------------------------
+
+Cubemap::Cubemap(int size, int fbo_flags)
+{
+	init(size, fbo_flags);
+}
+//------------------------------------------------------------------------------
+
+Cubemap::~Cubemap()
+{
+	glDeleteTextures(1, &_map);
+}
+//------------------------------------------------------------------------------
+
+void Cubemap::init(int size, int fbo_flags)
 {
 	_size = size;
 
@@ -48,38 +66,42 @@ EnvironmentMap::EnvironmentMap(int size)
 
 	_framebuffer = TextureFactory::create_framebuffer(
 		size, size,
-		Framebuffer::depth_flag | Framebuffer::color_flag
+		fbo_flags
 	);
 }
 //------------------------------------------------------------------------------
 
-void EnvironmentMap::render_to(GLenum face)
+void Cubemap::render_to(GLenum face)
 {
+	assert(gl_get_error());
+
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _map);
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer.id);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, _map, 0);
 	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+
+	assert(gl_get_error());
 }
 //------------------------------------------------------------------------------
 
-void EnvironmentMap::prepare()
+void Cubemap::prepare(int index)
 {
 	glViewport(0, 0, _size, _size);
 }
 //------------------------------------------------------------------------------
 
-void EnvironmentMap::draw(Viewer* viewer,
-                          Scene* scene,
-                          std::vector<Drawable*>& excluding)
+void Cubemap::draw(Viewer* viewer,
+                   Scene* scene,
+                   std::vector<Drawable*>& excluding)
 {
 	Vec3 pos = viewer->position();
 	draw_at(pos, scene, excluding);
 }
 //------------------------------------------------------------------------------
 
-void EnvironmentMap::draw_at(Vec3 position,
-                             Scene* scene,
-                             std::vector<Drawable*>& excluding)
+void Cubemap::draw_at(Vec3 position,
+                      Scene* scene,
+                      std::vector<Drawable*>& excluding)
 {
 	struct basis {
 		Vec3 up, forward;
@@ -102,16 +124,16 @@ void EnvironmentMap::draw_at(Vec3 position,
 		{ VEC3_DOWN,    VEC3_RIGHT   },
 		{ VEC3_DOWN,    VEC3_LEFT    },
 	};
-	mat4x4 cube_views[6];
+	mat4x4_t cube_views[6];
 
 	static bool setup;
-	static mat4x4 cube_proj;
+	static mat4x4_t cube_proj;
 
 	// Compute perspective and view matrices the first time a
 	// draw_at call is made
 	if(!setup)
 	{
-		mat4x4_perspective(cube_proj, M_PI / 2, 1, 0.01, 1000);
+		mat4x4_perspective(cube_proj.v, M_PI / 2, 1, 0.01, 1000);
 		setup = true;
 	}
 
@@ -121,7 +143,7 @@ void EnvironmentMap::draw_at(Vec3 position,
 		Vec3 eye = position + bases[i].forward;
 
 		mat4x4_look_at(
-			cube_views[i],
+			cube_views[i].v,
 			position.v,
 			eye.v,
 			bases[i].up.v
@@ -130,16 +152,19 @@ void EnvironmentMap::draw_at(Vec3 position,
 
 	assert(gl_get_error());
 
-	DrawParams draw_params = ShaderProgram::active()->draw_params;
+	auto shader = *ShaderProgram::active();
+	shader["u_proj_matrix"] << cube_proj;
 
 	int i = 0;
 	for(; i < 6; i++)
 	{
 		render_to(sides[i]);
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUniformMatrix4fv(draw_params.view_uniform, 1, GL_FALSE, (GLfloat*)cube_views[i]);
-		glUniformMatrix4fv(draw_params.proj_uniform, 1, GL_FALSE, (GLfloat*)cube_proj);
+		shader["u_view_matrix"] << cube_views[i];
+		// glUniformMatrix4fv(draw_params.view_uniform, 1, GL_FALSE, (GLfloat*)cube_views[i]);
+		// glUniformMatrix4fv(draw_params.proj_uniform, 1, GL_FALSE, (GLfloat*)cube_proj);
 
 		assert(gl_get_error());
 
@@ -159,7 +184,7 @@ void EnvironmentMap::draw_at(Vec3 position,
 }
 
 //------------------------------------------------------------------------------
-void EnvironmentMap::finish()
+void Cubemap::finish()
 {
 
 }

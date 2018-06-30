@@ -137,7 +137,7 @@ bool RendererGL::is_running()
 }
 //------------------------------------------------------------------------------
 
-void RendererGL::prepare()
+void RendererGL::prepare(int index)
 {
 	// Set the screen's framebuffer as the render target
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -160,7 +160,7 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 {
 	assert(gl_get_error());
 
-	prepare();
+	prepare(-1);
 
 	if(viewer)
 	{

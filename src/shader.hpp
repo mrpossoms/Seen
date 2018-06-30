@@ -2,6 +2,7 @@
 
 #include "core.h"
 #include "texture.hpp"
+#include "light.hpp"
 
 GLint link_program(const GLint* shaders, const char** attributes);
 GLint load_shader(const char* path, GLenum type);
@@ -248,6 +249,7 @@ struct ShaderProgram {
 	void operator<<(Material* m);
 	void operator<<(Viewer* v);
 	void operator<<(Positionable* p);
+	void operator<<(Light* l);
 
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();
@@ -255,6 +257,7 @@ struct ShaderProgram {
 	static ShaderProgram* compile(std::vector<Shader> shaders);
 
 	static ShaderProgram* builtin_sky();
+	static ShaderProgram* builtin_red();
 	static ShaderProgram* builtin_normal_colors();
 private:
 	std::map<std::string, ShaderParam*> _params;

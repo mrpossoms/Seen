@@ -177,16 +177,17 @@ Shader& Shader::blinn()
 	assert(has_input("normal_*"));
 
 	Variable* normal = NULL;
+
 	if (has_variable("l_normal", locals)) normal = has_variable("l_normal", locals);
 	else if (has_variable("normal_*", inputs)) normal = has_variable("normal_*", inputs);
+
+	assert(normal);
 
 	auto i_position = input("position_*");
 	auto o_color = output("color").as(Shader::vec(4));
 
 	auto u_light_position = parameter("u_light_position").as(vec(3));
-	auto u_light_diffuse = parameter("u_light_diffuse").as(vec(3));
-	auto u_light_specular = parameter("u_light_specular").as(vec(3));
-	auto u_light_ambient = parameter("u_light_ambient").as(vec(3));
+	auto u_light_power = parameter("u_light_power").as(vec(3));
 	auto u_view_pos = parameter("u_view_position").as(vec(3));
 
 	auto l_view_dir = local("l_view_dir").as(vec(3));
@@ -203,12 +204,12 @@ Shader& Shader::blinn()
 	next(l_intensity = normal->dot(l_light_dir).saturate());
 	next(l_half = (l_light_dir + l_view_dir).normalize());
 
-	next(l_light_color = u_light_ambient);
-	next(l_light_color += (l_intensity * u_light_diffuse) / l_light_dist);
+	next(l_light_color += u_light_power * 0.1f);
+	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 
 	next(l_ndh = normal->dot(l_half));
 	next(l_intensity = (l_ndh.saturate()).pow(16));
-	next(l_light_color += (l_intensity * u_light_specular) / l_light_dist);
+	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 	next(o_color["rgb"] *= l_light_color);
 
 	return *this;

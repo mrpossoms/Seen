@@ -5,7 +5,7 @@
 
 #include "camera.hpp"
 #include "geo.hpp"
-#include "envmap.hpp"
+#include "cubemap.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
 #include "renderergl.hpp"

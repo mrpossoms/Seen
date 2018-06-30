@@ -333,6 +333,34 @@ ShaderProgram* ShaderProgram::builtin_normal_colors()
 }
 //------------------------------------------------------------------------------
 
+ShaderProgram* ShaderProgram::builtin_red()
+{
+	const std::string prog_name = "default_vshred_fsh";
+
+	if (Shaders._program_cache.count(prog_name) == 1)
+	{
+		return &Shaders._program_cache[prog_name];
+	}
+
+	auto vsh = Shader::vertex("default_vsh");
+	auto fsh = Shader::fragment("red_fsh");
+
+	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	vsh.transformed()
+	   .viewed()
+	   .projected()
+	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
+
+	fsh.preceded_by(vsh);
+	auto color = fsh.output("color_" + fsh.suffix()).as(Shader::vec(4));
+
+	fsh.next(color["rgba"] = fsh.vec4(1, 0, 0, 1));
+
+	return seen::ShaderProgram::compile({ vsh, fsh });
+}
+//------------------------------------------------------------------------------
+
+
 ShaderProgram* ShaderProgram::use()
 {
 	_tex_counter = 0; // reset texture location
@@ -372,6 +400,12 @@ void ShaderProgram::operator<<(Positionable*)
 }
 //------------------------------------------------------------------------------
 
+void ShaderProgram::operator<<(Light* l)
+{
+	(*this)["u_light_position"] << l->position;
+	(*this)["u_light_power"] << l->power;
+}
+//--
 ShaderCache::ShaderCache()
 {
 

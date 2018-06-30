@@ -40,6 +40,14 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 }
 //------------------------------------------------------------------------------
 
+void destroy_framebuffer(Framebuffer& fbo)
+{
+	glDeleteTextures(1, &fbo.color);
+	glDeleteRenderbuffers(1, &fbo.depth);
+	glDeleteFramebuffers(1, &fbo.id);
+}
+//------------------------------------------------------------------------------
+
 Tex TextureFactory::create_texture(int width, int height, GLenum format, void* data)
 {
 	GLuint tex;

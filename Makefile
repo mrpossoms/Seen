@@ -3,7 +3,7 @@ $(eval OS := $(shell uname))
 CXX=g++
 CFLAGS=--std=c++11 -g -Wall -fPIC
 INC=-I/usr/local/include -I./src
-SRCS=camera.cpp envmap.cpp geo.cpp texture.cpp shader.cpp shader_factory.cpp shader_factory_expression.cpp renderergl.cpp listscene.cpp core.cpp custompass.cpp
+SRCS=camera.cpp cubemap.cpp geo.cpp texture.cpp shader.cpp shader_factory.cpp shader_factory_expression.cpp renderergl.cpp listscene.cpp core.cpp custompass.cpp
 LINK=-lode -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
 

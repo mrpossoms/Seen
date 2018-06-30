@@ -7,19 +7,22 @@ using namespace seen;
 
 CustomPass::CustomPass()
 {
-	std::function<void()> nop = [&](){};
+	std::function<void(int)> nop = [&](int){};
 	preparation_function = nop;
+
+	instances = 1;
 };
 
-CustomPass::CustomPass(std::function<void()> prep)
+CustomPass::CustomPass(std::function<void(int)> prep)
 {
 	preparation_function = prep;
+	instances = 1;
 };
 
-CustomPass::CustomPass(std::function<void()> prep, ...)
+CustomPass::CustomPass(std::function<void(int)> prep, ...)
 {
 	va_list args;
-	
+
 	va_start(args, prep);
 	while(true)
 	{
@@ -30,14 +33,15 @@ CustomPass::CustomPass(std::function<void()> prep, ...)
 	va_end(args);
 
 	preparation_function = prep;
+	instances = 1;
 };
 
 CustomPass::~CustomPass() {};
 
 
-void CustomPass::prepare()
+void CustomPass::prepare(int index)
 {
-	preparation_function();
+	preparation_function(index);
 }
 
 
@@ -48,28 +52,79 @@ void CustomPass::draw(Viewer* viewer)
 		std::cerr << "Something bad happend before drawing" << std::endl;
 	}
 
-	prepare();
+	if(!gl_get_error())
+	{
+		std::cerr << "ERROR: GL error produced in preparation_function" << std::endl;
+	}
+
+	for (int i = 0; i < instances; i++)
+	{
+		prepare(i);
+
+		if(viewer && i == 0)
+		{
+			//DrawParams& params = ShaderProgram::active()->draw_params;
+
+			//glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
+			//glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
+
+			ShaderProgram& shader = *ShaderProgram::active();
+			shader["u_view_matrix"] << viewer->_view;
+			shader["u_proj_matrix"] << viewer->_projection;
+
+		}
+
+		for(auto drawable : drawables)
+		{
+			drawable->draw(viewer);
+		}
+	}
+}
+
+
+ShadowPass::ShadowPass(int resolution)
+{
+	_cubemap = new Cubemap(resolution, Framebuffer::depth_flag);
+}
+
+
+ShadowPass::~ShadowPass()
+{
+	delete _cubemap;
+}
+
+
+void ShadowPass::prepare(int index)
+{
+	ShaderProgram::builtin_red()->use();
+}
+
+
+void ShadowPass::draw(Viewer* viewer)
+{
+	if (!gl_get_error())
+	{
+		std::cerr << "Something bad happend before drawing" << std::endl;
+	}
+
+	prepare(0);
 
 	if(!gl_get_error())
 	{
 		std::cerr << "ERROR: GL error produced in preparation_function" << std::endl;
 	}
 
-	if(viewer)
+	static std::vector<Drawable*> empty;
+	for (Light* l : lights)
 	{
-		//DrawParams& params = ShaderProgram::active()->draw_params;
+		ShaderProgram::builtin_red()->use();
 
-		//glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
-		//glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
+		_cubemap->draw_at(l->position, scene, empty);
 
-		ShaderProgram& shader = *ShaderProgram::active();
-		shader["u_view_matrix"] << viewer->_view;
-		shader["u_proj_matrix"] << viewer->_projection;
+		// bind default fbo
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	}
-
-	for(auto drawable : drawables)
-	{
-		drawable->draw(viewer);
+		// TODO - render the normal scene
+		scene->draw(viewer);
 	}
 }

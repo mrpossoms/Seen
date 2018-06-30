@@ -229,8 +229,8 @@ Plane::Plane(float size)
 //------------------------------------------------------------------------------
 Plane::Plane(float size, int subdivisions)
 {
-	float dx = size / (float)subdivisions;
-	float dy = size / (float)subdivisions;
+	float dx = 1 / (float)subdivisions;
+	float dy = 1 / (float)subdivisions;
 
 	for (int i = 0; i < subdivisions; i++)
 	for (int j = 0; j < subdivisions; j++)
@@ -240,7 +240,7 @@ Plane::Plane(float size, int subdivisions)
 			.position = { x * size, 0, y * size },
 			.normal = { 0, 1, 0 },
 			.tangent = { 1, 0, 0 },
-			.texture = { dx * i, dy * j, 0 }
+			.texture = { dx * i * size, dy * j * size, 0 }
 		};
 
 		vertices.push_back(v);

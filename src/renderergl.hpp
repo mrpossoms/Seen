@@ -17,7 +17,7 @@ public:
 		int gl_version_major=0,
 		int gl_version_minor=0);
 
-	void prepare();
+	void prepare(int index);
 
 	bool is_running();
 
