@@ -8,10 +8,10 @@ std::vector<seen::Drawable*>& seen::ListScene::drawables()
 }
 
 
-void ListScene::draw(Viewer* viewer)
+void ListScene::draw()
 {
 	for (Drawable* drawable : _drawables)
 	{
-		drawable->draw(viewer);
+		drawable->draw();
 	}
 }

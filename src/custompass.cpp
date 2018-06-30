@@ -74,9 +74,9 @@ void CustomPass::draw(Viewer* viewer)
 
 		}
 
-		for(auto drawable : drawables)
+		for(auto drawable : scene->drawables())
 		{
-			drawable->draw(viewer);
+			drawable->draw();
 		}
 	}
 }
@@ -120,11 +120,11 @@ void ShadowPass::draw(Viewer* viewer)
 		ShaderProgram::builtin_red()->use();
 
 		_cubemap->draw_at(l->position, scene, empty);
-
-		// bind default fbo
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// TODO - render the normal scene
-		scene->draw(viewer);
 	}
+}
+
+
+void ShadowPass::finish()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

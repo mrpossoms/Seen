@@ -174,12 +174,12 @@ void Cubemap::draw_at(Vec3 position,
 			if (std::find(excluding.begin(), excluding.end(), drawable) != excluding.end())
 				continue;
 
-			drawable->draw(NULL);
+			drawable->draw();
 		}
 
 		assert(gl_get_error());
+		break;
 	}
-
 	assert(gl_get_error());
 }
 

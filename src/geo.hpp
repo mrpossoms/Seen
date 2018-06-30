@@ -68,7 +68,7 @@ public:
 	Model(Mesh* mesh);
 	~Model();
 
-	void draw(Viewer* viewer);
+	void draw();
 private:
 	GLuint vbo, ibo;
 	unsigned int vertices, indices;

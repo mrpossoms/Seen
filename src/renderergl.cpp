@@ -156,7 +156,7 @@ void RendererGL::prepare(int index)
 }
 //------------------------------------------------------------------------------
 
-void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding)
+void RendererGL::draw(Viewer* viewer, std::vector<RenderingPass*> passes)
 {
 	assert(gl_get_error());
 
@@ -184,14 +184,11 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 		}
 	}
 
-	if (scene)
-	for(auto drawable : scene->drawables())
+	for(auto pass : passes)
 	{
-		// skip it drawable is in excluding
-		if (std::find(excluding.begin(), excluding.end(), drawable) != excluding.end())
-			continue;
-
-		drawable->draw(viewer);
+		pass->prepare(0);
+		pass->draw(viewer);
+		pass->finish();
 	}
 
 	assert(gl_get_error());
@@ -204,14 +201,6 @@ void RendererGL::draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excl
 	mouse_moved(xpos, ypos, xpos - mouse_last_x, ypos - mouse_last_y);
 	mouse_last_x = xpos;
 	mouse_last_y = ypos;
-}
-//------------------------------------------------------------------------------
-
-void RendererGL::draw(Viewer* viewer, Scene* scene)
-{
-	std::vector<Drawable*> empty;
-
-	draw(viewer, scene, empty);
 }
 //------------------------------------------------------------------------------
 

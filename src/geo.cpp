@@ -630,7 +630,7 @@ Model::~Model()
 }
 //------------------------------------------------------------------------------
 
-void Model::draw(Viewer* viewer)
+void Model::draw()
 {
 	assert(gl_get_error());
 

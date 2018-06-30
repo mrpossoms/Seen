@@ -12,7 +12,7 @@ public:
 	~ListScene() = default;
 
 	std::vector<Drawable*>& drawables();
-	void draw(Viewer* viewer);
+	void draw();
 
 private:
 	std::vector<Drawable*> _drawables;

@@ -17,8 +17,8 @@ public:
 	~CustomPass();
 
 	void prepare(int index);
-	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) {}
 	void draw(Viewer* viewer);
+	void finish() {}
 
 	int instances;
 
@@ -33,10 +33,10 @@ public:
 	~ShadowPass();
 
 	void prepare(int index);
-	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) {}
 	void draw(Viewer* viewer);
+	void finish();
 
-	Scene* scene;
+	// Scene* scene;
 	std::vector<Light*> lights;
 
 private:

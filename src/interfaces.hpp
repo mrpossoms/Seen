@@ -50,7 +50,7 @@ public:
 class Drawable
 {
 public:
-	virtual void draw(Viewer* viewer) = 0;
+	virtual void draw() = 0;
 };
 
 
@@ -65,25 +65,27 @@ class RenderBatch : public std::vector<Drawable*>
 
 };
 
-class RenderingPass : public Drawable
+class RenderingPass
 {
 public:
 	virtual void prepare(int index) {};
-	virtual void draw(Viewer* viewer) {};
-	virtual void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding) = 0;
+	virtual void draw(Viewer* viewer) = 0;
 	virtual void finish() {};
 
 	/**
 	 * @brief used to identify a rendering pass for shader set selection
 	 */
 	int id;
+
+	Scene* scene;
 };
 
-class Renderer : public RenderingPass
+class Renderer
 {
 public:
 	virtual bool is_running() = 0;
 	virtual bool capture(std::string path) = 0;
+	virtual void draw(Viewer* viewer, std::vector<RenderingPass*> passes) = 0;
 };
 
 }
