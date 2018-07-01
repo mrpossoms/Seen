@@ -27,6 +27,7 @@ public:
 
 	Vec3 left();
 	Vec3 forward();
+	Vec3 up();
 	// mat4x4 view();
 	// mat4x4 projection();
 

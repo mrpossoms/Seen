@@ -1,5 +1,4 @@
 #include "renderergl.hpp"
-#include "camera.hpp"
 #include "texture.hpp"
 #include "geo.hpp"
 #include "shader.hpp"
@@ -276,7 +275,72 @@ bool RendererGL::capture(std::string path)
 
 	return true;
 }
+//------------------------------------------------------------------------------
 
+void RendererGL::use_free_cam(Camera& cam)
+{
+	mouse_moved = [&](double x, double y, double dx, double dy)
+	{
+		static bool skip;
+
+		if (!skip)
+		{
+			skip = true;
+			return;
+		}
+
+		Quat pitch, yaw, roll;
+		Vec3 forward, left, up;
+
+		auto q = cam.orientation();
+
+		pitch.from_axis_angle(VEC3_LEFT.v[0], VEC3_LEFT.v[1], VEC3_LEFT.v[2], dy * 0.01);
+		yaw.from_axis_angle(VEC3_UP.v[0], VEC3_UP.v[1], VEC3_UP.v[2], dx * 0.01);
+		pitch = pitch * yaw;
+		q = pitch * q;
+
+		cam.orientation(q);
+	};
+
+	key_pressed = [&](int key)
+	{
+		Vec3 new_pos = cam.position();
+		Quat roll, q = cam.orientation();
+
+		switch (key)
+		{
+			case GLFW_KEY_S:
+				new_pos -= cam.forward() * 0.1;
+				break;
+			case GLFW_KEY_W:
+				new_pos += cam.forward() * 0.1;
+				break;
+			case GLFW_KEY_A:
+				new_pos += cam.left() * 0.1;
+				break;
+			case GLFW_KEY_D:
+				new_pos -= cam.left() * 0.1;
+				break;
+			case GLFW_KEY_Q:
+				roll.from_axis_angle(0, 0, 1, -0.05);
+				break;
+			case GLFW_KEY_E:
+				roll.from_axis_angle(0, 0, 1, 0.05);
+				break;
+			case GLFW_KEY_SPACE:
+				new_pos += cam.up() * 0.1;
+				break;
+			case GLFW_KEY_LEFT_SHIFT:
+			case GLFW_KEY_LEFT_CONTROL:
+				new_pos -= cam.up() * 0.1;
+				break;
+		}
+
+		roll = roll * q;
+		cam.orientation(roll);
+		cam.position(new_pos);
+	};
+}
 //------------------------------------------------------------------------------
 
 void RendererGL::clear_color(float r, float g, float b, float a)

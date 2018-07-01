@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core.h"
-#include <functional>
+#include "camera.hpp"
 
 namespace seen
 {
@@ -24,6 +24,8 @@ public:
 	void finish();
 	void clear_color(float r, float g, float b, float a);
 	bool capture(std::string path);
+
+	void use_free_cam(Camera& cam);
 
 	void draw(Viewer* viewer, std::vector<RenderingPass*> passes);
 

@@ -117,8 +117,6 @@ void ShadowPass::draw(Viewer* viewer)
 	static std::vector<Drawable*> empty;
 	for (Light* l : lights)
 	{
-		ShaderProgram::builtin_red()->use();
-
 		_cubemap->draw_at(l->position, scene, empty);
 	}
 }

@@ -69,6 +69,18 @@ Vec3 Camera::forward()
 }
 
 
+Vec3 Camera::up()
+{
+	vec4 out;
+
+	quat q;
+	quat_invert(q, _orientation.v);
+	quat_mul_vec3(out, q, VEC3_DOWN.v);
+
+	return Vec3(-out[0], -out[1], -out[2]);
+}
+
+
 Positionable* Camera::position(Vec3& pos)
 {
 	_position = pos;
