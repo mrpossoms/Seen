@@ -30,7 +30,7 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 	{
 		glGenRenderbuffers(1, &fbo.depth);
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo.depth);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo.depth);
 	}
 

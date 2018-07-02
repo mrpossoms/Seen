@@ -247,7 +247,7 @@ Shader::Expression Shader::Expression::operator[] (std::string swizzel)
 }
 //------------------------------------------------------------------------------
 
-const char* Shader::Expression::cstr() { return str.c_str(); }
+const char* Shader::Code::cstr() { return str.c_str(); }
 //------------------------------------------------------------------------------
 
 Shader::Variable::Variable(VarRole role, std::string type, std::string name) : Expression(name)
@@ -312,6 +312,37 @@ Shader::Expression Shader::Variable::at_index(int i)
 Shader& Shader::next(Shader::Expression e)
 {
 	statements.push_back(e);
+	return *this;
+}
+//------------------------------------------------------------------------------
+
+Shader::Block& Shader::next_if(Shader::Expression e)
+{
+	Shader::Block block;
+	Expression evaluation = { "if (" + e.str + ") {\n" };
+	block.statements.push_back(evaluation);
+	statements.push_back(block);
+
+	return (Shader::Block&)statements[statements.size() - 1];
+}
+//------------------------------------------------------------------------------
+
+void Shader::Block::build_str()
+{
+	str = "";
+	for (auto statement : statements)
+	{
+		str += "\t" + statement.str;
+	}
+	str += "}\n";
+}
+//------------------------------------------------------------------------------
+
+Shader::Block& Shader::Block::next(Expression e)
+{
+	statements.push_back(e + ";");
+	build_str();
+
 	return *this;
 }
 //------------------------------------------------------------------------------

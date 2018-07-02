@@ -106,6 +106,7 @@ Shader& Shader::compute_binormal()
 	assert(norm && tang);
 
 	next(o_binormal = norm->cross(*tang));
+	//next_if( *norm == *tang ).next(*norm = *tang);
 
 	return *this;
 }

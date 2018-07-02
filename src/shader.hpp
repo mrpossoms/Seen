@@ -77,8 +77,12 @@ struct Shader {
 		VERT_TANGENT  = 8,
 	};
 
-	struct Expression {
+	struct Code {
 		std::string str;
+		const char* cstr();
+	};
+
+	struct Expression : public Code {
 
 		Expression(std::string s);
 		Expression() = default;
@@ -134,7 +138,15 @@ struct Shader {
 		Expression mix(std::vector<Expression> params, Expression percent);
 		Expression saturate();
 
-		const char* cstr();
+	};
+
+	struct Block : public Code {
+		std::vector<Code> statements;
+
+		Block& next(Expression e);
+
+	private:
+		void build_str();
 	};
 
 	struct Variable : public Expression {
@@ -168,7 +180,7 @@ struct Shader {
 	std::string name;
 
 	std::vector<Variable> inputs, outputs, parameters, locals;
-	std::vector<Expression> statements;
+	std::vector<Code> statements;
 
 	Shader(std::string name, GLenum type);
 	~Shader();
@@ -196,6 +208,7 @@ struct Shader {
 	Shader& color_textured();
 	Shader& blinn();
 	Shader& normal_map();
+	
 
 	Expression vec2(float x, float y);
 	Expression vec3(float x, float y, float z);
@@ -213,6 +226,7 @@ struct Shader {
 	GLint compile();
 
 	Shader& next(Expression e);
+	Block& next_if(Expression e);
 
 	static Shader vertex(std::string name);
 	static Shader tessalation_control(std::string name);
