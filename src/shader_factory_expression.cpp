@@ -316,14 +316,14 @@ Shader& Shader::next(Shader::Expression e)
 }
 //------------------------------------------------------------------------------
 
-Shader::Block& Shader::next_if(Shader::Expression e)
+Shader& Shader::next_if(Shader::Expression e,
+                               std::function<void (void)> then)
 {
-	Shader::Block block;
-	Expression evaluation = { "if (" + e.str + ") {\n" };
-	block.statements.push_back(evaluation);
-	statements.push_back(block);
+	statements.push_back({ "if (" + e.str + ") {" });
+	then();
+	statements.push_back({ "}" });
 
-	return (Shader::Block&)statements[statements.size() - 1];
+	return *this;
 }
 //------------------------------------------------------------------------------
 
@@ -340,10 +340,7 @@ void Shader::Block::build_str()
 
 Shader::Block& Shader::Block::next(Expression e)
 {
-	statements.push_back(e + ";");
-	build_str();
-
-	return *this;
+		return *this;
 }
 //------------------------------------------------------------------------------
 

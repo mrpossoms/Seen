@@ -80,6 +80,8 @@ struct Shader {
 	struct Code {
 		std::string str;
 		const char* cstr();
+
+		
 	};
 
 	struct Expression : public Code {
@@ -226,7 +228,7 @@ struct Shader {
 	GLint compile();
 
 	Shader& next(Expression e);
-	Block& next_if(Expression e);
+	Shader& next_if(Expression e, std::function<void (void)> then);
 
 	static Shader vertex(std::string name);
 	static Shader tessalation_control(std::string name);

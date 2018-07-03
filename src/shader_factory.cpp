@@ -107,6 +107,9 @@ Shader& Shader::compute_binormal()
 
 	next(o_binormal = norm->cross(*tang));
 	//next_if( *norm == *tang ).next(*norm = *tang);
+	next_if( *norm == *tang, [&]{
+		next(*norm = *tang);
+	});
 
 	return *this;
 }
@@ -448,7 +451,14 @@ std::string Shader::code()
 
 	for (auto statement : statements)
 	{
-		src << "\t" << statement.str << ";" << std::endl;
+		src << "\t" << statement.str; // << ";" << std::endl;
+		const char c = statement.str[statement.str.length() - 1];
+		if (c != '{' && c != '}')
+		{
+			src << ";";
+		}
+		
+		src << std::endl;
 	}
 	src << "}" << std::endl;
 
