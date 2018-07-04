@@ -7,6 +7,8 @@ namespace seen
 {
 
 class Cubemap : public RenderingPass {
+	friend struct ShaderParam;
+
 public:
 	Cubemap(int size);
 	Cubemap(int size, int fbo_flags);

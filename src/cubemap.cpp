@@ -76,10 +76,12 @@ void Cubemap::render_to(GLenum face)
 	assert(gl_get_error());
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _map);
+	assert(gl_get_error());
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer.id);
+	assert(gl_get_error());
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, _map, 0);
-	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 
+	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
 	assert(gl_get_error());
 }
 //------------------------------------------------------------------------------
@@ -178,7 +180,6 @@ void Cubemap::draw_at(Vec3 position,
 		}
 
 		assert(gl_get_error());
-		break;
 	}
 	assert(gl_get_error());
 }

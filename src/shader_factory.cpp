@@ -278,16 +278,16 @@ Shader& Shader::shadow_mapped()
 
 	auto u_light_view = parameter("u_light_view").as(mat(4));
 	auto u_light_proj = parameter("u_light_proj").as(mat(4));
-	auto u_shadow_map = parameter("u_shadow_map").as(cubemap());
+	auto u_shadow_cube = parameter("u_shadow_cube").as(cubemap());
 	auto u_light_position = parameter("u_light_position").as(vec(3));
 
-	next(l_shadowed = 0.0);
+	next(l_shadowed = 1.0);
 	next(l_projected = u_light_proj * u_light_view * l_pos_trans);
 	next(l_calculated_dist = call("distance", { l_pos_trans["xyz"], u_light_position }));
-	//next(l_sampled_dist = call("texture", { u_shadow_map, l_projected["xyz"] })["r"]);
-	next_if(l_calculated_dist > l_sampled_dist, [&]{
-		next(l_shadowed = 1.0);
-	});
+	next(l_sampled_dist = call("texture", { u_shadow_cube, u_light_position - position })["w"]);
+	//next_if(l_calculated_dist > l_sampled_dist, [&]{
+		next(l_shadowed = l_sampled_dist);
+	//});
 
 
 	return *this;

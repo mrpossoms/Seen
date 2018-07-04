@@ -406,6 +406,13 @@ void ShaderProgram::operator<<(Light* l)
 	(*this)["u_light_power"] << l->power;
 }
 //--
+
+void ShaderProgram::operator<<(ShadowPass* s)
+{
+	(*this)["u_shadow_cube"] << s->_cubemap;
+}
+//------------------------------------------------------------------------------
+
 ShaderCache::ShaderCache()
 {
 
@@ -577,5 +584,18 @@ void ShaderParam::operator<<(Tex t)
 	glActiveTexture(GL_TEXTURE0 + _program->_tex_counter);
 	glBindTexture(GL_TEXTURE_2D, t);
 	glUniform1i(_uniform, _program->_tex_counter);
+	_program->_tex_counter++;
+}
+//------------------------------------------------------------------------------
+
+void ShaderParam::operator<<(Cubemap* c)
+{
+	//return; // TODO
+	glActiveTexture(GL_TEXTURE0 + _program->_tex_counter);
+	assert(gl_get_error());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, c->_map);
+	assert(gl_get_error());
+	glUniform1i(_uniform, _program->_tex_counter);
+	assert(gl_get_error());
 	_program->_tex_counter++;
 }

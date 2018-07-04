@@ -28,6 +28,8 @@ public:
 
 class ShadowPass : public RenderingPass
 {
+	friend struct ShaderProgram;
+
 public:
 	ShadowPass(int resolution=1024);
 	~ShadowPass();

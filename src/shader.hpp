@@ -3,6 +3,7 @@
 #include "core.h"
 #include "texture.hpp"
 #include "light.hpp"
+#include "custompass.hpp"
 
 GLint link_program(const GLint* shaders, const char** attributes);
 GLint load_shader(const char* path, GLenum type);
@@ -52,6 +53,7 @@ struct ShaderParam {
 	void operator<<(mat4x4_t& m);
 	void operator<<(GLint i);
 	void operator<<(Tex t);
+	void operator<<(Cubemap* c);
 private:
 	ShaderProgram* _program;
 	GLint _uniform;
@@ -270,6 +272,7 @@ struct ShaderProgram {
 	void operator<<(Viewer* v);
 	void operator<<(Positionable* p);
 	void operator<<(Light* l);
+	void operator<<(ShadowPass* s);
 
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();

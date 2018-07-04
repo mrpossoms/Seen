@@ -185,7 +185,7 @@ void RendererGL::draw(Viewer* viewer, std::vector<RenderingPass*> passes)
 
 	for(auto pass : passes)
 	{
-		pass->prepare(0);
+		//pass->prepare(0);
 		pass->draw(viewer);
 		pass->finish();
 	}
