@@ -171,7 +171,9 @@ struct Shader {
 		Expression operator[] (std::string lookup);
 		Expression operator= (Expression e);
 		Expression operator= (Variable v);
+		Expression operator= (float f);
 
+		static void copy(Variable& src, Variable& dst);
 	private:
 		std::map<std::string, Variable> properties;
 		int array_size;
@@ -210,6 +212,7 @@ struct Shader {
 	Shader& color_textured();
 	Shader& blinn();
 	Shader& normal_map();
+	Shader& shadow_mapped();
 	
 
 	Expression vec2(float x, float y);
@@ -239,6 +242,7 @@ struct Shader {
 	static std::string mat(int rank);
 	static std::string vec(int rank);
 	static std::string tex(int rank);
+	static std::string cubemap();
 	static Expression mat(int rank, const char* fmt, ...);
 	static Expression vec(int rank, const char* fmt, ...);
 

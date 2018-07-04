@@ -196,6 +196,7 @@ Shader::Expression Shader::Expression::normalize()
 
 Shader::Expression Shader::Expression::dot(Shader::Expression e)
 {
+	assert(this->str.length() > 0);
 	return { "dot(" + this->str + ", " + e.str + ")" };
 }
 //------------------------------------------------------------------------------
@@ -505,4 +506,19 @@ Shader::Expression Shader::Variable::operator= (Shader::Expression e)
 Shader::Expression Shader::Variable::operator= (Shader::Variable e)
 {
 	return { str + " = " + e.str };
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::Variable::operator= (float f)
+{
+	return { str + " = " + std::to_string(f) };
+}
+//------------------------------------------------------------------------------
+
+void Shader::Variable::copy(Shader::Variable& src, Shader::Variable& dst)
+{
+	dst.str = src.str;
+	dst.type = src.type;
+	dst.name = src.name;
+	dst.role = src.role;
 }

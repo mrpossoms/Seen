@@ -18,6 +18,9 @@ std::string Shader::vec(int rank)
 }
 //------------------------------------------------------------------------------
 
+std::string Shader::cubemap() { return "samplerCube"; }
+//------------------------------------------------------------------------------
+
 std::string Shader::integer() { return "int"; }
 //------------------------------------------------------------------------------
 
@@ -106,11 +109,7 @@ Shader& Shader::compute_binormal()
 	assert(norm && tang);
 
 	next(o_binormal = norm->cross(*tang));
-	//next_if( *norm == *tang ).next(*norm = *tang);
-	next_if( *norm == *tang, [&]{
-		next(*norm = *tang);
-	});
-
+	
 	return *this;
 }
 //------------------------------------------------------------------------------
@@ -180,12 +179,18 @@ Shader& Shader::blinn()
 {
 	assert(has_input("normal_*"));
 
-	Variable* normal = NULL;
+	Variable normal;
 
-	if (has_variable("l_normal", locals)) normal = has_variable("l_normal", locals);
-	else if (has_variable("normal_*", inputs)) normal = has_variable("normal_*", inputs);
+	if (has_variable("l_normal", locals))
+	{
+		Variable::copy(*has_variable("l_normal", locals), normal);
+	}
+	else if (has_variable("normal_*", inputs))
+	{
+		Variable::copy(*has_variable("normal_*", inputs), normal);
+	}
 
-	assert(normal);
+	//assert(normal);
 
 	auto i_position = input("position_*");
 	auto o_color = output("color").as(Shader::vec(4));
@@ -205,14 +210,26 @@ Shader& Shader::blinn()
 	next(l_view_dir = (u_view_pos - i_position).normalize());
 	next(l_light_dist = call("distance", {i_position, u_light_position}));
 	next(l_light_dir = (u_light_position - i_position).normalize());
-	next(l_intensity = normal->dot(l_light_dir).saturate());
+	next(l_intensity = normal.dot(l_light_dir).saturate());
+
+	if (has_variable("l_shadowed", locals))
+	{
+		next(l_intensity *= local("l_shadowed"));
+	}
+
 	next(l_half = (l_light_dir + l_view_dir).normalize());
 
 	next(l_light_color += u_light_power * 0.1f);
 	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 
-	next(l_ndh = normal->dot(l_half));
+	next(l_ndh = normal.dot(l_half));
 	next(l_intensity = (l_ndh.saturate()).pow(16));
+
+	if (has_variable("l_shadowed", locals))
+	{
+		next(l_intensity *= local("l_shadowed"));
+	}
+
 	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 	next(o_color["rgb"] *= l_light_color);
 
@@ -243,6 +260,35 @@ Shader& Shader::normal_map()
 	next(l_basis = mat3(i_tangent, i_binormal, i_normal));
 	next(l_norm_sample = call("texture", { u_normal_sampler, i_texcoord["xy"]})["xyz"] * 2.0 - 1.0);
 	next(l_normal = l_basis * l_norm_sample);
+
+	return *this;
+}
+//------------------------------------------------------------------------------
+
+Shader& Shader::shadow_mapped()
+{
+	assert(has_input("position_*"));
+
+	auto position = input("position_*");
+	auto l_projected = local("l_projected").as(vec(4));
+	auto l_pos_trans = local("l_pos_trans").as(vec(4));
+	auto l_calculated_dist = local("l_calc_dist").as(vec(1));
+	auto l_sampled_dist = local("l_samp_dist").as(vec(1));
+	auto l_shadowed = local("l_shadowed").as(vec(1));
+
+	auto u_light_view = parameter("u_light_view").as(mat(4));
+	auto u_light_proj = parameter("u_light_proj").as(mat(4));
+	auto u_shadow_map = parameter("u_shadow_map").as(cubemap());
+	auto u_light_position = parameter("u_light_position").as(vec(3));
+
+	next(l_shadowed = 0.0);
+	next(l_projected = u_light_proj * u_light_view * l_pos_trans);
+	next(l_calculated_dist = call("distance", { l_pos_trans["xyz"], u_light_position }));
+	//next(l_sampled_dist = call("texture", { u_shadow_map, l_projected["xyz"] })["r"]);
+	next_if(l_calculated_dist > l_sampled_dist, [&]{
+		next(l_shadowed = 1.0);
+	});
+
 
 	return *this;
 }
