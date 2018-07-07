@@ -53,6 +53,137 @@ Shader& Shader::vertex(int feature_flags)
 
 	return *this;
 }
+
+Shader::Variable& Shader::input(std::string name)
+{
+	Shader::Variable* input = has_variable(name, inputs);
+
+	if (input) return *input;
+
+	Shader::Variable var = { VAR_IN, "", name };
+	inputs.push_back(var);
+
+	return inputs[inputs.size() - 1];
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable& Shader::output(std::string name)
+{
+	Shader::Variable* output = has_variable(name, outputs);
+
+	if (output) return *output;
+
+	Shader::Variable var = { VAR_OUT, "", name };
+	outputs.push_back(var);
+
+	return outputs[outputs.size() - 1];
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable& Shader::parameter(std::string name)
+{
+	Shader::Variable* parameter = has_variable(name, parameters);
+
+	if (parameter) return *parameter;
+
+	Shader::Variable var = { VAR_PARAM, "", name };
+	parameters.push_back(var);
+
+	return parameters[parameters.size() - 1];
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable& Shader::local(std::string name)
+{
+	Shader::Variable* local = has_variable(name, locals);
+
+	if (local) return *local;
+
+	Shader::Variable var = { VAR_LOCAL, "", name };
+	locals.push_back(var);
+
+	return locals[locals.size() - 1];
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& vars)
+{
+	bool wild = false;
+
+	if (name[0] == '*')
+	{
+		wild = true;
+		name = name.substr(1);
+	}
+	else if (name[name.length() - 1] == '*')
+	{
+		wild = true;
+		name = name.substr(0, name.length() - 1);
+	}
+
+	for (int i = vars.size(); i--;)
+	{
+		if (wild)
+		{
+			if (vars[i].name.find(name) != std::string::npos)
+			{
+				return &vars[i];
+			}
+		}
+		else if (vars[i].name == name && vars[i].name.length() == name.length())
+		{
+			return &vars[i];
+		}
+	}
+
+	return NULL;
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable* Shader::has_input(std::string name)
+{
+	return has_variable(name, inputs);
+}
+//------------------------------------------------------------------------------
+
+Shader::Variable* Shader::has_output(std::string name)
+{
+	return has_variable(name, outputs);
+}
+
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::vec2(float x, float y)
+{
+	return call("vec2", {
+		{std::to_string(x)}, {std::to_string(y)}
+	});
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::vec3(float x, float y, float z)
+{
+	return call("vec3", {
+		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}
+	});
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::vec4(float x, float y, float z, float w)
+{
+	return call("vec4", {
+		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}, {std::to_string(w)}
+	});
+}
+//------------------------------------------------------------------------------
+
+Shader::Expression Shader::mat3(Shader::Expression c0, Shader::Expression c1, Shader::Expression c2)
+{
+	return call("mat3", {
+		c0, c1, c2
+	});
+}
+
 //------------------------------------------------------------------------------
 
 Shader& Shader::preceded_by(Shader& previous)
@@ -165,6 +296,15 @@ Shader& Shader::projected()
 }
 //------------------------------------------------------------------------------
 
+Shader& Shader::color_white()
+{
+	auto color = output("color").as(Shader::vec(4));
+	next(color = vec4(1, 1, 1, 1));
+
+	return *this;
+}
+//------------------------------------------------------------------------------
+
 Shader& Shader::color_textured()
 {
 	auto u_color_sampler = parameter("u_color_sampler").as(tex(2));
@@ -239,7 +379,7 @@ Shader& Shader::blinn()
 }
 //------------------------------------------------------------------------------
 
-Shader& Shader::normal_map()
+Shader& Shader::normal_mapped()
 {
 	assert(has_input("normal_*"));
 	assert(has_input("tangent_*"));
@@ -277,8 +417,6 @@ Shader& Shader::shadow_mapped()
 	auto l_sampled_dist = local("l_samp_dist").as(vec(1));
 	auto l_lit = local("l_lit").as(vec(1));
 	auto l_light_dir = local("l_light_dir").as(vec(3));
-	auto l_test = local("l_test").as(vec(1));
-
 
 	auto u_shadow_cube = parameter("u_shadow_cube").as(cubemap());
 	auto u_light_position = parameter("u_light_position").as(vec(3));
@@ -288,11 +426,69 @@ Shader& Shader::shadow_mapped()
 	next(l_calculated_dist = l_light_dir.length());
 	next(l_sampled_dist = call("texture", { u_shadow_cube, l_light_dir })["r"]);
 
-	seen::Shader::Expression one = { "1.0" };
-	next(l_test = l_calculated_dist - l_sampled_dist);
 	next_if(l_calculated_dist - l_sampled_dist > 0.01, [&]{
 		next(l_lit = 0);
 	});
+
+
+	return *this;
+}
+//------------------------------------------------------------------------------
+
+Shader& Shader::shadow_mapped_vsm()
+{
+	assert(has_input("position_*"));
+
+	auto position = input("position_*");
+	auto l_projected = local("l_projected").as(vec(4));
+	auto l_depth = local("l_depth").as(vec(1));
+	auto l_lit = local("l_lit").as(vec(1));
+	auto l_light_dir = local("l_light_dir").as(vec(3));
+
+	auto l_query = local("l_query").as(vec(2));
+	auto l_E_x2 = local("l_E_x2").as(vec(1));
+	auto l_Ex_2 = local("l_Ex_2").as(vec(1));
+	auto l_var = local("l_var").as(vec(1));
+	auto l_md = local("l_md").as(vec(1));
+	auto l_md_2 = local("l_mD_2").as(vec(1));
+	auto l_p = local("l_p").as(vec(1));
+
+	auto u_shadow_cube = parameter("u_shadow_cube").as(cubemap());
+	auto u_light_position = parameter("u_light_position").as(vec(3));
+
+	seen::Shader::Expression one = { "1.f" };
+
+	next(l_lit = 1.0);
+	next(l_light_dir = position["xyz"] - u_light_position );
+	next(l_query = call("texture", { u_shadow_cube, l_light_dir})["rg"]);
+
+	next(l_depth = l_light_dir.length());
+	next(l_E_x2 = l_query["y"]);
+	next(l_Ex_2 = l_query["x"].pow(2));
+	next(l_var = l_E_x2 - l_Ex_2);
+	next(l_md = l_query["x"] - l_depth);
+	next(l_md_2 = l_md.pow(2));
+	next(l_p = l_var + l_md_2);
+	next(l_p = l_var / l_p);
+
+	next_if(l_depth > l_query["x"], [&]{
+		next(l_lit = l_p);
+	});
+
+	// next(l_d2 = l_light_dir.length());
+	// next(l_d1 = l_query["r"]);
+	// next(l_m1 = l_p * l_d2 + ( one - l_p) * l_d1);
+	// next(l_m2 = l_p * l_d2.pow(2) + ( one - l_p) * l_query["g"]);
+
+	// next(l_test = l_d2 - l_d1);
+	// next_if(l_d2 >= l_m1, [&]{
+	// 	next(l_sig2 = l_p - l_p.pow(2));
+	// 	next(l_sig2 *= (l_d2 - l_d1).pow(2));
+	//
+	// 	next(l_pmax = l_sig2 + (l_m1 - l_d2).pow(2));
+	// 	next(l_pmax = l_sig2 / l_pmax);
+	// 	next(l_lit *= l_pmax);
+	// });
 
 
 	return *this;

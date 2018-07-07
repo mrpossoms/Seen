@@ -333,9 +333,9 @@ ShaderProgram* ShaderProgram::builtin_normal_colors()
 }
 //------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::builtin_red()
+ShaderProgram* ShaderProgram::builtin_shadow_depth()
 {
-	const std::string prog_name = "default_vshred_fsh";
+	const std::string prog_name = "default_vshshadow_depth_fsh";
 
 	if (Shaders._program_cache.count(prog_name) == 1)
 	{
@@ -343,7 +343,7 @@ ShaderProgram* ShaderProgram::builtin_red()
 	}
 
 	auto vsh = Shader::vertex("default_vsh");
-	auto fsh = Shader::fragment("red_fsh");
+	auto fsh = Shader::fragment("shadow_depth_fsh");
 
 	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
 	vsh.transformed()
@@ -353,10 +353,11 @@ ShaderProgram* ShaderProgram::builtin_red()
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
 	fsh.preceded_by(vsh);
-	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(1));
+	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(4));
 
 	//fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
-	fsh.next(depth = fsh.input("position_*").length());
+	fsh.next(depth["r"] = fsh.input("position_*").length());
+	fsh.next(depth["g"] = depth["r"] * depth["r"]);
 
 	return seen::ShaderProgram::compile({ vsh, fsh });
 }

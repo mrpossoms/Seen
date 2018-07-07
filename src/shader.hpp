@@ -83,7 +83,7 @@ struct Shader {
 		std::string str;
 		const char* cstr();
 
-		
+
 	};
 
 	struct Expression : public Code {
@@ -212,11 +212,13 @@ struct Shader {
 	Shader& emit_position();
 	Shader& pass_through(std::string name);
 
+	Shader& color_white();
 	Shader& color_textured();
 	Shader& blinn();
-	Shader& normal_map();
+	Shader& normal_mapped();
 	Shader& shadow_mapped();
-	
+	Shader& shadow_mapped_vsm();
+
 
 	Expression vec2(float x, float y);
 	Expression vec3(float x, float y, float z);
@@ -282,7 +284,7 @@ struct ShaderProgram {
 	static ShaderProgram* compile(std::vector<Shader> shaders);
 
 	static ShaderProgram* builtin_sky();
-	static ShaderProgram* builtin_red();
+	static ShaderProgram* builtin_shadow_depth();
 	static ShaderProgram* builtin_normal_colors();
 private:
 	std::map<std::string, ShaderParam*> _params;

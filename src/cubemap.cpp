@@ -182,7 +182,7 @@ void Cubemap::draw_at(Vec3 position,
 
 			mat4x4_t I4;
 			mat4x4_identity(I4.v);
-			shader["u_world_matrix"] << I4; 
+			shader["u_world_matrix"] << I4;
 			drawable->draw();
 		}
 
