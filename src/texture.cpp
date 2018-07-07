@@ -16,7 +16,7 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 
 	if(flags & Framebuffer::color_flag)
 	{
-		fbo.color = create_texture(width, height, GL_RGB, NULL);
+		fbo.color = create_texture(width, height, GL_RGB, GL_FLOAT, NULL);
 		glFramebufferTexture2D(
 			GL_FRAMEBUFFER,
 			GL_COLOR_ATTACHMENT0,
@@ -30,7 +30,7 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 	{
 		glGenRenderbuffers(1, &fbo.depth);
 		glBindRenderbuffer(GL_RENDERBUFFER, fbo.depth);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo.depth);
 	}
 
@@ -50,6 +50,12 @@ void destroy_framebuffer(Framebuffer& fbo)
 
 Tex TextureFactory::create_texture(int width, int height, GLenum format, void* data)
 {
+	return TextureFactory::create_texture(width, height, format, GL_UNSIGNED_BYTE, data);
+}
+//------------------------------------------------------------------------------
+
+Tex TextureFactory::create_texture(int width, int height, GLenum format, GLenum storage, void* data)
+{
 	GLuint tex;
 
 	assert(gl_get_error());
@@ -66,7 +72,7 @@ Tex TextureFactory::create_texture(int width, int height, GLenum format, void* d
 		width, height,
 		0,
 		format,
-		GL_UNSIGNED_BYTE,
+		storage,
 		(void*)data
 	);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

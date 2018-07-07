@@ -97,6 +97,7 @@ ShadowPass::~ShadowPass()
 void ShadowPass::prepare(int index)
 {
 	ShaderProgram::builtin_red()->use();
+	_cubemap->prepare(0);
 }
 
 
@@ -124,5 +125,6 @@ void ShadowPass::draw(Viewer* viewer)
 
 void ShadowPass::finish()
 {
+	_cubemap->finish();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

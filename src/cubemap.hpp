@@ -25,6 +25,7 @@ public:
 
 private:
 	GLuint _map;
+	GLint _last_viewport[4];
 
 	Framebuffer _framebuffer;
 	int _size;

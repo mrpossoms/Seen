@@ -201,6 +201,13 @@ Shader::Expression Shader::Expression::dot(Shader::Expression e)
 }
 //------------------------------------------------------------------------------
 
+Shader::Expression Shader::Expression::length()
+{
+	assert(this->str.length() > 0);
+	return { "length(" + this->str + ")" };
+}
+//------------------------------------------------------------------------------
+
 Shader::Expression Shader::Expression::cross(Shader::Expression e)
 {
 	return { "cross(" + this->str + ", " + e.str + ")" };

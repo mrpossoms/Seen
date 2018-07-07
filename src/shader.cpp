@@ -349,12 +349,14 @@ ShaderProgram* ShaderProgram::builtin_red()
 	vsh.transformed()
 	   .viewed()
 	   .projected()
+	   .next(vsh.output("position_" + vsh.suffix()).as(Shader::vec(3)) = vsh.local("l_pos_view")["xyz"])
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
 	fsh.preceded_by(vsh);
-	auto color = fsh.output("color_" + fsh.suffix()).as(Shader::vec(4));
+	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(1));
 
-	fsh.next(color["rgba"] = fsh.vec4(1, 0, 0, 1));
+	//fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
+	fsh.next(depth = fsh.input("position_*").length());
 
 	return seen::ShaderProgram::compile({ vsh, fsh });
 }

@@ -50,17 +50,21 @@ void Cubemap::init(int size, int fbo_flags)
 			_size, _size,
 			0,
 			GL_RGB,
-			GL_UNSIGNED_BYTE,
+			GL_FLOAT, //GL_UNSIGNED_BYTE,
 			NULL);
 	}
 
 	assert(gl_get_error());
+
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+	//glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
 	assert(gl_get_error());
 
@@ -76,8 +80,10 @@ void Cubemap::render_to(GLenum face)
 	assert(gl_get_error());
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _map);
+
 	assert(gl_get_error());
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebuffer.id);
+
 	assert(gl_get_error());
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, face, _map, 0);
 
@@ -88,6 +94,7 @@ void Cubemap::render_to(GLenum face)
 
 void Cubemap::prepare(int index)
 {
+	glGetIntegerv(GL_VIEWPORT, _last_viewport);
 	glViewport(0, 0, _size, _size);
 }
 //------------------------------------------------------------------------------
@@ -110,19 +117,19 @@ void Cubemap::draw_at(Vec3 position,
 	};
 
 	const GLenum sides[] = {
-		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
 		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
 	};
 
 	const basis bases[] = {
-		{ VEC3_UP,      VEC3_BACK    },
-		{ VEC3_UP,      VEC3_FORWARD },
 		{ VEC3_FORWARD, VEC3_UP      },
 		{ VEC3_BACK,    VEC3_DOWN    },
+		{ VEC3_DOWN,    VEC3_BACK    },
+		{ VEC3_DOWN,    VEC3_FORWARD },
 		{ VEC3_DOWN,    VEC3_RIGHT   },
 		{ VEC3_DOWN,    VEC3_LEFT    },
 	};
@@ -161,12 +168,9 @@ void Cubemap::draw_at(Vec3 position,
 	for(; i < 6; i++)
 	{
 		render_to(sides[i]);
-
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shader["u_view_matrix"] << cube_views[i];
-		// glUniformMatrix4fv(draw_params.view_uniform, 1, GL_FALSE, (GLfloat*)cube_views[i]);
-		// glUniformMatrix4fv(draw_params.proj_uniform, 1, GL_FALSE, (GLfloat*)cube_proj);
 
 		assert(gl_get_error());
 
@@ -176,6 +180,9 @@ void Cubemap::draw_at(Vec3 position,
 			if (std::find(excluding.begin(), excluding.end(), drawable) != excluding.end())
 				continue;
 
+			mat4x4_t I4;
+			mat4x4_identity(I4.v);
+			shader["u_world_matrix"] << I4; 
 			drawable->draw();
 		}
 
@@ -187,5 +194,5 @@ void Cubemap::draw_at(Vec3 position,
 //------------------------------------------------------------------------------
 void Cubemap::finish()
 {
-
+	glViewport(_last_viewport[0], _last_viewport[1], _last_viewport[2], _last_viewport[3]);
 }

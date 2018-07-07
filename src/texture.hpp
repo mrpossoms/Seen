@@ -29,6 +29,7 @@ public:
 	static Framebuffer create_framebuffer(int width, int height, int flags);
 	static void destroy_framebuffer(Framebuffer& fbo);
 	static Tex create_texture(int width, int height, GLenum format, void* data);
+	static Tex create_texture(int width, int height, GLenum format, GLenum storage, void* data);
 	static Tex load_texture(std::string path);
 	static int load_texture_buffer(
 		std::string path,

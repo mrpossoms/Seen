@@ -136,6 +136,7 @@ struct Shader {
 
 		Expression normalize();
 		Expression dot(Expression e);
+		Expression length();
 		Expression cross(Expression e);
 		Expression pow(float power);
 		Expression mix(std::vector<Expression> params, float percent);
@@ -245,6 +246,7 @@ struct Shader {
 	static std::string vec(int rank);
 	static std::string tex(int rank);
 	static std::string cubemap();
+	static std::string shadowCube();
 	static Expression mat(int rank, const char* fmt, ...);
 	static Expression vec(int rank, const char* fmt, ...);
 
