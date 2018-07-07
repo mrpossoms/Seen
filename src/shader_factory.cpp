@@ -471,7 +471,7 @@ Shader& Shader::shadow_mapped_vsm()
 	next(l_p = l_var + l_md_2);
 	next(l_p = l_var / l_p);
 
-	next_if(l_depth > l_query["x"], [&]{
+	next_if(l_depth - l_query["x"] > 0.01, [&]{
 		next(l_lit = l_p);
 	});
 
