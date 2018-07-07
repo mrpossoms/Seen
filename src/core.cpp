@@ -59,7 +59,7 @@ fail:
 
 using namespace seen;
 
-Vec3 Positionable::position()
+Vec3& Positionable::position()
 {
 	return _position;
 }
@@ -131,9 +131,9 @@ Positionable* Positionable::orientation(Quat& ori)
 	mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
 	mat4x4_mul(_world.v, rot, trans);
 
-	vec3_copy(normal_matrix.c0, rot[0]);
-	vec3_copy(normal_matrix.c1, rot[1]);
-	vec3_copy(normal_matrix.c2, rot[2]);
+	vec3_norm(normal_matrix.c0, rot[0]);
+	vec3_norm(normal_matrix.c1, rot[1]);
+	vec3_norm(normal_matrix.c2, rot[2]);
 
 	return this;
 }
@@ -162,7 +162,7 @@ void Positionable::world(mat4x4 world)
 }
 
 
-mat4x4_t Positionable::world()
+mat4x4_t& Positionable::world()
 {
 	return _world;
 }

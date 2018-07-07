@@ -62,7 +62,7 @@ protected:
 
 //------------------------------------------------------------------------------
 
-struct Model : Drawable
+struct Model : Drawable, Positionable
 {
 public:
 	Model(Mesh* mesh);

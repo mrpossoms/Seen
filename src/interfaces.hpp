@@ -8,7 +8,7 @@ namespace seen
 struct Positionable
 {
 		// Dynamic Interface
-		Vec3 position();
+		Vec3& position();
 		Vec3 left();
 		Vec3 forward();
 		Quat orientation();
@@ -20,9 +20,13 @@ struct Positionable
 		void orientation(mat3x3 rot);
 
 		void world(mat4x4 world);
-		mat4x4_t world();
+		mat4x4_t& world();
 
-		mat3x3_t normal_matrix;
+		mat3x3_t normal_matrix = { {
+			{ 1, 0, 0 },
+			{ 0, 1, 0 },
+			{ 0, 0, 1 },
+		} };
 private:
 		Vec3 _position;
 		Quat _orientation = QUAT_I;

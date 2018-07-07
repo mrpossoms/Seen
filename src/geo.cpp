@@ -654,16 +654,7 @@ void Model::draw()
 
 	assert(gl_get_error());
 
-	// TODO
-	// mat4x4 world;
-	// mat3x3 rot;
-	// mat4x4_identity(world);
-	// mat3x3_identity(rot);
-	//
-    // DrawParams& params = ShaderProgram::active()->draw_params;
-	//
-	// glUniformMatrix4fv(params.world_uniform, 1, GL_FALSE, (GLfloat*)world);
-	// glUniformMatrix3fv(params.norm_uniform,  1, GL_FALSE, (GLfloat*)rot);
+	*ShaderProgram::active() << (Positionable*)this;
 
 	assert(gl_get_error());
 

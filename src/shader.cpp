@@ -397,9 +397,10 @@ void ShaderProgram::operator<<(Viewer* v)
 }
 //------------------------------------------------------------------------------
 
-void ShaderProgram::operator<<(Positionable*)
+void ShaderProgram::operator<<(Positionable* p)
 {
-
+	(*this)["u_world_matrix"] << p->world();
+	(*this)["u_normal_matrix"] << p->normal_matrix;
 }
 //------------------------------------------------------------------------------
 
@@ -408,7 +409,7 @@ void ShaderProgram::operator<<(Light* l)
 	(*this)["u_light_position"] << l->position;
 	(*this)["u_light_power"] << l->power;
 }
-//--
+//------------------------------------------------------------------------------
 
 void ShaderProgram::operator<<(ShadowPass* s)
 {

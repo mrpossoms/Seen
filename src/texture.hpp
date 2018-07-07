@@ -21,6 +21,8 @@ struct Framebuffer {
 
 	static const int color_flag = 1;
 	static const int depth_flag = 2;
+
+	void blur();
 };
 
 class TextureFactory
