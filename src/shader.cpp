@@ -408,6 +408,7 @@ void ShaderProgram::operator<<(Light* l)
 {
 	(*this)["u_light_position"] << l->position;
 	(*this)["u_light_power"] << l->power;
+	(*this)["u_light_ambience"] << l->ambience;
 }
 //------------------------------------------------------------------------------
 

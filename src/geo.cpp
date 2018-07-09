@@ -274,6 +274,7 @@ Heightmap::Heightmap(Tex texture, float size, int resolution) :
 	};
 
 	rgba_t textels[resolution * resolution];
+	glBindTexture(GL_TEXTURE_2D, texture);
 	glGetTexImage(
 		GL_TEXTURE_2D,
 		0,

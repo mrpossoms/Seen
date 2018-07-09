@@ -6,7 +6,7 @@ int main(int arc, const char* argv[])
 
 	while(renderer.is_running())
 	{
-		renderer.draw(NULL, NULL);
+		renderer.draw(NULL, { /* passes go here */ });
 	}
 
 	return 0;

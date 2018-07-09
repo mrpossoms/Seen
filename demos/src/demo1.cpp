@@ -1,20 +1,22 @@
 #include "seen.hpp"
-#include "sky.hpp"
 
 int main(int arc, const char* argv[])
 {
-	seen::RendererGL renderer("./data", argv[0]);
+	seen::RendererGL renderer("./data", argv[0], 640, 480, 4, 0);
 	seen::ListScene scene;
-	seen::Sky sky;
 	seen::Camera camera(M_PI / 2, renderer.width, renderer.height);
 
-	seen::Mesh* bale = seen::MeshFactory::get_model("mutable_cube.obj");
+	seen::Model* sky_sphere = seen::MeshFactory::get_model("sphere.obj");
 
-	// define the sky shader
-	seen::ShaderConfig default_shader = {
-		.vertex = "sky.vsh",
-		.fragment = "sky.fsh"
-	};
+	// define the sky render pass 
+	seen::CustomPass sky_pass([&](int index) {
+		seen::ShaderProgram::builtin_sky()->use();
+		glDisable(GL_CULL_FACE);
+	}, NULL);
+	seen::ListScene sky_scene;
+	
+	sky_scene.drawables().push_back(sky_sphere);
+	sky_pass.scene = &sky_scene;
 
 	// callback for camera looking
 	renderer.mouse_moved = [&](double x, double y, double dx, double dy)
@@ -32,14 +34,11 @@ int main(int arc, const char* argv[])
 	};
 
 	// set the sky shader to active
-	seen::ShaderProgram::active(seen::Shaders[default_shader]);
-
-	// Add all things to be drawn to the scene
-	scene.drawables().push_back(&sky);
+	seen::ShaderProgram::builtin_sky()->use();
 
 	while(renderer.is_running())
 	{
-		renderer.draw(&camera, &scene);
+		renderer.draw(&camera, { &sky_pass });
 	}
 
 	return 0;

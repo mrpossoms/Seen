@@ -340,6 +340,7 @@ Shader& Shader::blinn()
 	auto u_light_position = parameter("u_light_position").as(vec(3));
 	auto u_light_power = parameter("u_light_power").as(vec(3));
 	auto u_view_pos = parameter("u_view_position").as(vec(3));
+	auto u_light_ambience = parameter("u_light_ambience").as(vec(1));
 
 	auto l_view_dir = local("l_view_dir").as(vec(3));
 	auto l_light_color = local("l_light_color").as(vec(3));
@@ -361,7 +362,7 @@ Shader& Shader::blinn()
 
 	next(l_half = (l_light_dir + l_view_dir).normalize());
 
-	next(l_light_color += u_light_power * 0.1f);
+	next(l_light_color += u_light_power * u_light_ambience);
 	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 
 	next(l_ndh = normal.dot(l_half));
