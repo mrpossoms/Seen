@@ -145,14 +145,6 @@ struct Shader {
 
 	};
 
-	struct Block : public Code {
-		std::vector<Code> statements;
-
-		Block& next(Expression e);
-
-	private:
-		void build_str();
-	};
 
 	struct Variable : public Expression {
 		friend struct Shader;
@@ -257,6 +249,7 @@ struct Shader {
 
 private:
 	std::string suffix();
+	int _code_block;
 };
 
 

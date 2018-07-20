@@ -351,8 +351,9 @@ Shader& Shader::blinn()
 	auto l_ndh = local("l_ndh").as(vec(1));
 
 	next(l_view_dir = (u_view_pos - i_position["xyz"]).normalize());
-	next(l_light_dist = call("distance", {i_position["xyz"], u_light_position}));
-	next(l_light_dir = (u_light_position - i_position["xyz"]).normalize());
+	next(l_light_dir = (u_light_position - i_position["xyz"]));
+	next(l_light_dist = l_light_dir.length());
+	next(l_light_dir = l_light_dir.normalize());
 	next(l_intensity = normal.dot(l_light_dir).saturate());
 
 	if (has_variable("l_lit", locals))
@@ -362,8 +363,9 @@ Shader& Shader::blinn()
 
 	next(l_half = (l_light_dir + l_view_dir).normalize());
 
-	next(l_light_color += u_light_power * u_light_ambience);
+	next(l_light_color = u_light_power * u_light_ambience);
 	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
+
 
 	next(l_ndh = normal.dot(l_half));
 	next(l_intensity = (l_ndh.saturate()).pow(16));
@@ -427,7 +429,7 @@ Shader& Shader::shadow_mapped()
 	next(l_calculated_dist = l_light_dir.length());
 	next(l_sampled_dist = call("texture", { u_shadow_cube, l_light_dir })["r"]);
 
-	next_if(l_calculated_dist - l_sampled_dist > 0.01, [&]{
+	next_if(l_calculated_dist > l_sampled_dist /*> 0.01*/, [&]{
 		next(l_lit = 0);
 	});
 
@@ -500,6 +502,8 @@ Shader::Shader(std::string name, GLenum type)
 {
 	this->name = name;
 	this->type = type;
+
+	_code_block = 1;
 }
 //------------------------------------------------------------------------------
 
@@ -608,7 +612,7 @@ Shader::Expression Shader::call(std::string func_name, std::vector<Expression> p
 {
 	Expression call = { func_name + "(" };
 
-	for (int i = 0; i < params.size(); i++)
+	for (unsigned int i = 0; i < params.size(); i++)
 	{
 		call.str += params[i].str;
 
@@ -635,7 +639,7 @@ std::string Shader::code()
 	}
 
 	auto emit_var_list = [&](std::vector<Variable> vars) {
-		for (int i = 0; i < vars.size(); i++)
+		for (unsigned int i = 0; i < vars.size(); i++)
 		{
 			src << vars[i].declaration() << ";" << std::endl;
 		}
@@ -699,7 +703,7 @@ std::string Shader::code()
 
 	for (auto statement : statements)
 	{
-		src << "\t" << statement.str; // << ";" << std::endl;
+		src << statement.str; // << ";" << std::endl;
 		const char c = statement.str[statement.str.length() - 1];
 		if (c != '{' && c != '}')
 		{

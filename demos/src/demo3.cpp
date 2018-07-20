@@ -12,11 +12,16 @@ void setup_shaders()
 	   .emit_position()
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
-	auto fsh = seen::Shader::fragment("basic_fsh").preceded_by(vsh);
+	auto fsh = seen::Shader::fragment("basic_fsh");
+	fsh.preceded_by(vsh);
 	fsh.color_textured()
 	   .normal_mapped()
 	   .shadow_mapped_vsm()
-	   .blinn();
+	//    .shadow_mapped()
+	   .blinn()
+	   ;
+
+	std::cerr << fsh.code() << '\n';
 
 	land_shader = seen::ShaderProgram::compile({ vsh, fsh });
 	land_shader->use();
@@ -51,11 +56,10 @@ int main(int argc, const char* argv[])
 
 	auto shadow_pass = seen::ShadowPass(1024);
 
-	seen::Light light = {
-		.power = { 1, 1, 1 },
-		.is_point = true,
-		.ambience = 0.01
-	};
+	seen::Light light;
+	light.power = { 1, 1, 1 };
+	light.is_point = true;
+	light.ambience = 0.01;
 
 	seen::CustomPass land_pass([&](int index) {
 		light.position.x = 3 * cos(t);
@@ -98,3 +102,4 @@ int main(int argc, const char* argv[])
 
 	return 0;
 }
+//

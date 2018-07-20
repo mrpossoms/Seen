@@ -210,7 +210,7 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 		if (shader.type == GL_VERTEX_SHADER)
 		{
 
-			for (int i = 0; i < shader.inputs.size(); i++)
+			for (unsigned int i = 0; i < shader.inputs.size(); i++)
 			{
 				attributes[i] = attribute_store[i];
 				strncpy(attributes[i], shader.inputs[i].name.c_str(), sizeof(attribute_store[i]));

@@ -306,6 +306,8 @@ std::string Shader::Variable::declaration()
 		case VAR_NONE:
 			return "";
 	}
+
+	return "";
 }
 //------------------------------------------------------------------------------
 
@@ -319,7 +321,11 @@ Shader::Expression Shader::Variable::at_index(int i)
 
 Shader& Shader::next(Shader::Expression e)
 {
-	statements.push_back(e);
+	std::string indent = "";
+
+	for (int i = _code_block; i--;) indent += "\t";
+
+	statements.push_back({ indent + e.str });
 	return *this;
 }
 //------------------------------------------------------------------------------
@@ -327,28 +333,13 @@ Shader& Shader::next(Shader::Expression e)
 Shader& Shader::next_if(Shader::Expression e,
                                std::function<void (void)> then)
 {
-	statements.push_back({ "if (" + e.str + ") {" });
+	next({ "if (" + e.str + ") {" });
+	_code_block++;
 	then();
-	statements.push_back({ "}" });
+	_code_block--;
+	next({ "}" });
 
 	return *this;
-}
-//------------------------------------------------------------------------------
-
-void Shader::Block::build_str()
-{
-	str = "";
-	for (auto statement : statements)
-	{
-		str += "\t" + statement.str;
-	}
-	str += "}\n";
-}
-//------------------------------------------------------------------------------
-
-Shader::Block& Shader::Block::next(Expression e)
-{
-		return *this;
 }
 //------------------------------------------------------------------------------
 
