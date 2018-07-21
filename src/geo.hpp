@@ -121,6 +121,7 @@ struct Plane : Mesh
 {
 	Plane(float size);
 	Plane(float size, int subdivisions);
+	Plane(Vec3 corner_0, Vec3 corner_1);
 	~Plane() = default;
 };
 

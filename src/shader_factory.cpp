@@ -321,15 +321,11 @@ Shader& Shader::blinn()
 {
 	assert(has_input("normal_*"));
 
-	Variable normal;
+	auto l_normal = local("l_normal").as(vec(3));
 
-	if (has_variable("l_normal", locals))
+	if (has_variable("l_normal", locals) == NULL && has_variable("normal_*", inputs))
 	{
-		Variable::copy(*has_variable("l_normal", locals), normal);
-	}
-	else if (has_variable("normal_*", inputs))
-	{
-		Variable::copy(*has_variable("normal_*", inputs), normal);
+		Variable::copy(*has_variable("normal_*", inputs), l_normal);
 	}
 
 	//assert(normal);
@@ -350,11 +346,17 @@ Shader& Shader::blinn()
 	auto l_light_dist = local("l_light_dist").as(vec(1));
 	auto l_ndh = local("l_ndh").as(vec(1));
 
+	// Expression is_front = { "gl_FrontFacing == false" };
+	//
+	// next_if(is_front, [&]{
+	// 	next(l_normal *= -1.f);
+	// });
+
 	next(l_view_dir = (u_view_pos - i_position["xyz"]).normalize());
 	next(l_light_dir = (u_light_position - i_position["xyz"]));
 	next(l_light_dist = l_light_dir.length());
 	next(l_light_dir = l_light_dir.normalize());
-	next(l_intensity = normal.dot(l_light_dir).saturate());
+	next(l_intensity = l_normal.dot(l_light_dir).saturate());
 
 	if (has_variable("l_lit", locals))
 	{
@@ -367,7 +369,7 @@ Shader& Shader::blinn()
 	next(l_light_color += (l_intensity * u_light_power) / l_light_dist);
 
 
-	next(l_ndh = normal.dot(l_half));
+	next(l_ndh = l_normal.dot(l_half));
 	next(l_intensity = (l_ndh.saturate()).pow(16));
 
 	if (has_variable("l_lit", locals))
@@ -410,7 +412,7 @@ Shader& Shader::normal_mapped()
 }
 //------------------------------------------------------------------------------
 
-Shader& Shader::shadow_mapped()
+Shader& Shader::shadow_mapped(bool for_point_light)
 {
 	assert(has_input("position_*"));
 
@@ -438,7 +440,7 @@ Shader& Shader::shadow_mapped()
 }
 //------------------------------------------------------------------------------
 
-Shader& Shader::shadow_mapped_vsm()
+Shader& Shader::shadow_mapped_vsm(bool for_point_light)
 {
 	assert(has_input("position_*"));
 
@@ -474,7 +476,7 @@ Shader& Shader::shadow_mapped_vsm()
 	next(l_p = l_var + l_md_2);
 	next(l_p = l_var / l_p);
 
-	next_if(l_depth - l_query["x"] > 0.01, [&]{
+	next_if(l_depth > l_query["x"], [&]{
 		next(l_lit = l_p);
 	});
 
