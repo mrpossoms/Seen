@@ -208,8 +208,8 @@ struct Shader {
 	Shader& color_textured();
 	Shader& blinn();
 	Shader& normal_mapped();
-	Shader& shadow_mapped();
-	Shader& shadow_mapped_vsm();
+	Shader& shadow_mapped(bool for_point_light=true);
+	Shader& shadow_mapped_vsm(bool for_point_light=true);
 
 
 	Expression vec2(float x, float y);

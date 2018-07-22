@@ -57,12 +57,9 @@ void Mesh::compute_tangents()
 	{
 
 		vec3_sub(v[indices[i + 0]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
-		vec3_sub(v[indices[i + 1]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
-		vec3_sub(v[indices[i + 2]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
 
 		for(int j = 3; j--;)
 		{
-			// vec3_mul_cross(v[i + j].tangent, v[i + j].tangent, v[i + j].normal);
 			vec3_norm(v[indices[i + j]].tangent, v[indices[i + j]].tangent);
 		}
 	}
@@ -259,6 +256,47 @@ Plane::Plane(float size, int subdivisions)
 		indices.push_back(j);
 		indices.push_back(i + 1);
 	}
+}
+//------------------------------------------------------------------------------
+
+Plane::Plane(Vec3 c0, Vec3 c1)
+{
+	Vertex verts[4] = {
+		{ { c0.x, c0.y, c0.z } },
+		{ { c1.x, c0.y, c1.z } },
+		{ { c0.x, c1.y, c0.z } },
+		{ { c1.x, c1.y, c1.z } },
+	};
+
+	vec3_t normal, d[2];
+	vec3_sub(d[0].v, verts[0].position, verts[1].position);
+	vec3_sub(d[1].v, verts[0].position, verts[2].position);
+	vec3_mul_cross(normal.v, d[0].v, d[1].v);
+	vec3_norm(verts[0].normal, normal.v);
+
+	for(int i = 4; i--;)
+	{
+		if (i > 0)
+		{
+			vec3_copy(verts[i].normal, verts[0].normal);
+		}
+
+		printf("%f %f %f\n", verts[i].normal[0], verts[i].normal[1], verts[i].normal[2]);
+
+		verts[i].texture[0] = 10 * ((verts[i].position[0]) + 1) / 2;
+		verts[i].texture[1] = 10 * ((verts[i].position[1]) + 1) / 2;
+		vertices.push_back(verts[i]);
+	}
+
+	indices.push_back(0);
+	indices.push_back(1);
+	indices.push_back(2);
+
+	indices.push_back(2);
+	indices.push_back(1);
+	indices.push_back(3);
+
+	// compute_tangents();
 }
 //------------------------------------------------------------------------------
 

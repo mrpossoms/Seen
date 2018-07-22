@@ -23,6 +23,8 @@ void setup_shaders()
 
 	std::cerr << fsh.code() << '\n';
 
+	std::cerr << fsh.code() << std::endl;
+
 	land_shader = seen::ShaderProgram::compile({ vsh, fsh });
 	land_shader->use();
 }
@@ -46,6 +48,7 @@ int main(int argc, const char* argv[])
 	// Models
 	seen::Model* sky_sphere = seen::MeshFactory::get_model("sphere.obj");
 	seen::Model land(new seen::Heightmap(height_map, 10, 256));
+	seen::Model monolith(new seen::Plane({Vec3(0.3, 2, 0), Vec3(-0.3, 0, 0)}));
 
 	seen::CustomPass sky_pass([&](int index) {
 		seen::ShaderProgram::builtin_sky()->use();
@@ -57,7 +60,7 @@ int main(int argc, const char* argv[])
 	auto shadow_pass = seen::ShadowPass(512);
 
 	seen::Light light;
-	light.power = { 1, 1, 1 };
+	light.power = { 1.5, 1.5, 1.5 };
 	light.ambience = 0.01;
 	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
@@ -81,6 +84,7 @@ int main(int argc, const char* argv[])
 
 	sky_scene.drawables().push_back(sky_sphere);
 	land_scene.drawables().push_back(&land);
+	land_scene.drawables().push_back(&monolith);
 
 
 	shadow_pass.scene = &land_scene;
