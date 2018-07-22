@@ -351,19 +351,21 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	vsh.transformed()
 	   .viewed()
 	   .projected()
-	   // .next(l_depth = vsh.call("vec4", { {"0"}, {"0"}, vsh.local("l_pos_view").length(), {"1"} }))
-	   .next(l_depth = vsh.local("l_pos_proj"))
+	   // .next(l_depth = vsh.call("vec4", { {"0"}, {"0"}, vsh.local("l_pos_view").length() / {"1000.0"}, {"1"} }))
+	   // .next(l_depth = vsh.local("l_pos_proj"))
 	   // .next(l_depth /= l_depth["w"])
-	   .next(o_depth = l_depth["z"])
+	   // .next(o_depth = l_depth["z"])
+	   .next(o_depth = vsh.local("l_pos_view").length() / 1000.f)
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
 	fsh.preceded_by(vsh);
 	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(4));
 
-	//fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
+	// fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
 	fsh.next(depth["r"] = fsh.input("depth_*"));
-	// fsh.next(depth["r"] = fsh.builtin("gl_FragCoord")["z"]);//fsh.input("depth_*"));
-	// fsh.next(depth["g"] = depth["r"] * depth["r"]);
+	fsh.next(depth["g"] = depth["r"] * depth["r"]);
+
+	std::cerr << vsh.code() << std::endl;
 
 	return seen::ShaderProgram::compile({ vsh, fsh });
 }

@@ -18,7 +18,7 @@ void setup_shaders()
 	   .normal_mapped()
 	   .shadow_mapped_vsm()
 	//    .shadow_mapped()
-	   // .blinn()
+	   .blinn()
 	   ;
 
 	std::cerr << fsh.code() << '\n';
@@ -54,7 +54,7 @@ int main(int argc, const char* argv[])
 
 	float t = 0;
 
-	auto shadow_pass = seen::ShadowPass(1024);
+	auto shadow_pass = seen::ShadowPass(512);
 
 	seen::Light light;
 	light.power = { 1, 1, 1 };
@@ -63,7 +63,7 @@ int main(int argc, const char* argv[])
 
 	seen::CustomPass land_pass([&](int index) {
 		light.position.x = 3 * cos(t);
-		light.position.y = 1;
+		light.position.y = 2;
 		light.position.z = 3 * sin(t);
 
 		// glEnable(GL_CULL_FACE);

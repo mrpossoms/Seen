@@ -468,8 +468,7 @@ Shader& Shader::shadow_mapped_vsm()
 	next(l_query = call("texture", { u_shadow_cube, l_light_dir})["rg"]);
 
 	next(l_depth = call("vec4", {{"0"}, {"0"}, l_light_dir.length(), {"1.0"}}));
-	next(l_depth = u_light_projection * l_depth);
-	// next(l_depth /= l_depth["w"]);
+	next(l_depth /= 1000.f);
 	next(l_E_x2 = l_query["y"]);
 	next(l_Ex_2 = l_query["x"].pow(2));
 	next(l_var = l_E_x2 - l_Ex_2);
@@ -478,15 +477,9 @@ Shader& Shader::shadow_mapped_vsm()
 	next(l_p = l_var + l_md_2);
 	next(l_p = l_var / l_p);
 
-	auto o_color = output("color").as(Shader::vec(4));
-	next(o_color = call("texture", { u_shadow_cube, l_light_dir}));
-	next(o_color *= vec4(1, 0, 0, 1));
-	next(o_color["b"] = l_depth["z"]);
-
-
-	// next_if(l_depth["z"] > l_query["x"], [&]{
-	//  	next(o_color = vec4(0, 0, 0, 1));//l_p);
-	// });
+	next_if(l_depth["z"] > l_query["x"], [&]{
+	 	next(l_lit = l_p);
+	});
 
 	// next(l_d2 = l_light_dir.length());
 	// next(l_d1 = l_query["r"]);

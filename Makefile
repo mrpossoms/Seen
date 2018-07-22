@@ -23,7 +23,7 @@ all: static shared
 lib/libseen.a: lib $(addprefix obj/,$(SRCS:.cpp=.o))
 	$(AR) rcs lib/libseen.a $(OBJS)
 
-static: lib $(addprefix obj/,$(SRCS:.cpp=.o))
+static: lib/libseen.a
 	@echo "Built static"
 
 shared: lib $(OBJS)

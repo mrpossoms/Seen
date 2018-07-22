@@ -21,10 +21,15 @@ all: $(DEMOS)
 ../lib/libseen.a:
 	make -C .. static -j4
 
-obj: ../lib/libseen.a
+.PHONY: lib
+lib: 	clean
+	make -C .. static -j4
+	@echo "Forced libseen.a rebuild"
+
+obj:
 	mkdir obj || true
 
-obj/%.o: src/%.cpp obj
+obj/%.o: src/%.cpp lib obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
 
 demo0: obj
