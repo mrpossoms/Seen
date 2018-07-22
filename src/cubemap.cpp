@@ -72,6 +72,8 @@ void Cubemap::init(int size, int fbo_flags)
 		size, size,
 		fbo_flags
 	);
+
+	mat4x4_perspective(side_projection.v, M_PI / 2, 1, 0.01, 1000);
 }
 //------------------------------------------------------------------------------
 
@@ -135,17 +137,6 @@ void Cubemap::draw_at(Vec3 position,
 	};
 	mat4x4_t cube_views[6];
 
-	static bool setup;
-	static mat4x4_t cube_proj;
-
-	// Compute perspective and view matrices the first time a
-	// draw_at call is made
-	if(!setup)
-	{
-		mat4x4_perspective(cube_proj.v, M_PI / 2, 1, 0.01, 1000);
-		setup = true;
-	}
-
 	// Compute new view matrices each time, as position could have changed
 	for(int i = 6; i--;)
 	{
@@ -162,7 +153,7 @@ void Cubemap::draw_at(Vec3 position,
 	assert(gl_get_error());
 
 	auto shader = *ShaderProgram::active();
-	shader["u_proj_matrix"] << cube_proj;
+	shader["u_proj_matrix"] << side_projection;
 
 	int i = 0;
 	for(; i < 6; i++)

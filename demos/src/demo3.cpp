@@ -18,7 +18,7 @@ void setup_shaders()
 	   .normal_mapped()
 	   .shadow_mapped_vsm()
 	//    .shadow_mapped()
-	   .blinn()
+	   // .blinn()
 	   ;
 
 	std::cerr << fsh.code() << '\n';
@@ -58,15 +58,15 @@ int main(int argc, const char* argv[])
 
 	seen::Light light;
 	light.power = { 1, 1, 1 };
-	light.is_point = true;
 	light.ambience = 0.01;
+	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
 	seen::CustomPass land_pass([&](int index) {
 		light.position.x = 3 * cos(t);
 		light.position.y = 1;
 		light.position.z = 3 * sin(t);
 
-		glEnable(GL_CULL_FACE);
+		// glEnable(GL_CULL_FACE);
 
 		land_shader->use();
 

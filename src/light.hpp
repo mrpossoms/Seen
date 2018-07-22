@@ -9,6 +9,6 @@ namespace seen
 		Vec3 position, direction;
 		Vec3 power;
 		float ambience;
-		bool is_point;
+		mat4x4_t projection;
 	};
 }

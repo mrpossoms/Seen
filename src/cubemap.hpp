@@ -23,6 +23,7 @@ public:
 
 	void finish();
 
+	mat4x4_t side_projection;
 private:
 	GLuint _map;
 	GLint _last_viewport[4];

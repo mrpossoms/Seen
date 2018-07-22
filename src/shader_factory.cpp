@@ -442,9 +442,10 @@ Shader& Shader::shadow_mapped_vsm()
 {
 	assert(has_input("position_*"));
 
-	auto position = input("position_*");
+	auto i_position = input("position_*");
+
 	auto l_projected = local("l_projected").as(vec(4));
-	auto l_depth = local("l_depth").as(vec(1));
+	auto l_depth = local("l_depth").as(vec(4));
 	auto l_lit = local("l_lit").as(vec(1));
 	auto l_light_dir = local("l_light_dir").as(vec(3));
 
@@ -458,25 +459,34 @@ Shader& Shader::shadow_mapped_vsm()
 
 	auto u_shadow_cube = parameter("u_shadow_cube").as(cubemap());
 	auto u_light_position = parameter("u_light_position").as(vec(3));
+	auto u_light_projection = parameter("u_light_proj_matrix").as(mat(4));
 
 	seen::Shader::Expression one = { "1.f" };
 
 	next(l_lit = 1.0);
-	next(l_light_dir = position["xyz"] - u_light_position );
+	next(l_light_dir = i_position["xyz"] - u_light_position );
 	next(l_query = call("texture", { u_shadow_cube, l_light_dir})["rg"]);
 
-	next(l_depth = l_light_dir.length());
+	next(l_depth = call("vec4", {{"0"}, {"0"}, l_light_dir.length(), {"1.0"}}));
+	next(l_depth = u_light_projection * l_depth);
+	// next(l_depth /= l_depth["w"]);
 	next(l_E_x2 = l_query["y"]);
 	next(l_Ex_2 = l_query["x"].pow(2));
 	next(l_var = l_E_x2 - l_Ex_2);
-	next(l_md = l_query["x"] - l_depth);
+	next(l_md = l_query["x"] - l_depth["z"]);
 	next(l_md_2 = l_md.pow(2));
 	next(l_p = l_var + l_md_2);
 	next(l_p = l_var / l_p);
 
-	next_if(l_depth - l_query["x"] > 0.01, [&]{
-		next(l_lit = l_p);
-	});
+	auto o_color = output("color").as(Shader::vec(4));
+	next(o_color = call("texture", { u_shadow_cube, l_light_dir}));
+	next(o_color *= vec4(1, 0, 0, 1));
+	next(o_color["b"] = l_depth["z"]);
+
+
+	// next_if(l_depth["z"] > l_query["x"], [&]{
+	//  	next(o_color = vec4(0, 0, 0, 1));//l_p);
+	// });
 
 	// next(l_d2 = l_light_dir.length());
 	// next(l_d1 = l_query["r"]);
