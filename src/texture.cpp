@@ -16,7 +16,7 @@ Framebuffer TextureFactory::create_framebuffer(int width, int height, int flags)
 
 	if(flags & Framebuffer::color_flag)
 	{
-		fbo.color = create_texture(width, height, GL_RGB, GL_FLOAT, NULL);
+		fbo.color = create_texture(width, height, GL_RGB, GL_SHORT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(

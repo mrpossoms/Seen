@@ -85,9 +85,9 @@ void CustomPass::draw(Viewer* viewer)
 ShadowPass::ShadowPass(int resolution)
 {
 	_cubemap = new Cubemap(resolution, Framebuffer::depth_flag);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_LOD, 3);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LOD, 3);
+	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_LOD, 3);
+	// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LOD, 3);
 }
 
 
@@ -130,6 +130,6 @@ void ShadowPass::draw(Viewer* viewer)
 void ShadowPass::finish()
 {
 	_cubemap->finish();
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	// glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

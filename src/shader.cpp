@@ -355,7 +355,7 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	   // .next(l_depth = vsh.local("l_pos_proj"))
 	   // .next(l_depth /= l_depth["w"])
 	   // .next(o_depth = l_depth["z"])
-	   .next(o_depth = vsh.local("l_pos_view").length() / 1000.f)
+	   .next(o_depth = vsh.local("l_pos_view").length())
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
 	fsh.preceded_by(vsh);
@@ -364,6 +364,7 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	// fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
 	fsh.next(depth["r"] = fsh.input("depth_*"));
 	fsh.next(depth["g"] = depth["r"] * depth["r"]);
+	fsh.next(depth /= 100.f);
 
 	std::cerr << vsh.code() << std::endl;
 

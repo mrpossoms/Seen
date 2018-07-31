@@ -16,8 +16,8 @@ void setup_shaders()
 	fsh.preceded_by(vsh);
 	fsh.color_textured()
 	   .normal_mapped()
-	   .shadow_mapped_vsm()
-	//    .shadow_mapped()
+	   // .shadow_mapped_vsm()
+	   .shadow_mapped()
 	   .blinn()
 	   ;
 
