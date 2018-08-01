@@ -471,12 +471,12 @@ Shader& Shader::shadow_mapped_vsm(bool for_point_light)
 
 	next(l_lit = 1.0);
 	next(l_light_dir = i_position["xyz"] - u_light_position );
-	next(l_query = call("texture", { u_shadow_cube, l_light_dir})["rg"]);
+	next(l_query = call("texture", { u_shadow_cube, l_light_dir})["rg"] * 1000.f);
 
 	next(l_depth = call("vec4", {{"0"}, {"0"}, l_light_dir.length(), {"1.0"}}));
-	next(l_depth /= 100.f);
-	next(l_E_x2 = l_query["r"]);
-	next(l_Ex_2 = l_query["g"].pow(2));
+	//next(l_depth /= 1000.f);
+	next(l_E_x2 = l_query["g"]);
+	next(l_Ex_2 = l_query["r"].pow(2));
 	next(l_var = l_E_x2 - l_Ex_2);
 	next(l_md = l_query["r"] - l_depth["z"]);
 	next(l_md_2 = l_md.pow(2));
@@ -484,8 +484,7 @@ Shader& Shader::shadow_mapped_vsm(bool for_point_light)
 	next(l_p = l_var / l_p);
 
 	next_if(l_depth["z"] > l_query["r"], [&]{
-	 	next(l_lit = 0.5);
-		// next(l_lit = l_p);
+		next(l_lit = l_p);
 	});
 
 	// next(l_d2 = l_light_dir.length());

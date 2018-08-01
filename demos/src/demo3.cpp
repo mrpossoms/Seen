@@ -16,8 +16,8 @@ void setup_shaders()
 	fsh.preceded_by(vsh);
 	fsh.color_textured()
 	   .normal_mapped()
-	   // .shadow_mapped_vsm()
-	   .shadow_mapped()
+	   .shadow_mapped_vsm()
+	   //.shadow_mapped()
 	   .blinn()
 	   ;
 
@@ -57,7 +57,7 @@ int main(int argc, const char* argv[])
 
 	float t = 0;
 
-	auto shadow_pass = seen::ShadowPass(512);
+	auto shadow_pass = seen::ShadowPass(512, true);
 
 	seen::Light light;
 	light.power = { 1.5, 1.5, 1.5 };

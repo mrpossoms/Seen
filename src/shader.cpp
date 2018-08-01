@@ -360,11 +360,12 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 
 	fsh.preceded_by(vsh);
 	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(4));
+	auto i_depth = fsh.input("depth_*");
 
 	// fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
-	fsh.next(depth["r"] = fsh.input("depth_*"));
-	fsh.next(depth["g"] = depth["r"] * depth["r"]);
-	fsh.next(depth /= 100.f);
+	fsh.next(depth["r"] = i_depth);
+	fsh.next(depth["g"] = i_depth * i_depth);
+	fsh.next(depth /= 1000.f);
 
 	std::cerr << vsh.code() << std::endl;
 

@@ -31,7 +31,7 @@ class ShadowPass : public RenderingPass
 	friend struct ShaderProgram;
 
 public:
-	ShadowPass(int resolution=1024);
+	ShadowPass(int resolution=1024, bool generate_mipmaps=true);
 	~ShadowPass();
 
 	void prepare(int index);
@@ -43,6 +43,7 @@ public:
 
 private:
 	Cubemap* _cubemap;
+	bool _generate_mipmaps;
 };
 
 }
