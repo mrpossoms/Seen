@@ -367,8 +367,6 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	fsh.next(depth["g"] = i_depth * i_depth);
 	fsh.next(depth /= 1000.f);
 
-	std::cerr << vsh.code() << std::endl;
-
 	return seen::ShaderProgram::compile({ vsh, fsh });
 }
 //------------------------------------------------------------------------------

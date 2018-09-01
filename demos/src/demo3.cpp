@@ -21,12 +21,15 @@ void setup_shaders()
 	   .blinn()
 	   ;
 
-	std::cerr << fsh.code() << '\n';
-
-	std::cerr << fsh.code() << std::endl;
-
+	//land_shader = seen::ShaderProgram::builtin_normal_colors();
 	land_shader = seen::ShaderProgram::compile({ vsh, fsh });
 	land_shader->use();
+}
+
+
+static float sphere(vec3 v)
+{
+	return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) - 1.f;
 }
 
 
@@ -48,7 +51,11 @@ int main(int argc, const char* argv[])
 	// Models
 	seen::Model* sky_sphere = seen::MeshFactory::get_model("sphere.obj");
 	seen::Model land(new seen::Heightmap(height_map, 10, 256));
-	seen::Model monolith(new seen::Plane({Vec3(0.3, 2, 0), Vec3(-0.3, 0, 0)}));
+	// seen::Model monolith(new seen::Plane({Vec3(0.3, 2, 0), Vec3(-0.3, 0, 0)}));
+	const float s = 4;
+	auto mc_mesh = new seen::Volume({ Vec3(-s, -s, -s), Vec3(s, s, s) }, 16);
+	mc_mesh->generate(sphere);
+	seen::Model monolith(mc_mesh);
 
 	seen::CustomPass sky_pass([&](int index) {
 		seen::ShaderProgram::builtin_sky()->use();
@@ -65,9 +72,9 @@ int main(int argc, const char* argv[])
 	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
 	seen::CustomPass land_pass([&](int index) {
-		light.position.x = 3 * cos(t);
+		light.position.x = 2 * cos(t);
 		light.position.y = 2;
-		light.position.z = 3 * sin(t);
+		light.position.z = 2 * sin(t);
 
 		// glEnable(GL_CULL_FACE);
 
@@ -79,11 +86,13 @@ int main(int argc, const char* argv[])
 		(*land_shader) << &shadow_pass;
 		(*land_shader) << &light;
 	}, NULL);
+	glPointSize(10);
+	// land_shader->primative = GL_POINTS;
 
 	seen::ListScene land_scene, sky_scene;
 
 	sky_scene.drawables().push_back(sky_sphere);
-	land_scene.drawables().push_back(&land);
+	// land_scene.drawables().push_back(&land);
 	land_scene.drawables().push_back(&monolith);
 
 

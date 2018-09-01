@@ -32,7 +32,7 @@ void Mesh::compute_normals()
 {
 	Vertex* v = verts();
 
-	for(unsigned int i = 0; i < indices.size(); i ++)
+	for(unsigned int i = 0; i < indices.size(); i += 3)
 	{
 		vec3 diff[2];
 
@@ -43,6 +43,11 @@ void Mesh::compute_normals()
 		vec3 cross;
 		vec3_mul_cross(cross, diff[0], diff[1]);
 		vec3_norm(vert->normal, cross);
+
+		if(isnan(vert->normal[0]) || isnan(vert->normal[1]) || isnan(vert->normal[2]))
+		{
+			// assert(0);
+		}
 
 		i = (i + 1) - 1;
 	}
@@ -332,7 +337,131 @@ Heightmap::Heightmap(Tex texture, float size, int resolution) :
 
 	compute_normals();
 }
+//------------------------------------------------------------------------------
 
+Volume::Volume(std::vector<Vec3> corners, int divisions)
+{
+	int max_possible_tris = pow(8, divisions) * 5;
+	int max_possible_verts = max_possible_tris * 3;
+
+	_corners = corners;
+	_divisions = divisions + 1;
+
+	// TODO reserve space instead
+	// for (;max_possible_verts--;)
+	// {
+	// 	Vertex v = {};
+	// 	vertices.push_back(v);
+	// }
+}
+
+//------------------------------------------------------------------------------
+
+void Volume::generate(float(*density_at)(vec3 loc))
+{
+	#include "mc_luts.hpp"
+
+	float div = _divisions;
+	float points_per_edge = _divisions + 1;
+
+	Vec3& p0 = _corners[0];
+	Vec3& p1 = _corners[1];
+	Vec3 block_delta = (p1 - p0);// / _divisions;
+	Vec3 voxel_delta = block_delta / div;
+
+	for (int x = _divisions; x--;)
+	for (int y = _divisions; y--;)
+	for (int z = _divisions; z--;)
+	{
+		Vec3 voxel_index(x, y, z);
+		Vec3 p[8];  // voxel corners
+		float d[8]; // densities at each corner
+		uint8_t voxel_case = 0;
+
+		Vec3 c[8] = {
+			{ 0.f, 0.f, 0.f },
+			{ 0.f, 1.f, 0.f },
+			{ 1.f, 1.f, 0.f },
+			{ 1.f, 0.f, 0.f },
+
+			{ 0.f, 0.f, 1.f },
+			{ 0.f, 1.f, 1.f },
+			{ 1.f, 1.f, 1.f },
+			{ 1.f, 0.f, 1.f },
+		};
+
+		// compute positions of the corners for voxel x,y,z as well
+		// as the case for the voxel
+		for (int i = 8; i--;)
+		{
+			c[i] *= voxel_delta;
+			p[i] = p0 + (voxel_delta * voxel_index) + c[i];
+			d[i] = density_at(p[i].v);
+
+			if (d[i] <= 0)
+			{
+				voxel_case |= (1 << i);
+			}
+		}
+
+		// compute lerp weights between verts for each edge
+		float w[12];
+		for (int i = 0; i < 12; ++i)
+		{
+			int e_i = tri_edge_list_case[voxel_case][i];
+
+			if (e_i == -1) break;
+
+			// v0 * w + v1 * (1 - w)
+			// w = 0.5
+			// -1 * w + 1 * (1 - w) = 0
+			//
+			// d0 * w + d1 * (1 - w) = 0
+			// d0 * w + d1 - d1 * w = 0
+			// (d0 * w - d1 * w) / w = -d1 / w
+			// d0 - d1 = -d1 / w
+			// -d1 / (d0 - d1) = w
+
+			int p0_i = edge_list[e_i][0];
+			int p1_i = edge_list[e_i][1];
+
+			// solve for the weight that will lerp between
+			w[i] = d[p0_i] / (d[p0_i] - d[p1_i]);
+
+			Vertex v = {};
+			Vec3 _p = p[p1_i] * w[i] + p[p0_i] * (1 - w[i]);
+			vec3_copy(v.position, _p.v);
+
+			indices.push_back(vertices.size());
+			vertices.push_back(v);
+		}
+
+	}
+
+	// use the gradient of the density function to compute the
+	// normal vector for each vertex
+	for (int i = 0; i < vertices.size(); i++)
+	{
+		const float s = 0.1;
+		vec3 grad;
+		vec3 deltas[3][2] = {
+			{{ s, 0, 0 }, { -s, 0, 0 }},
+			{{ 0, s, 0 }, { 0, -s, 0 }},
+			{{ 0, 0, s }, { 0,  0, -s }},
+		};
+		Vertex& v = vertices[i];
+
+		for (int j = 3; j--;)
+		{
+			vec3 samples[2];
+			vec3_add(samples[0], v.position, deltas[j][0]);
+			vec3_add(samples[1], v.position, deltas[j][1]);
+			grad[j] = density_at(samples[0]) - density_at(samples[1]);
+		}
+
+		vec3_norm(v.normal, grad);
+	}
+}
 //------------------------------------------------------------------------------
 //     ___  ___    _
 //    / _ \| _ )_ | |

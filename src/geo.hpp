@@ -61,7 +61,6 @@ protected:
 };
 
 //------------------------------------------------------------------------------
-
 struct Model : Drawable, Positionable
 {
 public:
@@ -130,6 +129,17 @@ struct Heightmap : Plane
 {
 	Heightmap(Tex texture, float size, int resolution);
 	~Heightmap();
+};
+
+//------------------------------------------------------------------------------
+struct Volume : Mesh
+{
+	Volume(std::vector<Vec3> corners, int divisions);
+
+	void generate(float(*density_at)(vec3 loc));
+private:
+	int _divisions;
+	std::vector<Vec3> _corners;
 };
 
 }
