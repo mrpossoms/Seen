@@ -159,7 +159,7 @@ void Cubemap::draw_at(Vec3 position,
 
 		assert(gl_get_error());
 
-		for(auto drawable : scene->drawables())
+		for(auto drawable : scene->all())
 		{
 			// skip it drawable is in excluding
 			if (std::find(excluding.begin(), excluding.end(), drawable) != excluding.end())

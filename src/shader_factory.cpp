@@ -322,15 +322,15 @@ Shader& Shader::blinn()
 	assert(has_input("normal_*"));
 
 	auto l_normal = local("l_normal").as(vec(3));
+	auto u_specular_sampler = parameter("u_specular_sampler").as(tex(2));
 
 	if (has_variable("l_normal", locals) == NULL && has_variable("normal_*", inputs))
 	{
 		Variable::copy(*has_variable("normal_*", inputs), l_normal);
 	}
 
-	//assert(normal);
-
 	auto i_position = input("position_*");
+	auto i_texcoord = input("texcoord_*").as(Shader::vec(3));
 	auto o_color = output("color").as(Shader::vec(4));
 
 	auto u_light_position = parameter("u_light_position").as(vec(3));
@@ -345,12 +345,6 @@ Shader& Shader::blinn()
 	auto l_light_dir = local("l_light_dir").as(vec(3));
 	auto l_light_dist = local("l_light_dist").as(vec(1));
 	auto l_ndh = local("l_ndh").as(vec(1));
-
-	// Expression is_front = { "gl_FrontFacing == false" };
-	//
-	// next_if(is_front, [&]{
-	// 	next(l_normal *= -1.f);
-	// });
 
 	next(l_view_dir = (u_view_pos - i_position["xyz"]).normalize());
 	next(l_light_dir = (u_light_position - i_position["xyz"]));
@@ -371,6 +365,7 @@ Shader& Shader::blinn()
 
 	next(l_ndh = l_normal.dot(l_half));
 	next(l_intensity = (l_ndh.saturate()).pow(16));
+	next(l_intensity *= call("texture", {u_specular_sampler, i_texcoord["xy"]})["r"]);
 
 	if (has_variable("l_lit", locals))
 	{
@@ -486,22 +481,6 @@ Shader& Shader::shadow_mapped_vsm(bool for_point_light)
 	next_if(l_depth["z"] > l_query["r"], [&]{
 		next(l_lit = l_p);
 	});
-
-	// next(l_d2 = l_light_dir.length());
-	// next(l_d1 = l_query["r"]);
-	// next(l_m1 = l_p * l_d2 + ( one - l_p) * l_d1);
-	// next(l_m2 = l_p * l_d2.pow(2) + ( one - l_p) * l_query["g"]);
-
-	// next(l_test = l_d2 - l_d1);
-	// next_if(l_d2 >= l_m1, [&]{
-	// 	next(l_sig2 = l_p - l_p.pow(2));
-	// 	next(l_sig2 *= (l_d2 - l_d1).pow(2));
-	//
-	// 	next(l_pmax = l_sig2 + (l_m1 - l_d2).pow(2));
-	// 	next(l_pmax = l_sig2 / l_pmax);
-	// 	next(l_lit *= l_pmax);
-	// });
-
 
 	return *this;
 }

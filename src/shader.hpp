@@ -258,9 +258,9 @@ struct ShaderProgram {
 
 	GLint program;
 	GLint primative;
+	std::string name;
 	DrawParams draw_params;
 
-	void init_draw_params();
 	ShaderProgram* use();
 
 	ShaderParam& operator[](std::string name);
@@ -274,32 +274,17 @@ struct ShaderProgram {
 	static ShaderProgram* active(ShaderProgram* program);
 	static ShaderProgram* active();
 
-	static ShaderProgram* compile(std::vector<Shader> shaders);
+	static ShaderProgram& compile(std::string name, std::vector<Shader> shaders);
+	static ShaderProgram& get(std::string name);
 
-	static ShaderProgram* builtin_sky();
-	static ShaderProgram* builtin_shadow_depth();
-	static ShaderProgram* builtin_normal_colors();
+	static ShaderProgram& builtin_sky();
+	static ShaderProgram& builtin_shadow_depth();
+	static ShaderProgram& builtin_normal_colors();
 private:
 	std::map<std::string, ShaderParam*> _params;
 	int _tex_counter;
 };
 
-// auto vsh = Shader::Vertex("basic_vsh");
-// auto position = vsh.input("position_in").as(Shader::vec(3));
-// auto uv_in = vsh.input("texcoord_in").as(Shader::vec(2));
-// auto uv_out = vsh.output("texcoord_vsh").as(Shader::vec(2));
-// auto mvp = vsh.parameter("uModelViewProjection").as(Shader::mat(4));
-// vsh.next() << uv_out = uv_in;
-// vsh.next() << vsh.builtin("gl_Position") = mvp * position;
-// vsh.compile()
-//
-// auto fsh = Shader::Fragment("basic_fsh");
-// auto tex = fsh.parameter("uTexture").as(Shader::tex2d);
-// auto uv_in = fsh.input("texcoord_vsh").as(Shader::vec(2));
-// fsh.next() << fsh.builtin("gl_Color")["rgba"] = fsh.call("texture", tex, uv_in);
-// fsh.compile()
-
-// auto program = Shader::compile(vsh, fsh);
 
 class ShaderCache {
 	friend struct Shader;

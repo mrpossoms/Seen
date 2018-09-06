@@ -13,7 +13,6 @@ class CustomPass : public RenderingPass
 public:
 	CustomPass();
 	CustomPass(std::function<void (int)> prep);
-	CustomPass(std::function<void (int)> prep, ...);
 	~CustomPass();
 
 	void prepare(int index);
@@ -23,7 +22,6 @@ public:
 	int instances;
 
 	std::function<void (int)> preparation_function;
-	std::vector<Drawable*> drawables;
 };
 
 class ShadowPass : public RenderingPass

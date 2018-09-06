@@ -9,13 +9,18 @@ class ListScene : public Scene
 {
 public:
 	ListScene() = default;
+    ListScene(std::initializer_list<Drawable*> drawables);
 	~ListScene() = default;
 
-	std::vector<Drawable*>& drawables();
+    void insert(Drawable* d);
+    void erase(Drawable* d);
+
+    std::vector<Drawable*>& all();
+
 	void draw();
 
 private:
-	std::vector<Drawable*> _drawables;
+    std::vector<Drawable*> _drawables;
 };
 
 }

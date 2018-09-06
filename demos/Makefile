@@ -22,7 +22,7 @@ all: $(DEMOS)
 	make -C .. static -j4
 
 .PHONY: lib
-lib: 	clean
+lib:
 	make -C .. static -j4
 	@echo "Forced libseen.a rebuild"
 

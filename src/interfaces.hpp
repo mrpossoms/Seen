@@ -61,13 +61,19 @@ public:
 class Scene : public Drawable
 {
 public:
-	virtual std::vector<Drawable*>& drawables() = 0;
+
+	virtual void insert(Drawable* d) = 0;
+	virtual void erase(Drawable* d) = 0;
+
+	virtual std::vector<Drawable*>& all() = 0;
 };
+
 
 class RenderBatch : public std::vector<Drawable*>
 {
 
 };
+
 
 class RenderingPass
 {

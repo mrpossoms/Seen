@@ -127,19 +127,23 @@ struct Plane : Mesh
 //------------------------------------------------------------------------------
 struct Heightmap : Plane
 {
+	Heightmap(std::string path, float size, int resolution);
 	Heightmap(Tex texture, float size, int resolution);
 	~Heightmap();
+
+private:
+	void generate(Tex t, int resolution);
 };
 
 //------------------------------------------------------------------------------
 struct Volume : Mesh
 {
-	Volume(std::vector<Vec3> corners, int divisions);
+	Volume(Vec3 corner0, Vec3 corner1, int divisions);
 
 	void generate(float(*density_at)(vec3 loc));
 private:
 	int _divisions;
-	std::vector<Vec3> _corners;
+	Vec3 _corners[2];
 };
 
 }

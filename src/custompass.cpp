@@ -19,23 +19,6 @@ CustomPass::CustomPass(std::function<void(int)> prep)
 	instances = 1;
 };
 
-CustomPass::CustomPass(std::function<void(int)> prep, ...)
-{
-	va_list args;
-
-	va_start(args, prep);
-	while(true)
-	{
-		Drawable* d = va_arg(args, Drawable*);
-		if (!d) break;
-		drawables.push_back(d);
-	}
-	va_end(args);
-
-	preparation_function = prep;
-	instances = 1;
-};
-
 CustomPass::~CustomPass() {};
 
 
@@ -49,7 +32,7 @@ void CustomPass::draw(Viewer* viewer)
 {
 	if (!gl_get_error())
 	{
-		std::cerr << "Something bad happend before drawing" << std::endl;
+		std::cerr << "Something bad happened before drawing" << std::endl;
 	}
 
 	if(!gl_get_error())
@@ -63,18 +46,13 @@ void CustomPass::draw(Viewer* viewer)
 
 		if(viewer && i == 0)
 		{
-			//DrawParams& params = ShaderProgram::active()->draw_params;
-
-			//glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
-			//glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
-
 			ShaderProgram& shader = *ShaderProgram::active();
 			shader["u_view_matrix"] << viewer->_view;
 			shader["u_proj_matrix"] << viewer->_projection;
 
 		}
 
-		for(auto drawable : scene->drawables())
+		for(auto drawable : scene->all())
 		{
 			drawable->draw();
 		}
@@ -104,7 +82,7 @@ ShadowPass::~ShadowPass()
 
 void ShadowPass::prepare(int index)
 {
-	ShaderProgram::builtin_shadow_depth()->use();
+	ShaderProgram::builtin_shadow_depth().use();
 	_cubemap->prepare(0);
 }
 

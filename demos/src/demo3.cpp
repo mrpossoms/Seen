@@ -1,9 +1,16 @@
 #include "seen.hpp"
 
-seen::ShaderProgram* land_shader;
-
-void setup_shaders()
+static float sphere(vec3 v)
 {
+	return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) - 1.f;
+}
+
+
+int main(int argc, const char* argv[])
+{
+	seen::RendererGL renderer("./data", argv[0], 640, 480, 4, 0);
+	seen::Camera cam(M_PI / 4, 640, 480);
+
 	auto vsh = seen::Shader::vertex("basic_vsh");
 	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV)
 	   .transformed()
@@ -17,32 +24,11 @@ void setup_shaders()
 	fsh.color_textured()
 	   .normal_mapped()
 	   .shadow_mapped_vsm()
-	   //.shadow_mapped()
 	   .blinn()
 	   ;
 
 	//land_shader = seen::ShaderProgram::builtin_normal_colors();
-	land_shader = seen::ShaderProgram::compile({ vsh, fsh });
-	land_shader->use();
-}
-
-
-static float sphere(vec3 v)
-{
-	return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) - 1.f;
-}
-
-
-int main(int argc, const char* argv[])
-{
-	seen::RendererGL renderer("./data", argv[0], 640, 480, 4, 0);
-	seen::Camera cam(M_PI / 4, 640, 480);
-
-	setup_shaders();
-
-	auto height_map = seen::TextureFactory::load_texture("austrailia_256.png");
-	auto normal_tex = seen::TextureFactory::load_texture("dirt_normal.png");
-	auto dirt_tex = seen::TextureFactory::load_texture("dry_dirt.png");
+	seen::ShaderProgram::compile("land", { vsh, fsh }).use();
 
 	// setup camera
 	cam.position(0, 1, 0);
@@ -50,17 +36,18 @@ int main(int argc, const char* argv[])
 
 	// Models
 	seen::Model* sky_sphere = seen::MeshFactory::get_model("sphere.obj");
-	seen::Model land(new seen::Heightmap(height_map, 10, 256));
-	// seen::Model monolith(new seen::Plane({Vec3(0.3, 2, 0), Vec3(-0.3, 0, 0)}));
+	seen::Model land(new seen::Heightmap("austrailia_256.png", 10, 256));
+	auto dirt_mat = seen::TextureFactory::get_material("dirt");
+
 	const float s = 4;
-	auto mc_mesh = new seen::Volume({ Vec3(-s, -s, -s), Vec3(s, s, s) }, 16);
+	auto mc_mesh = new seen::Volume(Vec3(-s, -s, -s), Vec3(s, s, s), 64);
 	mc_mesh->generate(sphere);
 	seen::Model monolith(mc_mesh);
 
 	seen::CustomPass sky_pass([&](int index) {
-		seen::ShaderProgram::builtin_sky()->use();
+		seen::ShaderProgram::builtin_sky().use();
 		glDisable(GL_CULL_FACE);
-	}, NULL);
+	});
 
 	float t = 0;
 
@@ -72,32 +59,23 @@ int main(int argc, const char* argv[])
 	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
 	seen::CustomPass land_pass([&](int index) {
-		light.position.x = 2 * cos(t);
-		light.position.y = 2;
-		light.position.z = 2 * sin(t);
+		light.position = { 2 * cos(t), 2, 2 * sin(t) };
 
-		// glEnable(GL_CULL_FACE);
+		seen::ShaderProgram& shader = seen::ShaderProgram::get("land");
 
-		land_shader->use();
+		shader.use();
 
-		(*land_shader)["u_color_sampler"] << dirt_tex;
-		(*land_shader)["u_normal_sampler"] << normal_tex;
-		(*land_shader)["u_view_position"] << cam.position();
-		(*land_shader) << &shadow_pass;
-		(*land_shader) << &light;
-	}, NULL);
-	glPointSize(10);
-	// land_shader->primative = GL_POINTS;
+		shader << dirt_mat;
+		shader["u_view_position"] << cam.position();
+		shader << &shadow_pass;
+		shader << &light;
+	});
 
-	seen::ListScene land_scene, sky_scene;
-
-	sky_scene.drawables().push_back(sky_sphere);
-	// land_scene.drawables().push_back(&land);
-	land_scene.drawables().push_back(&monolith);
-
+	seen::ListScene land_scene = { &land, &monolith };
+	seen::ListScene sky_scene = { sky_sphere };
 
 	shadow_pass.scene = &land_scene;
-	shadow_pass.lights.push_back(&light);
+	shadow_pass.lights = { &light };
 
 	sky_pass.scene = &sky_scene;
 	land_pass.scene = &land_scene;
@@ -115,4 +93,3 @@ int main(int argc, const char* argv[])
 
 	return 0;
 }
-//

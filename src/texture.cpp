@@ -113,6 +113,7 @@ int TextureFactory::load_texture_buffer(
 	if (!fp)
 	{
 		fprintf(stderr, SEEN_TERM_RED "[read_png_file] File %s could not be opened for reading" SEEN_TERM_COLOR_OFF, path.c_str());
+		return -1;
 	}
 
 	fread(header, 1, 8, fp);
@@ -197,7 +198,10 @@ Tex TextureFactory::load_texture(std::string path)
 	int width, height, depth;
 	void* pixel_buf = NULL;
 
-	load_texture_buffer(path, &pixel_buf, width, height, depth);
+	if (load_texture_buffer(path, &pixel_buf, width, height, depth))
+	{
+		return -1;
+	}
 
 	GLenum gl_color_type;
 	switch (depth)

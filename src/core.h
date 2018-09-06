@@ -19,6 +19,7 @@
 #include <sstream>
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
 
 // project libs
 #ifdef __linux__

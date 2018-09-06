@@ -142,34 +142,6 @@ GLint link_program(const GLint* shaders, const char** attributes)
 }
 //------------------------------------------------------------------------------
 
-void ShaderProgram::init_draw_params()
-{
-	//draw_params.world_uniform = glGetUniformLocation(program, "u_world_matrix");
-	//draw_params.norm_uniform  = glGetUniformLocation(program, "u_normal_matrix");
-	//draw_params.view_uniform  = glGetUniformLocation(program, "view_matrix");
-	//draw_params.proj_uniform  = glGetUniformLocation(program, "proj_matrix");
-
-	std::string uniforms[] = {
-		"u_world_matrix",
-		"u_normal_matrix",
-		"u_view_matrix",
-		"u_proj_matrix"
-	};
-
-	for (auto uniform : uniforms)
-	{
-		(*this)[uniform];
-	}
-
-	draw_params.material_uniforms.tex  = glGetUniformLocation(program, "tex");
-	draw_params.material_uniforms.norm = glGetUniformLocation(program, "norm");
-	draw_params.material_uniforms.spec = glGetUniformLocation(program, "spec");
-	draw_params.material_uniforms.envd = glGetUniformLocation(program, "envd");
-
-	gl_get_error();
-}
-//------------------------------------------------------------------------------
-
 ShaderProgram* ShaderProgram::active(ShaderProgram* shader)
 {
 	static ShaderProgram* active;
@@ -195,13 +167,12 @@ ShaderProgram* ShaderProgram::active()
 }
 //------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
+ShaderProgram& ShaderProgram::compile(std::string name, std::vector<Shader> shaders)
 {
 	char attribute_store[16][128] = {};
 	char* attributes[16] = {};
 	GLint gs_shaders[6] = {};
 	ShaderProgram program;
-	std::string prog_name;
 
 	// compile, cache and include each shader
 	int si = 0;
@@ -219,14 +190,13 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 
 		gs_shaders[si] = shader.compile();
 		si++;
-		prog_name += shader.name;
 	}
 
 	program.program = link_program(gs_shaders, (const char**)attributes);
 	program.primative = GL_TRIANGLES;
-	Shaders._program_cache[prog_name] = program;
+	Shaders._program_cache[name] = program;
 
-	ShaderProgram& prog_ref = Shaders._program_cache[prog_name];
+	ShaderProgram& prog_ref = Shaders._program_cache[name];
 
 	// preload the uniforms
 	for (auto shader : shaders)
@@ -237,18 +207,23 @@ ShaderProgram* ShaderProgram::compile(std::vector<Shader> shaders)
 		}
 	}
 
-	return &Shaders._program_cache[prog_name];
+	return Shaders._program_cache[name];
 }
 //------------------------------------------------------------------------------
 
-
-ShaderProgram* ShaderProgram::builtin_sky()
+ShaderProgram& ShaderProgram::get(std::string name)
 {
-	const std::string prog_name = "sky_vshsky_fsh";
+	return Shaders._program_cache[name];
+}
+//------------------------------------------------------------------------------
+
+ShaderProgram& ShaderProgram::builtin_sky()
+{
+	const std::string prog_name = "sky";
 
 	if (Shaders._program_cache.count(prog_name) == 1)
 	{
-		return &Shaders._program_cache[prog_name];
+		return Shaders._program_cache[prog_name];
 	}
 
 	auto vsh = Shader::vertex("sky_vsh");
@@ -300,17 +275,17 @@ ShaderProgram* ShaderProgram::builtin_sky()
 	   .next(color = fsh.call("vec4", { blue.mix({sun}, light_angle.pow(64)), {"1.0"}}));
 
 
-	return seen::ShaderProgram::compile({ vsh, fsh });
+	return seen::ShaderProgram::compile(prog_name, { vsh, fsh });
 }
 //------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::builtin_normal_colors()
+ShaderProgram& ShaderProgram::builtin_normal_colors()
 {
-	const std::string prog_name = "default_vshnormal_color_fsh";
+	const std::string prog_name = "normal_colors";
 
 	if (Shaders._program_cache.count(prog_name) == 1)
 	{
-		return &Shaders._program_cache[prog_name];
+		return Shaders._program_cache[prog_name];
 	}
 
 	auto vsh = Shader::vertex("default_vsh");
@@ -329,17 +304,17 @@ ShaderProgram* ShaderProgram::builtin_normal_colors()
 	fsh.next(color["rgb"] = fsh.input("normal_*") / 2.0 + 0.5);
 	fsh.next(color["a"] = "1.0");
 
-	return seen::ShaderProgram::compile({ vsh, fsh });
+	return seen::ShaderProgram::compile(prog_name, { vsh, fsh });
 }
 //------------------------------------------------------------------------------
 
-ShaderProgram* ShaderProgram::builtin_shadow_depth()
+ShaderProgram& ShaderProgram::builtin_shadow_depth()
 {
-	const std::string prog_name = "default_vshshadow_depth_fsh";
+	const std::string prog_name = "shadow_depth";
 
 	if (Shaders._program_cache.count(prog_name) == 1)
 	{
-		return &Shaders._program_cache[prog_name];
+		return Shaders._program_cache[prog_name];
 	}
 
 	auto vsh = Shader::vertex("default_vsh");
@@ -351,10 +326,6 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	vsh.transformed()
 	   .viewed()
 	   .projected()
-	   // .next(l_depth = vsh.call("vec4", { {"0"}, {"0"}, vsh.local("l_pos_view").length() / {"1000.0"}, {"1"} }))
-	   // .next(l_depth = vsh.local("l_pos_proj"))
-	   // .next(l_depth /= l_depth["w"])
-	   // .next(o_depth = l_depth["z"])
 	   .next(o_depth = vsh.local("l_pos_view").length())
 	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
 
@@ -362,12 +333,11 @@ ShaderProgram* ShaderProgram::builtin_shadow_depth()
 	auto depth = fsh.output("depth_" + fsh.suffix()).as(Shader::vec(4));
 	auto i_depth = fsh.input("depth_*");
 
-	// fsh.next(depth = fsh.builtin("gl_FragCoord")["xyz"].length());
 	fsh.next(depth["r"] = i_depth);
 	fsh.next(depth["g"] = i_depth * i_depth);
 	fsh.next(depth /= 1000.f);
 
-	return seen::ShaderProgram::compile({ vsh, fsh });
+	return seen::ShaderProgram::compile(prog_name, { vsh, fsh });
 }
 //------------------------------------------------------------------------------
 
@@ -383,13 +353,16 @@ ShaderProgram* ShaderProgram::use()
 void ShaderProgram::operator<<(Material* m)
 {
 	const std::string uniform_names[] = {
-		"us_color",
-		"us_normal",
-		"us_specular"
+		"u_color_sampler",
+		"u_normal_sampler",
+		"u_specular_sampler"
 	};
 
 	for (int i = 3; i--;)
 	{
+		// skip material textures that haven't been loaded
+		if (m->v[i] == -1) { continue; }
+
 		glActiveTexture(GL_TEXTURE0 + _tex_counter);
 		glBindTexture(GL_TEXTURE_2D, m->v[i]);
 		(*this)[uniform_names[i]] << _tex_counter;
@@ -508,7 +481,6 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 		}
 
 		ShaderProgram::active(&shader);
-		shader.init_draw_params();
 
 		_program_cache[name] = shader;
 	}

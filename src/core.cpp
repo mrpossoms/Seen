@@ -166,3 +166,12 @@ mat4x4_t& Positionable::world()
 {
 	return _world;
 }
+
+
+// Iterator Scene::begin()
+// {
+// 	Iterator itr(this);
+// 	this->iteration_start();
+
+// 	return itr;
+// }

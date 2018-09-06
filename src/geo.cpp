@@ -303,10 +303,24 @@ Plane::Plane(Vec3 c0, Vec3 c1)
 
 	// compute_tangents();
 }
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+Heightmap::Heightmap(std::string path, float size, int resolution) :
+           Plane(size, resolution)
+{
+	auto texture = TextureFactory::load_texture(path);
+	generate(texture, resolution);
+}
+
+//------------------------------------------------------------------------------
 Heightmap::Heightmap(Tex texture, float size, int resolution) :
            Plane(size, resolution)
+{
+	generate(texture, resolution);
+}
+
+//------------------------------------------------------------------------------
+void Heightmap::generate(Tex texture, int resolution)
 {
 	struct rgba_t {
 		uint8_t r, g, b, a;
@@ -337,36 +351,30 @@ Heightmap::Heightmap(Tex texture, float size, int resolution) :
 
 	compute_normals();
 }
+
 //------------------------------------------------------------------------------
-
-Volume::Volume(std::vector<Vec3> corners, int divisions)
+Volume::Volume(Vec3 corner0, Vec3 corner1, int divisions)
 {
-	int max_possible_tris = pow(8, divisions) * 5;
-	int max_possible_verts = max_possible_tris * 3;
-
-	_corners = corners;
+	_corners[0] = corner0;
+	_corners[1] = corner1;
 	_divisions = divisions + 1;
 
-	// TODO reserve space instead
-	// for (;max_possible_verts--;)
-	// {
-	// 	Vertex v = {};
-	// 	vertices.push_back(v);
-	// }
+	// reserve space for the maximum number of tris that could be allocated
+	// int max_possible_tris = pow(8, divisions) * 5;
+	// int max_possible_verts = max_possible_tris * 3;
+	// vertices.reserve(max_possible_verts);
 }
 
 //------------------------------------------------------------------------------
-
 void Volume::generate(float(*density_at)(vec3 loc))
 {
 	#include "mc_luts.hpp"
 
 	float div = _divisions;
-	float points_per_edge = _divisions + 1;
 
 	Vec3& p0 = _corners[0];
 	Vec3& p1 = _corners[1];
-	Vec3 block_delta = (p1 - p0);// / _divisions;
+	Vec3 block_delta = (p1 - p0);
 	Vec3 voxel_delta = block_delta / div;
 
 	for (int x = _divisions; x--;)
