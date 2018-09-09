@@ -44,26 +44,24 @@ int main(int argc, const char* argv[])
 	mc_mesh->generate(sphere);
 	seen::Model monolith(mc_mesh);
 
-	seen::CustomPass sky_pass([&](int index) {
-		seen::ShaderProgram::builtin_sky().use();
-		glDisable(GL_CULL_FACE);
-	});
-
 	float t = 0;
-
-	auto shadow_pass = seen::ShadowPass(512, true);
-
 	seen::Light light;
 	light.power = { 1.5, 1.5, 1.5 };
 	light.ambience = 0.01;
 	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
+	// render passes
+	seen::CustomPass sky_pass([&](int index) {
+		seen::ShaderProgram::builtin_sky().use();
+		glDisable(GL_CULL_FACE);
+	});
+
+	auto shadow_pass = seen::ShadowPass(512, true);
+
 	seen::CustomPass land_pass([&](int index) {
 		light.position = { 2 * cos(t), 2, 2 * sin(t) };
 
-		seen::ShaderProgram& shader = seen::ShaderProgram::get("land");
-
-		shader.use();
+		seen::ShaderProgram& shader = seen::ShaderProgram::get("land").use();
 
 		shader << dirt_mat;
 		shader["u_view_position"] << cam.position();

@@ -342,11 +342,11 @@ ShaderProgram& ShaderProgram::builtin_shadow_depth()
 //------------------------------------------------------------------------------
 
 
-ShaderProgram* ShaderProgram::use()
+ShaderProgram& ShaderProgram::use()
 {
 	_tex_counter = 0; // reset texture location
 	ShaderProgram::active(this);
-	return this;
+	return *this;
 }
 //------------------------------------------------------------------------------
 

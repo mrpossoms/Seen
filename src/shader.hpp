@@ -14,20 +14,6 @@ namespace seen
 
 struct ShaderProgram;
 
-struct DrawParams {
-	GLint world_uniform;
-	GLint norm_uniform;
-	GLint view_uniform;
-	GLint proj_uniform;
-	struct {
-		GLint tex;
-		GLint norm;
-		GLint spec;
-		GLint envd;
-	} material_uniforms;
-};
-
-
 struct ShaderConfig {
 	std::string vertex;
 	std::string fragment;
@@ -259,9 +245,8 @@ struct ShaderProgram {
 	GLint program;
 	GLint primative;
 	std::string name;
-	DrawParams draw_params;
 
-	ShaderProgram* use();
+	ShaderProgram& use();
 
 	ShaderParam& operator[](std::string name);
 
