@@ -60,7 +60,7 @@ Shader::Variable& Shader::input(std::string name)
 
 	if (input) return *input;
 
-	Shader::Variable var = { VAR_IN, "", name };
+	Shader::Variable var = { Shader::VarRole::VAR_IN, "", name };
 	inputs.push_back(var);
 
 	return inputs[inputs.size() - 1];
@@ -73,7 +73,7 @@ Shader::Variable& Shader::output(std::string name)
 
 	if (output) return *output;
 
-	Shader::Variable var = { VAR_OUT, "", name };
+	Shader::Variable var = { Shader::VarRole::VAR_OUT, "", name };
 	outputs.push_back(var);
 
 	return outputs[outputs.size() - 1];
@@ -86,7 +86,7 @@ Shader::Variable& Shader::parameter(std::string name)
 
 	if (parameter) return *parameter;
 
-	Shader::Variable var = { VAR_PARAM, "", name };
+	Shader::Variable var = { Shader::VarRole::VAR_PARAM, "", name };
 	parameters.push_back(var);
 
 	return parameters[parameters.size() - 1];
@@ -99,7 +99,7 @@ Shader::Variable& Shader::local(std::string name)
 
 	if (local) return *local;
 
-	Shader::Variable var = { VAR_LOCAL, "", name };
+	Shader::Variable var = { Shader::VarRole::VAR_LOCAL, "", name };
 	locals.push_back(var);
 
 	return locals[locals.size() - 1];
@@ -136,7 +136,7 @@ Shader::Variable* Shader::has_variable(std::string name, std::vector<Variable>& 
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 //------------------------------------------------------------------------------
 
@@ -190,7 +190,7 @@ Shader& Shader::preceded_by(Shader& previous)
 {
 	for (auto output : previous.outputs)
 	{
-		Shader::Variable input(VAR_IN, output.type, output.name);
+		Shader::Variable input(Shader::VarRole::VAR_IN, output.type, output.name);
 		input.array(output.array_size);
 		inputs.push_back(input);
 	}
@@ -324,7 +324,7 @@ Shader& Shader::blinn()
 	auto l_normal = local("l_normal").as(vec(3));
 	auto u_specular_sampler = parameter("u_specular_sampler").as(tex(2));
 
-	if (has_variable("l_normal", locals) == NULL && has_variable("normal_*", inputs))
+	if (has_variable("l_normal", locals) == nullptr && has_variable("normal_*", inputs))
 	{
 		Variable::copy(*has_variable("normal_*", inputs), l_normal);
 	}
@@ -503,78 +503,80 @@ Shader::~Shader()
 
 Shader::Expression Shader::builtin(std::string gl_name)
 {
-	static std::map<std::string, Shader::Variable> vertex_builtin_map = {
-		{ "gl_VertexID",     Shader::Variable(VAR_IN, "int", "gl_VertexID") },
-		{ "gl_InstanceID",   Shader::Variable(VAR_IN, "int", "gl_InstanceID") },
-		{ "gl_DrawID",       Shader::Variable(VAR_IN, "int", "gl_DrawID") },
-		{ "gl_BaseVertex",   Shader::Variable(VAR_IN, "int", "gl_BaseVertex") },
-		{ "gl_BaseInstance", Shader::Variable(VAR_IN, "int", "gl_BaseInstance") },
+	using VRole = Shader::VarRole;
 
-		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
-		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
+	static std::map<std::string, Shader::Variable> vertex_builtin_map = {
+		{ "gl_VertexID",     Shader::Variable(VRole::VAR_IN, "int", "gl_VertexID") },
+		{ "gl_InstanceID",   Shader::Variable(VRole::VAR_IN, "int", "gl_InstanceID") },
+		{ "gl_DrawID",       Shader::Variable(VRole::VAR_IN, "int", "gl_DrawID") },
+		{ "gl_BaseVertex",   Shader::Variable(VRole::VAR_IN, "int", "gl_BaseVertex") },
+		{ "gl_BaseInstance", Shader::Variable(VRole::VAR_IN, "int", "gl_BaseInstance") },
+
+		{ "gl_Position",     Shader::Variable(VRole::VAR_OUT, "vec4", "gl_Position") },
+		{ "gl_PointSize",    Shader::Variable(VRole::VAR_OUT, "float", "gl_PointSize") },
 	};
 
 	static std::map<std::string, Shader::Variable> tess_control_builtin_map = {
-		{ "gl_PatchVerticesIn", Shader::Variable(VAR_IN, "int", "gl_PatchVerticesIn") },
-		{ "gl_PrimitiveID",     Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
-		{ "gl_InvocationID",    Shader::Variable(VAR_IN, "int", "gl_InvocationID") },
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
-		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
-	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
+		{ "gl_PatchVerticesIn", Shader::Variable(VRole::VAR_IN, "int", "gl_PatchVerticesIn") },
+		{ "gl_PrimitiveID",     Shader::Variable(VRole::VAR_IN, "int", "gl_PrimitiveID") },
+		{ "gl_InvocationID",    Shader::Variable(VRole::VAR_IN, "int", "gl_InvocationID") },
+		{ "gl_in", Shader::Variable(VRole::VAR_IN, "struct", "gl_in").array(32)
+		                                                       << Shader::Variable(VRole::VAR_IN, "vec4", "gl_Position")
+	 	                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_PointSize")
+		                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_ClipDistance").array(32)},
 
-		{ "gl_TessLevelOuter",     Shader::Variable(VAR_OUT, "float", "gl_TessLevelOuter").array(4) },
-		{ "gl_TessLevelInner",    Shader::Variable(VAR_OUT, "float", "gl_TessLevelInner").array(2) },
-		{ "gl_out", Shader::Variable(VAR_OUT, "struct", "gl_out").array(32)
-		                                                       << Shader::Variable(VAR_OUT, "vec4", "gl_Position")
-	 	                                                       << Shader::Variable(VAR_OUT, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32)},
+		{ "gl_TessLevelOuter",     Shader::Variable(VRole::VAR_OUT, "float", "gl_TessLevelOuter").array(4) },
+		{ "gl_TessLevelInner",    Shader::Variable(VRole::VAR_OUT, "float", "gl_TessLevelInner").array(2) },
+		{ "gl_out", Shader::Variable(VRole::VAR_OUT, "struct", "gl_out").array(32)
+		                                                       << Shader::Variable(VRole::VAR_OUT, "vec4", "gl_Position")
+	 	                                                       << Shader::Variable(VRole::VAR_OUT, "float", "gl_PointSize")
+		                                                       << Shader::Variable(VRole::VAR_OUT, "float", "gl_ClipDistance").array(32)},
 	};
 
 	static std::map<std::string, Shader::Variable> tess_eval_builtin_map = {
-		{ "gl_TessCoord", Shader::Variable(VAR_IN, "vec3", "gl_TessCoord") },
-		{ "gl_PatchVerticesIn",     Shader::Variable(VAR_IN, "int", "gl_PatchVerticesIn") },
-		{ "gl_PrimitiveID",    Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
-		{ "gl_TessLevelOuter",     Shader::Variable(VAR_IN, "float", "gl_TessLevelOuter").array(4) },
-		{ "gl_TessLevelInner",    Shader::Variable(VAR_IN, "float", "gl_TessLevelInner").array(2) },
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
-		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
-	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
+		{ "gl_TessCoord", Shader::Variable(VRole::VAR_IN, "vec3", "gl_TessCoord") },
+		{ "gl_PatchVerticesIn",     Shader::Variable(VRole::VAR_IN, "int", "gl_PatchVerticesIn") },
+		{ "gl_PrimitiveID",    Shader::Variable(VRole::VAR_IN, "int", "gl_PrimitiveID") },
+		{ "gl_TessLevelOuter",     Shader::Variable(VRole::VAR_IN, "float", "gl_TessLevelOuter").array(4) },
+		{ "gl_TessLevelInner",    Shader::Variable(VRole::VAR_IN, "float", "gl_TessLevelInner").array(2) },
+		{ "gl_in", Shader::Variable(VRole::VAR_IN, "struct", "gl_in").array(32)
+		                                                       << Shader::Variable(VRole::VAR_IN, "vec4", "gl_Position")
+	 	                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_PointSize")
+		                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_ClipDistance").array(32)},
 
-		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
-		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
-		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32) },
+		{ "gl_Position",     Shader::Variable(VRole::VAR_OUT, "vec4", "gl_Position") },
+		{ "gl_PointSize",    Shader::Variable(VRole::VAR_OUT, "float", "gl_PointSize") },
+		{ "gl_ClipDistance", Shader::Variable(VRole::VAR_OUT, "float", "gl_ClipDistance").array(32) },
 	};
 
 	static std::map<std::string, Shader::Variable> geometry_builtin_map = {
-		{ "gl_in", Shader::Variable(VAR_IN, "struct", "gl_in").array(32)
-		                                                       << Shader::Variable(VAR_IN, "vec4", "gl_Position")
-	 	                                                       << Shader::Variable(VAR_IN, "float", "gl_PointSize")
-		                                                       << Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32)},
-		{ "gl_PrimitiveIDIn",     Shader::Variable(VAR_IN, "int", "gl_PrimitiveIDIn") },
-		{ "gl_InvocationID",    Shader::Variable(VAR_IN, "int", "gl_InvocationID") },
+		{ "gl_in", Shader::Variable(VRole::VAR_IN, "struct", "gl_in").array(32)
+		                                                       << Shader::Variable(VRole::VAR_IN, "vec4", "gl_Position")
+	 	                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_PointSize")
+		                                                       << Shader::Variable(VRole::VAR_IN, "float", "gl_ClipDistance").array(32)},
+		{ "gl_PrimitiveIDIn",     Shader::Variable(VRole::VAR_IN, "int", "gl_PrimitiveIDIn") },
+		{ "gl_InvocationID",    Shader::Variable(VRole::VAR_IN, "int", "gl_InvocationID") },
 
-		{ "gl_Position",     Shader::Variable(VAR_OUT, "vec4", "gl_Position") },
-		{ "gl_PointSize",    Shader::Variable(VAR_OUT, "float", "gl_PointSize") },
-		{ "gl_ClipDistance", Shader::Variable(VAR_OUT, "float", "gl_ClipDistance").array(32) },
+		{ "gl_Position",     Shader::Variable(VRole::VAR_OUT, "vec4", "gl_Position") },
+		{ "gl_PointSize",    Shader::Variable(VRole::VAR_OUT, "float", "gl_PointSize") },
+		{ "gl_ClipDistance", Shader::Variable(VRole::VAR_OUT, "float", "gl_ClipDistance").array(32) },
 	};
 
 	static std::map<std::string, Shader::Variable> fragment_builtin_map = {
-		{ "gl_FragCoord",     Shader::Variable(VAR_IN, "vec4", "gl_FragCoord") },
-		{ "gl_FrontFacing",   Shader::Variable(VAR_IN, "bool", "gl_FrontFacing") },
-		{ "gl_PointCoord",    Shader::Variable(VAR_IN, "vec2", "gl_PointCoord") },
-		{ "gl_SampleID",      Shader::Variable(VAR_IN, "int", "gl_SampleID") },
-		{ "gl_PointCoord",    Shader::Variable(VAR_IN, "vec2", "gl_PointCoord") },
-		{ "gl_SampleMaskIn",  Shader::Variable(VAR_IN, "int", "gl_SampleMaskIn") },
-		{ "gl_ClipDistance",  Shader::Variable(VAR_IN, "float", "gl_ClipDistance").array(32) },
-		{ "gl_PrimitiveID",   Shader::Variable(VAR_IN, "int", "gl_PrimitiveID") },
-		{ "gl_Layer",         Shader::Variable(VAR_IN, "int", "gl_Layer") },
-		{ "gl_ViewportIndex", Shader::Variable(VAR_IN, "int", "gl_ViewportIndex") },
+		{ "gl_FragCoord",     Shader::Variable(VRole::VAR_IN, "vec4", "gl_FragCoord") },
+		{ "gl_FrontFacing",   Shader::Variable(VRole::VAR_IN, "bool", "gl_FrontFacing") },
+		{ "gl_PointCoord",    Shader::Variable(VRole::VAR_IN, "vec2", "gl_PointCoord") },
+		{ "gl_SampleID",      Shader::Variable(VRole::VAR_IN, "int", "gl_SampleID") },
+		{ "gl_PointCoord",    Shader::Variable(VRole::VAR_IN, "vec2", "gl_PointCoord") },
+		{ "gl_SampleMaskIn",  Shader::Variable(VRole::VAR_IN, "int", "gl_SampleMaskIn") },
+		{ "gl_ClipDistance",  Shader::Variable(VRole::VAR_IN, "float", "gl_ClipDistance").array(32) },
+		{ "gl_PrimitiveID",   Shader::Variable(VRole::VAR_IN, "int", "gl_PrimitiveID") },
+		{ "gl_Layer",         Shader::Variable(VRole::VAR_IN, "int", "gl_Layer") },
+		{ "gl_ViewportIndex", Shader::Variable(VRole::VAR_IN, "int", "gl_ViewportIndex") },
 
-		{ "gl_FragDepth",     Shader::Variable(VAR_OUT, "float", "gl_FragDepth") },
-		{ "gl_Color",         Shader::Variable(VAR_OUT, "vec4", "gl_Color") },
-		{ "gl_SampleMask",    Shader::Variable(VAR_OUT, "int", "gl_SampleMask").array(32) },
+		{ "gl_FragDepth",     Shader::Variable(VRole::VAR_OUT, "float", "gl_FragDepth") },
+		{ "gl_Color",         Shader::Variable(VRole::VAR_OUT, "vec4", "gl_Color") },
+		{ "gl_SampleMask",    Shader::Variable(VRole::VAR_OUT, "int", "gl_SampleMask").array(32) },
 	};
 
 	switch (type)
@@ -591,7 +593,7 @@ Shader::Expression Shader::builtin(std::string gl_name)
 			return fragment_builtin_map[gl_name];
 	}
 
-	static Shader::Variable empty(VAR_NONE, "", "");
+	static Shader::Variable empty(VRole::VAR_NONE, "", "");
 	return empty;
 }
 //------------------------------------------------------------------------------

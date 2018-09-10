@@ -32,16 +32,7 @@ obj:
 obj/%.o: src/%.cpp lib obj
 	$(CXX) $(CFLAGS) $(INC) -c $< -o $@
 
-demo0: obj
-	$(CXX) $(CFLAGS) $(INC) src/$@.cpp -o $@ $(LINK)
-
-demo1: obj/demo1.o
-	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
-
-demo2: obj/demo2.o
-	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
-
-demo3: obj/demo3.o
+%: obj/%.o
 	$(CXX) $(CFLAGS) $(INC) $^ -o $@ $(LINK)
 
 clean:

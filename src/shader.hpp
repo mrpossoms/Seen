@@ -49,8 +49,8 @@ private:
 struct Shader {
 	friend struct ShaderProgram;
 
-	enum VarRole {
-		VAR_IN = 0,
+	enum class VarRole {
+		VAR_IN,
 		VAR_OUT,
 		VAR_INOUT,
 		VAR_PARAM,
@@ -68,8 +68,6 @@ struct Shader {
 	struct Code {
 		std::string str;
 		const char* cstr();
-
-
 	};
 
 	struct Expression : public Code {
@@ -263,6 +261,7 @@ struct ShaderProgram {
 	static ShaderProgram& get(std::string name);
 
 	static ShaderProgram& builtin_sky();
+	static ShaderProgram& builtin_realistic();
 	static ShaderProgram& builtin_shadow_depth();
 	static ShaderProgram& builtin_normal_colors();
 private:

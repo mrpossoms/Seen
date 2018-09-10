@@ -78,6 +78,8 @@ class RenderBatch : public std::vector<Drawable*>
 class RenderingPass
 {
 public:
+	virtual ~RenderingPass() {};
+
 	virtual void prepare(int index) {};
 	virtual void draw(Viewer* viewer) = 0;
 	virtual void finish() {};

@@ -29,7 +29,6 @@ public:
 
 	void draw(Viewer* viewer, std::vector<RenderingPass*> passes);
 
-	GLFWwindow* win;
 	int width, height;
 
 	std::function<void(double x, double y, double dx, double dy)> mouse_moved;
@@ -42,6 +41,7 @@ public:
 
 private:
 	double mouse_last_x, mouse_last_y;
+	GLFWwindow* _win;
 };
 
 }

@@ -32,19 +32,10 @@ int main(int argc, const char* argv[])
 	camera.position(0, 0, -3);
 
 	// callback for camera looking
-	renderer.mouse_moved = [&](double x, double y, double dx, double dy)
-	{
-		Quat pitch, yaw, roll;
-		Vec3 forward, left, up;
-
-		pitch.from_axis_angle(VEC3_LEFT.v[0], VEC3_LEFT.v[1], VEC3_LEFT.v[2], dy * 0.01);
-		yaw.from_axis_angle(VEC3_UP.v[0], VEC3_UP.v[1], VEC3_UP.v[2], dx * 0.01);
-		pitch = pitch * yaw;
-		q_bale_ori = pitch * q_bale_ori;
-	};
+	renderer.use_free_cam(camera);
 
 	float uv_rot = 0;
-	bale_pass.preparation_function = [&]()
+	bale_pass.preparation_function = [&](int instance_index)
 	{
 		vec4_t material = { 0.1, 0.01, 1, 0.01 };
 		vec4_t albedo = { 1, 1, 1, 1 };
@@ -69,7 +60,7 @@ int main(int argc, const char* argv[])
 			uv_rot += 0.0001f;
 		}
 
-		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
+		seen::ShaderProgram& shader = seen::Shaders[bale_shader]->use();
 
 		shader << bale_mat; //->use(&shader.draw_params.material_uniforms.tex);
 
@@ -95,9 +86,9 @@ int main(int argc, const char* argv[])
 		// glDisable(GL_CULL_FACE);
 	};
 
-	bale_tess_pass.preparation_function = [&]()
+	bale_tess_pass.preparation_function = [&](int instance_index)
 	{
-		seen::ShaderProgram& shader = *seen::Shaders[bale_shader]->use();
+		seen::ShaderProgram& shader = seen::Shaders[bale_shader]->use();
 
 		shader["us_displacement"] << displacement_tex;
 
@@ -109,19 +100,16 @@ int main(int argc, const char* argv[])
 		shader["u_tint"] << tint;
 	};
 
-	// Add all things to be drawn to the scene
-	bale_pass.drawables.push_back(bale);
-	bale_tess_pass.drawables.push_back(bale);
-
-	scene.drawables().push_back(&bale_pass);
-	scene.drawables().push_back(&bale_tess_pass);
+	seen::ListScene bale_scene = { bale };
+	bale_pass.scene      = &bale_scene;
+	bale_tess_pass.scene = &bale_scene;
 
 	renderer.clear_color(seen::rf(), seen::rf(), seen::rf(), 1);
 
 	int i = argc >= 3 ? atoi(argv[3]) : 10e6;
 	for(; renderer.is_running() && i--;)
 	{
-		renderer.draw(&camera, &scene);
+		renderer.draw(&camera, { &bale_pass, &bale_tess_pass });
 
 		if (argc > 2)
 		{

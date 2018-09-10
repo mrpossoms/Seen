@@ -9,13 +9,14 @@ CustomPass::CustomPass()
 {
 	std::function<void(int)> nop = [&](int){};
 	preparation_function = nop;
-
+	scene = nullptr;
 	instances = 1;
 };
 
 CustomPass::CustomPass(std::function<void(int)> prep)
 {
 	preparation_function = prep;
+	scene = nullptr;
 	instances = 1;
 };
 
@@ -38,6 +39,13 @@ void CustomPass::draw(Viewer* viewer)
 	if(!gl_get_error())
 	{
 		std::cerr << "ERROR: GL error produced in preparation_function" << std::endl;
+	}
+
+	if (scene == nullptr)
+	{
+		std::cerr << "Pass drawing with null scene" << std::endl;
+		// TODO: handle null scene
+		return;
 	}
 
 	for (int i = 0; i < instances; i++)

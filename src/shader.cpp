@@ -163,7 +163,7 @@ ShaderProgram* ShaderProgram::active(ShaderProgram* shader)
 
 ShaderProgram* ShaderProgram::active()
 {
-	return ShaderProgram::active(NULL);
+	return ShaderProgram::active(nullptr);
 }
 //------------------------------------------------------------------------------
 
@@ -229,7 +229,8 @@ ShaderProgram& ShaderProgram::builtin_sky()
 	auto vsh = Shader::vertex("sky_vsh");
 	auto fsh = Shader::fragment("sky_fsh");
 
-	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	using Feature = seen::Shader::FeatureFlags;
+	vsh.vertex(Feature::VERT_POSITION | Feature::VERT_NORMAL | Feature::VERT_TANGENT | Feature::VERT_UV);
 	vsh.transformed()
 	   .next(vsh.local("l_pos_trans")["xyz"] *= "100.0")
 	   .viewed()
@@ -279,6 +280,35 @@ ShaderProgram& ShaderProgram::builtin_sky()
 }
 //------------------------------------------------------------------------------
 
+ShaderProgram& ShaderProgram::builtin_realistic()
+{
+	const std::string prog_name = "realistic";
+
+	if (Shaders._program_cache.count(prog_name) == 1)
+	{
+		return Shaders._program_cache[prog_name];
+	}
+
+	auto vsh = seen::Shader::vertex("basic_vsh");
+	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV)
+	   .transformed()
+   	   .compute_binormal()
+	   .viewed().projected().pass_through("texcoord_in")
+	   .emit_position()
+	   .next(vsh.builtin("gl_Position") = vsh.local("l_pos_proj"));
+
+	auto fsh = seen::Shader::fragment("basic_fsh");
+	fsh.preceded_by(vsh);
+	fsh.color_textured()
+	   .normal_mapped()
+	   .shadow_mapped_vsm()
+	   .blinn();
+
+	return seen::ShaderProgram::compile(prog_name, { vsh, fsh }).use();
+
+}
+//------------------------------------------------------------------------------
+
 ShaderProgram& ShaderProgram::builtin_normal_colors()
 {
 	const std::string prog_name = "normal_colors";
@@ -291,7 +321,8 @@ ShaderProgram& ShaderProgram::builtin_normal_colors()
 	auto vsh = Shader::vertex("default_vsh");
 	auto fsh = Shader::fragment("normal_color_fsh");
 
-	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	using Feature = seen::Shader::FeatureFlags;
+	vsh.vertex(Feature::VERT_POSITION | Feature::VERT_NORMAL | Feature::VERT_TANGENT | Feature::VERT_UV);
 	vsh.transformed()
 	   .viewed()
 	   .projected()
@@ -320,7 +351,8 @@ ShaderProgram& ShaderProgram::builtin_shadow_depth()
 	auto vsh = Shader::vertex("default_vsh");
 	auto fsh = Shader::fragment("shadow_depth_fsh");
 
-	vsh.vertex(seen::Shader::VERT_POSITION | seen::Shader::VERT_NORMAL | seen::Shader::VERT_TANGENT | seen::Shader::VERT_UV);
+	using Feature = seen::Shader::FeatureFlags;
+	vsh.vertex(Feature::VERT_POSITION | Feature::VERT_NORMAL | Feature::VERT_TANGENT | Feature::VERT_UV);
 	auto l_depth = vsh.local("l_depth").as(Shader::vec(4));
 	auto o_depth = vsh.output("depth_" + vsh.suffix()).as(Shader::vec(1));
 	vsh.transformed()
@@ -375,6 +407,7 @@ void ShaderProgram::operator<<(Viewer* v)
 {
 	(*this)["u_view_matrix"] << v->_view;
 	(*this)["u_proj_matrix"] << v->_projection;
+	(*this)["u_view_position"] << v->position();
 }
 //------------------------------------------------------------------------------
 
@@ -453,7 +486,7 @@ ShaderProgram* ShaderCache::operator[](ShaderConfig config)
 		if (!config.vertex_attributes)
 		{
 			const char* attrs[] = {
-				"a_position", "a_normal", "a_tangent", "a_texcoord", NULL
+				"a_position", "a_normal", "a_tangent", "a_texcoord", nullptr
 			};
 
 			config.vertex_attributes = attrs;
@@ -507,7 +540,7 @@ ShaderParam::ShaderParam(ShaderProgram* program, const char* name)
 	bool is_good = gl_get_error();
 	if(!is_good)
 	{
-		std::cerr << SEEN_TERM_RED "Error befor setting: " << name << SEEN_TERM_COLOR_OFF << '\n';
+		std::cerr << SEEN_TERM_RED "Error before setting: " << name << SEEN_TERM_COLOR_OFF << '\n';
 	}
 	assert(is_good);
 

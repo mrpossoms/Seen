@@ -201,7 +201,7 @@ unsigned int STLMesh::vert_count()
 //------------------------------------------------------------------------------
 Vertex* STLMesh::verts()
 {
-	return NULL;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -519,7 +519,7 @@ static int get_line(int fd, char* line)
 //------------------------------------------------------------------------------
 bool parse_line(int fd, ObjLine& line)
 {
-	char *save_ptr = NULL;
+	char *save_ptr = nullptr;
 	line.type = UNKNOWN;
 
 	if(get_line(fd, line.str) == 0)
@@ -531,7 +531,7 @@ bool parse_line(int fd, ObjLine& line)
 	if(!token) return false;
 
 	// Determine the tag of the line
-	const char* tag[] = { R"(#)", R"(v)", R"(vt)", R"(vn)", R"(vp)", R"(f)", NULL };
+	const char* tag[] = { R"(#)", R"(v)", R"(vt)", R"(vn)", R"(vp)", R"(f)", nullptr };
 	for(int i = 0; tag[i]; ++i)
 	{
 		if(strcmp(tag[i], token) == 0)
@@ -567,7 +567,7 @@ bool parse_line(int fd, ObjLine& line)
 		bzero(&line.face, sizeof(line.face));
 		for(int i = 0; i < 3; ++i)
 		{
-			token = strtok_r(NULL, " ", &save_ptr);
+			token = strtok_r(nullptr, " ", &save_ptr);
 			if(!token) break;
 
 			char* idx_token = token;
@@ -603,7 +603,7 @@ bool parse_line(int fd, ObjLine& line)
 	// Read the vector selected above
 	for(int i = 0; i < vec_size; ++i)
 	{
-		token = strtok_r(NULL, " ", &save_ptr);
+		token = strtok_r(nullptr, " ", &save_ptr);
 		// printf("type: %d TOK: '%s' %d\n", line.type, token, vec_size);
 		sscanf(token, "%f", v + i);
 	}
@@ -614,7 +614,7 @@ bool parse_line(int fd, ObjLine& line)
 //------------------------------------------------------------------------------
 OBJMesh::OBJMesh(int fd)
 {
-	_min = _max = NULL;
+	_min = _max = nullptr;
 
 	std::map<std::string, uint16_t> index_map;
 
@@ -710,21 +710,21 @@ Mesh* MeshFactory::get_mesh(std::string path)
 	if(fd < 0)
 	{
 		fprintf(stderr, "Failed to open '%s'\n", full_path.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	// Find this path's file ext
-	const char* ext = NULL;
+	const char* ext = nullptr;
 	for(int i = full_path.length() - 1; full_path.at(i); i--) if(full_path.at(i) == '.')
 	{
 		ext = full_path.c_str() + i + 1;
 		break;
 	}
 
-	if(ext == NULL)
+	if(ext == nullptr)
 	{
 		fprintf(stderr, "Failed find to path's extension '%s'\n", full_path.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	int matched_ext = -1;
@@ -772,7 +772,7 @@ Model* MeshFactory::get_model(std::string path)
 
 	return _cached_models[path];
 }
-
+//------------------------------------------------------------------------------
 
 Model::Model(Mesh* mesh)
 {

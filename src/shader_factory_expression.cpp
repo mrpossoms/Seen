@@ -285,6 +285,7 @@ Shader::Variable& Shader::Variable::array(int dims)
 std::string Shader::Variable::declaration()
 {
 	std::string rank = "";
+	using VRole = Shader::VarRole;
 
 	if (array_size > 0)
 	{
@@ -293,17 +294,17 @@ std::string Shader::Variable::declaration()
 
 	switch (role)
 	{
-		case VAR_IN:
+		case VRole::VAR_IN:
 			return "in " + this->type + " " + this->name + rank;
-		case VAR_OUT:
+		case VRole::VAR_OUT:
 			return "out " + this->type + " " + this->name + rank;
-		case VAR_INOUT:
+		case VRole::VAR_INOUT:
 			return "inout " + this->type + " " + this->name + rank;
-		case VAR_PARAM:
+		case VRole::VAR_PARAM:
 			return "uniform " + this->type + " " + this->name + rank;
-		case VAR_LOCAL:
+		case VRole::VAR_LOCAL:
 			return  this->type + " " + this->name + rank;
-		case VAR_NONE:
+		case VRole::VAR_NONE:
 			return "";
 	}
 

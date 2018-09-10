@@ -42,7 +42,8 @@ static void key_callback(GLFWwindow* window,
 //------------------------------------------------------------------------------
 static GLFWwindow* init_glfw(int width, int height, const char* title, int version[2])
 {
-	if (!glfwInit()){
+	if (!glfwInit())
+	{
 		fprintf(stderr, "glfwInit() failed\n");
 		exit(-1);
 	}
@@ -117,7 +118,7 @@ RendererGL::RendererGL(
 	DATA_PATH = std::string(data_path);
 
 	int version[] = { gl_version_major, gl_version_minor };
-	win = init_glfw(width, height, title, version);
+	_win = init_glfw(width, height, title, version);
 
 	// NOP by default
 	mouse_moved  = [&](double x, double y, double dx, double dy) { };
@@ -132,7 +133,7 @@ RendererGL::RendererGL(
 
 bool RendererGL::is_running()
 {
-	return !(glfwWindowShouldClose(win) || glfwGetKey(win, GLFW_KEY_ESCAPE));
+	return !(glfwWindowShouldClose(_win) || glfwGetKey(_win, GLFW_KEY_ESCAPE));
 }
 //------------------------------------------------------------------------------
 
@@ -146,7 +147,7 @@ void RendererGL::prepare(int index)
 	// reset the viewport
 	// Make the sky black, and clear the screen
 	int fb_width, fb_height;
-	glfwGetFramebufferSize(win, &fb_width, &fb_height);
+	glfwGetFramebufferSize(_win, &fb_width, &fb_height);
 	glViewport(0, 0, fb_width, fb_height);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -160,18 +161,6 @@ void RendererGL::draw(Viewer* viewer, std::vector<RenderingPass*> passes)
 	assert(gl_get_error());
 
 	prepare(-1);
-
-	if(viewer)
-	{
-		//DrawParams& params = ShaderProgram::active()->draw_params;
-
-		//glUniformMatrix4fv(params.view_uniform, 1, GL_FALSE, (GLfloat*)viewer->_view);
-		//glUniformMatrix4fv(params.proj_uniform,  1, GL_FALSE, (GLfloat*)viewer->_projection);
-		//(*ShaderProgram::active())["u_view_matrix"] << ((mat4x4_t)viewer->_view);
-
-
-		assert(gl_get_error());
-	}
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -193,10 +182,10 @@ void RendererGL::draw(Viewer* viewer, std::vector<RenderingPass*> passes)
 	assert(gl_get_error());
 
 	glfwPollEvents();
-	glfwSwapBuffers(win);
+	glfwSwapBuffers(_win);
 
 	double xpos, ypos;
-	glfwGetCursorPos(win, &xpos, &ypos);
+	glfwGetCursorPos(_win, &xpos, &ypos);
 	mouse_moved(xpos, ypos, xpos - mouse_last_x, ypos - mouse_last_y);
 	mouse_last_x = xpos;
 	mouse_last_y = ypos;
@@ -258,7 +247,7 @@ static void write_png_file_rgb(
 bool RendererGL::capture(std::string path)
 {
 	int fb_width, fb_height;
-	glfwGetFramebufferSize(win, &fb_width, &fb_height);
+	glfwGetFramebufferSize(_win, &fb_width, &fb_height);
 
 	size_t buf_len = fb_width * fb_height * 3;
 	GLchar color_buffer[buf_len];
