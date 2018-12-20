@@ -25,7 +25,7 @@ void ListScene::erase(const Drawable* d)
 }
 
 
-std::vector<const Drawable*>& ListScene::all()
+std::vector<const seen::Drawable*>& ListScene::all()
 {
     return _drawables;
 }

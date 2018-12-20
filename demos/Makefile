@@ -3,7 +3,7 @@ $(eval OS := $(shell uname))
 CXX=g++
 CFLAGS=--std=c++11 -g
 INC=-I/usr/local/include -I../src
-LINK=../lib/libseen.a -lode -lpng
+LINK=../lib/libseen.a -lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))
 DEMOS=demo0 demo1 demo2 demo3
 
