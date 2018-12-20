@@ -112,7 +112,7 @@ int TextureFactory::load_texture_buffer(
 	FILE *fp = fopen(full_path.c_str(), "rb");
 	if (!fp)
 	{
-		fprintf(stderr, SEEN_TERM_RED "[read_png_file] File %s could not be opened for reading" SEEN_TERM_COLOR_OFF, path.c_str());
+		fprintf(stderr, SEEN_TERM_RED "[read_png_file] File %s could not be opened for reading\n" SEEN_TERM_COLOR_OFF, path.c_str());
 		return -1;
 	}
 

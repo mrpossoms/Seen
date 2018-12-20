@@ -67,9 +67,9 @@ public:
 	Model(Mesh* mesh);
 	~Model();
 
-	void draw();
+	void draw() const override;
 private:
-	GLuint vbo, ibo;
+	GLuint vao, vbo, ibo;
 	unsigned int vertices, indices;
 };
 
@@ -116,12 +116,29 @@ struct OBJMesh : Mesh
 };
 
 //------------------------------------------------------------------------------
+struct Volume : Mesh
+{
+	Volume(Vec3 corner0, Vec3 corner1, int divisions);
+
+	void generate(std::function<float (vec3)> density_at);
+private:
+	int _divisions;
+	Vec3 _corners[2];
+};
+
+//------------------------------------------------------------------------------
 struct Plane : Mesh
 {
 	Plane(float size);
 	Plane(float size, int subdivisions);
 	Plane(Vec3 corner_0, Vec3 corner_1);
 	~Plane() = default;
+};
+
+//------------------------------------------------------------------------------
+struct Sphere : Volume
+{
+	Sphere(float radius, int subdivisions);
 };
 
 //------------------------------------------------------------------------------
@@ -135,15 +152,5 @@ private:
 	void generate(Tex t, int resolution);
 };
 
-//------------------------------------------------------------------------------
-struct Volume : Mesh
-{
-	Volume(Vec3 corner0, Vec3 corner1, int divisions);
-
-	void generate(float(*density_at)(vec3 loc));
-private:
-	int _divisions;
-	Vec3 _corners[2];
-};
 
 }

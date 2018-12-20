@@ -109,8 +109,8 @@ void ShadowPass::draw(Viewer* viewer)
 		std::cerr << "ERROR: GL error produced in preparation_function" << std::endl;
 	}
 
-	static std::vector<Drawable*> empty;
-	for (Light* l : lights)
+	static std::vector<const Drawable*> empty;
+	for (auto l : lights)
 	{
 		_cubemap->side_projection = l->projection;
 		_cubemap->draw_at(l->position, scene, empty);

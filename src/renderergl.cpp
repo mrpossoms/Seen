@@ -131,7 +131,7 @@ RendererGL::RendererGL(
 }
 //------------------------------------------------------------------------------
 
-bool RendererGL::is_running()
+bool RendererGL::is_running() const
 {
 	return !(glfwWindowShouldClose(_win) || glfwGetKey(_win, GLFW_KEY_ESCAPE));
 }

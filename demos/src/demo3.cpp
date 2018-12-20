@@ -27,10 +27,7 @@ int main(int argc, const char* argv[])
 
 	// setup the light
 	float t = 0;
-	seen::Light light;
-	light.power = { 1.5, 1.5, 1.5 };
-	light.ambience = 0.01;
-	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
+	seen::Light light({10, 10, 10}, 0.001);
 
 	// define render passes
 	auto shadow_pass = seen::ShadowPass(512, true);

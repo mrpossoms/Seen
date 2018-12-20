@@ -9,18 +9,18 @@ class ListScene : public Scene
 {
 public:
 	ListScene() = default;
-    ListScene(std::initializer_list<Drawable*> drawables);
+    ListScene(std::initializer_list<const Drawable*> drawables);
 	~ListScene() = default;
 
-    void insert(Drawable* d);
-    void erase(Drawable* d);
+    void insert(const Drawable* d) override;
+    void erase(const Drawable* d) override;
 
-    std::vector<Drawable*>& all();
+    std::vector<const Drawable*>& all() override;
 
-	void draw();
+	void draw() const override;
 
 private:
-    std::vector<Drawable*> _drawables;
+    std::vector<const Drawable*> _drawables;
 };
 
 }

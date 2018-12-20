@@ -19,9 +19,9 @@ public:
 	void rotation(mat3x3 rot);
 	void matrix(mat4x4 world);
 
-	Viewer* view_projection(mat4x4 vp);
-	Viewer* view(mat4x4 v);
-	Viewer* projection(mat4x4 p);
+	Viewer* view_projection(mat4x4 vp) override;
+	Viewer* view(mat4x4 v) override;
+	Viewer* projection(mat4x4 p) override;
 
 	Viewer* fov(float f);
 

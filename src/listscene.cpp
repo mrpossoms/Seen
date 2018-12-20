@@ -3,37 +3,37 @@
 using namespace seen;
 
 
-ListScene::ListScene(std::initializer_list<Drawable*> drawables)
+ListScene::ListScene(std::initializer_list<const Drawable*> drawables)
 {
-    for (Drawable* drawable : drawables)
+    for (auto drawable : drawables)
     {
         _drawables.push_back(drawable);
     }
 }
 
 
-void ListScene::insert(Drawable* d)
+void ListScene::insert(const Drawable* d)
 {
     _drawables.push_back(d);
 }
 
 
-void ListScene::erase(Drawable* d)
+void ListScene::erase(const Drawable* d)
 {
-    auto it = find(_drawables.begin(), _drawables.end(), d);
+    auto it = find(_drawables.cbegin(), _drawables.cend(), d);
     _drawables.erase(it);
 }
 
 
-std::vector<Drawable*>& ListScene::all()
+std::vector<const Drawable*>& ListScene::all()
 {
     return _drawables;
 }
 
 
-void ListScene::draw()
+void ListScene::draw() const
 {
-	for (Drawable* drawable : _drawables)
+	for (auto drawable : _drawables)
 	{
 		drawable->draw();
 	}

@@ -97,7 +97,7 @@ void Cubemap::prepare(int index)
 
 void Cubemap::draw(Viewer* viewer,
                    Scene* scene,
-                   std::vector<Drawable*>& excluding)
+                   std::vector<const Drawable*>& excluding)
 {
 	Vec3 pos = viewer->position();
 	draw_at(pos, scene, excluding);
@@ -106,7 +106,7 @@ void Cubemap::draw(Viewer* viewer,
 
 void Cubemap::draw_at(Vec3 position,
                       Scene* scene,
-                      std::vector<Drawable*>& excluding)
+                      std::vector<const Drawable*>& excluding)
 {
 	struct basis {
 		Vec3 up, forward;

@@ -19,15 +19,15 @@ public:
 
 	void prepare(int index);
 
-	bool is_running();
+	// Renderer interface
+	bool is_running() const override;
+	bool capture(std::string path) override;
+	void draw(Viewer* viewer, std::vector<RenderingPass*> passes) override;
 
 	void finish();
 	void clear_color(float r, float g, float b, float a);
-	bool capture(std::string path);
 
 	void use_free_cam(Camera& cam);
-
-	void draw(Viewer* viewer, std::vector<RenderingPass*> passes);
 
 	int width, height;
 

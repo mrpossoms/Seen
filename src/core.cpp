@@ -65,7 +65,7 @@ Vec3& Positionable::position()
 }
 
 
-Vec3 Positionable::left()
+Vec3 Positionable::left() const
 {
 	vec4 out;
 
@@ -77,7 +77,7 @@ Vec3 Positionable::left()
 }
 
 
-Vec3 Positionable::forward()
+Vec3 Positionable::forward() const
 {
 	vec4 out;
 
@@ -89,7 +89,7 @@ Vec3 Positionable::forward()
 }
 
 
-Quat Positionable::orientation()
+Quat Positionable::orientation() const
 {
 	return _orientation;
 }

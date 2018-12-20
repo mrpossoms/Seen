@@ -44,11 +44,6 @@ void Mesh::compute_normals()
 		vec3_mul_cross(cross, diff[0], diff[1]);
 		vec3_norm(vert->normal, cross);
 
-		if(isnan(vert->normal[0]) || isnan(vert->normal[1]) || isnan(vert->normal[2]))
-		{
-			// assert(0);
-		}
-
 		i = (i + 1) - 1;
 	}
 }
@@ -366,7 +361,7 @@ Volume::Volume(Vec3 corner0, Vec3 corner1, int divisions)
 }
 
 //------------------------------------------------------------------------------
-void Volume::generate(float(*density_at)(vec3 loc))
+void Volume::generate(std::function<float (vec3)> density_at)
 {
 	#include "mc_luts.hpp"
 
@@ -450,7 +445,7 @@ void Volume::generate(float(*density_at)(vec3 loc))
 	// normal vector for each vertex
 	for (int i = 0; i < vertices.size(); i++)
 	{
-		const float s = 0.1;
+		const float s = 0.001;
 		vec3 grad;
 		vec3 deltas[3][2] = {
 			{{ s, 0, 0 }, { -s, 0, 0 }},
@@ -470,6 +465,15 @@ void Volume::generate(float(*density_at)(vec3 loc))
 		vec3_norm(v.normal, grad);
 	}
 }
+//------------------------------------------------------------------------------
+Sphere::Sphere(float r, int subdivisions) :
+        Volume(Vec3(-r, -r, -r), Vec3(r, r, r), subdivisions)
+{
+	this->generate([&](vec3 v) {
+		return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) - 1.f;
+	});
+}
+
 //------------------------------------------------------------------------------
 //     ___  ___    _
 //    / _ \| _ )_ | |
@@ -776,6 +780,9 @@ Model* MeshFactory::get_model(std::string path)
 
 Model::Model(Mesh* mesh)
 {
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	glGenBuffers(2, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -795,24 +802,6 @@ Model::Model(Mesh* mesh)
 		GL_STATIC_DRAW
 	);
 
-	vertices = mesh->vert_count();
-	indices  = mesh->index_count();
-}
-//------------------------------------------------------------------------------
-
-Model::~Model()
-{
-    glDeleteBuffers(1, &vbo);
-}
-//------------------------------------------------------------------------------
-
-void Model::draw()
-{
-	assert(gl_get_error());
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	assert(gl_get_error());
-
 	glEnableVertexAttribArray(0);
 	assert(gl_get_error());
 	glEnableVertexAttribArray(1);
@@ -827,6 +816,25 @@ void Model::draw()
 		glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3) * i));
 	}
 
+	glBindVertexArray(0);
+
+	vertices = mesh->vert_count();
+	indices  = mesh->index_count();
+}
+//------------------------------------------------------------------------------
+
+Model::~Model()
+{
+    glDeleteBuffers(2, &vbo);
+    glDeleteVertexArrays(1, &vao);
+}
+//------------------------------------------------------------------------------
+
+void Model::draw() const
+{
+	assert(gl_get_error());
+
+	glBindVertexArray(vao);
 
 	assert(gl_get_error());
 
@@ -834,19 +842,9 @@ void Model::draw()
 
 	assert(gl_get_error());
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-
 	glPatchParameteri(GL_PATCH_VERTICES, 3);
 	assert(gl_get_error());
-	// glDrawArrays(GL_PATCHES, 0, vertices);
 	glDrawElements(ShaderProgram::active()->primative, indices, GL_UNSIGNED_SHORT, 0);
-
-	assert(gl_get_error());
-
-	for(int i = 4; i--;)
-	{
-		glDisableVertexAttribArray(i);
-	}
 
 	assert(gl_get_error());
 }

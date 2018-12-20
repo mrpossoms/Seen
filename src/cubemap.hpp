@@ -15,13 +15,12 @@ public:
 	~Cubemap();
 	void init(int size, int fbo_flags);
 
-	void prepare(int index);
+	void prepare(int index) override;
+	void draw(Viewer* viewer) override {};
+	void finish() override;
 
-	void draw(Viewer* viewer) {};
-	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding);
-	void draw_at(Vec3 position, Scene* scene, std::vector<Drawable*>& excluding);
-
-	void finish();
+	void draw(Viewer* viewer, Scene* scene, std::vector<const Drawable*>& excluding);
+	void draw_at(Vec3 position, Scene* scene, std::vector<const Drawable*>& excluding);
 
 	mat4x4_t side_projection;
 private:

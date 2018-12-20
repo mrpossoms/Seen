@@ -9,9 +9,9 @@ struct Positionable
 {
 		// Dynamic Interface
 		Vec3& position();
-		Vec3 left();
-		Vec3 forward();
-		Quat orientation();
+		Vec3 left() const;
+		Vec3 forward() const;
+		Quat orientation() const;
 
 		Positionable* position(Vec3& pos);
 		Positionable* position(float x, float y, float z);
@@ -54,7 +54,7 @@ public:
 class Drawable
 {
 public:
-	virtual void draw() = 0;
+	virtual void draw() const = 0;
 };
 
 
@@ -62,16 +62,10 @@ class Scene : public Drawable
 {
 public:
 
-	virtual void insert(Drawable* d) = 0;
-	virtual void erase(Drawable* d) = 0;
+	virtual void insert(const Drawable* d) = 0;
+	virtual void erase(const Drawable* d) = 0;
 
-	virtual std::vector<Drawable*>& all() = 0;
-};
-
-
-class RenderBatch : public std::vector<Drawable*>
-{
-
+	virtual std::vector<const Drawable*>& all() = 0;
 };
 
 
@@ -89,13 +83,16 @@ public:
 	 */
 	int id;
 
+	/**
+	 * @brief Pointer to the scene that should be rendered by this pass
+	 */
 	Scene* scene;
 };
 
 class Renderer
 {
 public:
-	virtual bool is_running() = 0;
+	virtual bool is_running() const = 0;
 	virtual bool capture(std::string path) = 0;
 	virtual void draw(Viewer* viewer, std::vector<RenderingPass*> passes) = 0;
 };

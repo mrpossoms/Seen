@@ -15,9 +15,9 @@ public:
 	CustomPass(std::function<void (int)> prep);
 	~CustomPass();
 
-	void prepare(int index);
-	void draw(Viewer* viewer);
-	void finish() {}
+	void prepare(int index) override;
+	void draw(Viewer* viewer) override;
+	void finish() override {}
 
 	int instances;
 
@@ -32,12 +32,12 @@ public:
 	ShadowPass(int resolution=1024, bool generate_mipmaps=true);
 	~ShadowPass();
 
-	void prepare(int index);
-	void draw(Viewer* viewer);
-	void finish();
+	void prepare(int index) override;
+	void draw(Viewer* viewer) override;
+	void finish() override;
 
 	// Scene* scene;
-	std::vector<Light*> lights;
+	std::vector<const Light*> lights;
 
 private:
 	Cubemap* _cubemap;
