@@ -10,7 +10,7 @@
 		<mass>1</mass> <!-- Mass in Kg -->
 	</phys>
 	<position>0,0,0</position> <!-- Absolute position in Meters  -->
-	<orientation>0,0,0,1</orientation> <!-- Quaternion -->
+	<orientation>0,0,0,1</orientation> <!-- quaternion -->
 
 
 	<!-- Used to specify motors, solenoids, pistons etc -->

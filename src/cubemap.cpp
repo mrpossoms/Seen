@@ -67,7 +67,7 @@ void Cubemap::init(int size, int fbo_flags)
 		fbo_flags
 	);
 
-	mat4x4_perspective(side_projection.v, M_PI / 2, 1, 0.01, 1000);
+	mat<4, 4>_perspective(side_projection.v, M_PI / 2, 1, 0.01, 1000);
 }
 //------------------------------------------------------------------------------
 
@@ -99,17 +99,17 @@ void Cubemap::draw(Viewer* viewer,
                    Scene* scene,
                    std::vector<Drawable*>& excluding)
 {
-	Vec3 pos = viewer->position();
+	vec<3> pos = viewer->position();
 	draw_at(pos, scene, excluding);
 }
 //------------------------------------------------------------------------------
 
-void Cubemap::draw_at(Vec3 position,
+void Cubemap::draw_at(vec<3> position,
                       Scene* scene,
                       std::vector<Drawable*>& excluding)
 {
 	struct basis {
-		Vec3 up, forward;
+		vec<3> up, forward;
 	};
 
 	const GLenum sides[] = {
@@ -129,14 +129,14 @@ void Cubemap::draw_at(Vec3 position,
 		{ VEC3_DOWN,    VEC3_RIGHT   },
 		{ VEC3_DOWN,    VEC3_LEFT    },
 	};
-	mat4x4_t cube_views[6];
+	mat<4,4> cube_views[6];
 
 	// Compute new view matrices each time, as position could have changed
 	for(int i = 6; i--;)
 	{
-		Vec3 eye = position + bases[i].forward;
+		vec<3> eye = position + bases[i].forward;
 
-		mat4x4_look_at(
+		mat<4, 4>_look_at(
 			cube_views[i].v,
 			position.v,
 			eye.v,

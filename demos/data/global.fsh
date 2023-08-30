@@ -15,10 +15,10 @@ in vec4 v_screen_space;      // pixel view space position
 out vec4 color;
 
 
-uniform mat4x4 world_matrix;  // object's world position
-uniform mat4x4 view_matrix;   // view (camera) transform
-uniform mat4x4 proj_matrix;   // projection matrix
-uniform mat3x3 normal_matrix; // normal transformation matrix ( transpose(inverse(W * V)) )
+uniform mat<4, 4> world_matrix;  // object's world position
+uniform mat<4, 4> view_matrix;   // view (camera) transform
+uniform mat<4, 4> proj_matrix;   // projection matrix
+uniform mat<3, 3> normal_matrix; // normal transformation matrix ( transpose(inverse(W * V)) )
 
 
 uniform vec4 material; // x - metallic, y - roughness, w - "rim" lighting
@@ -94,7 +94,7 @@ void main() {
     vec3 nn = normalize(v_normal + v_pos);
 
     vec3 nb = normalize(cross(nn, v_binormal));
-    mat3x3 tbn = mat3x3(nb, cross(nn, nb), nn);
+    mat<3, 3> tbn = mat<3, 3>(nb, cross(nn, nb), nn);
 
     vec2 texcoord = v_texcoord;
 

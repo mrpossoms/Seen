@@ -15,15 +15,15 @@ namespace seen
 //
 struct STLTri
 {
-	Vec3* normal;
-	Vec3* verts;
+	vec<3>* normal;
+	vec<3>* verts;
 	uint16_t attr;
 };
 //------------------------------------------------------------------------------
 struct STLVert
 {
-	Vec3 position;
-	Vec3 normal;
+	vec<3> position;
+	vec<3> normal;
 };
 //------------------------------------------------------------------------------
 struct Vertex
@@ -41,14 +41,14 @@ struct Mesh
 	Vertex* verts();
 	uint16_t* inds();
 
-	Vec3 *_min, *_max;
+	vec<3> *_min, *_max;
 
 	void compute_normals();
 	void compute_tangents();
 
-	Vec3 min_position();
-	Vec3 max_position();
-	Vec3 box_dimensions();
+	vec<3> min_position();
+	vec<3> max_position();
+	vec<3> box_dimensions();
 
 protected:
 	std::vector<vec3_t> positions;
@@ -80,8 +80,8 @@ struct STLMesh : Mesh
 	uint32_t tri_count;
 
 	Vertex* all_verts;
-	Vec3* all_positions;
-	Vec3* all_normals;
+	vec<3>* all_positions;
+	vec<3>* all_normals;
 	STLTri* tris;
 
 	STLMesh(int fd);
@@ -89,11 +89,11 @@ struct STLMesh : Mesh
 	unsigned int vert_count();
 	Vertex* verts();
 
-	Vec3 min_position();
-	Vec3 max_position();
+	vec<3> min_position();
+	vec<3> max_position();
 
 private:
-	Vec3 *_min, *_max;
+	vec<3> *_min, *_max;
 	unsigned int* _indices;
 };
 
@@ -120,7 +120,7 @@ struct Plane : Mesh
 {
 	Plane(float size);
 	Plane(float size, int subdivisions);
-	Plane(Vec3 corner_0, Vec3 corner_1);
+	Plane(vec<3> corner_0, vec<3> corner_1);
 	~Plane() = default;
 };
 
@@ -138,12 +138,12 @@ private:
 //------------------------------------------------------------------------------
 struct Volume : Mesh
 {
-	Volume(Vec3 corner0, Vec3 corner1, int divisions);
+	Volume(vec<3> corner0, vec<3> corner1, int divisions);
 
 	void generate(float(*density_at)(vec3 loc));
 private:
 	int _divisions;
-	Vec3 _corners[2];
+	vec<3> _corners[2];
 };
 
 }

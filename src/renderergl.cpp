@@ -278,8 +278,8 @@ void RendererGL::use_free_cam(Camera& cam)
 			return;
 		}
 
-		Quat pitch, yaw, roll;
-		Vec3 forward, left, up;
+		quat pitch, yaw, roll;
+		vec<3> forward, left, up;
 
 		auto q = cam.orientation();
 
@@ -293,8 +293,8 @@ void RendererGL::use_free_cam(Camera& cam)
 
 	key_pressed = [&](int key)
 	{
-		Vec3 new_pos = cam.position();
-		Quat roll, q = cam.orientation();
+		vec<3> new_pos = cam.position();
+		quat roll, q = cam.orientation();
 
 		switch (key)
 		{

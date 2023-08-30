@@ -36,7 +36,6 @@
 
 
 // #include <GL/glew.h>
-#include <linmath.h>
 #include "interfaces.hpp"
 
 #define SEEN_RAND_F_DENOMINATOR 2048
@@ -54,7 +53,7 @@ bool gl_get_error();
 
 float rf();
 float rf(float min, float max);
-Vec3 rn();
+vec<3> rn();
 
 std::string get_line(std::string lines, int line_number);
 

@@ -11,26 +11,25 @@ Camera::Camera(float fov,
 
 	float aspect = width / (float)height;
 
-	mat4x4_perspective(_projection.v, fov, aspect, 0.01, 1000);
+	_projection = mat<4, 4>::perspective(0.01, 1000, fov, aspect);
+
 	position(0, 0, 0);
 }
 
 
-Viewer* Camera::view_projection(mat4x4 vp)
+Viewer* Camera::view_projection(mat<4, 4>& vp)
 {
-	mat4x4 view;
+	mat<4, 4> view = _orientation.to_matrix();
+	vec<3> pos = position();
+	view *= mat<4, 4>::translation({-pos[0], -pos[1], -pos[2]});
 
-	Vec3 pos = position();
-	mat4x4_from_quat(view, orientation().v);
-	mat4x4_translate_in_place(view, -pos.x, -pos.y, -pos.z);
-
-	mat4x4_mul(vp, _projection.v, view);
+	vp = _projection *  view;
 
 	return this;
 }
 
 
-Vec3 Camera::position()
+vec<3> Camera::position()
 {
 	return _position;
 }
@@ -39,54 +38,41 @@ Viewer* Camera::fov(float f)
 {
 	float aspect = width / (float)height;
 
-	mat4x4_perspective(_projection.v, f, aspect, 0.01, 1000);
+	_projection = mat<4, 4>::perspective(0.01, 1000, f, aspect);
 
 	return this;
 }
 
 
-Vec3 Camera::left()
+vec<3> Camera::left()
 {
-	vec4 out;
-
-	quat q;
-	quat_invert(q, _orientation.v);
-	quat_mul_vec3(out, q, VEC3_LEFT.v);
-
-	return Vec3(-out[0], -out[1], -out[2]);
+	// TODO: define LEFT in xmath.h
+	return _orientation.inverse().rotate({-1, 0, 0});
 }
 
 
-Vec3 Camera::forward()
+vec<3> Camera::forward()
 {
-	vec4 out;
-
-	quat q;
-	quat_invert(q, _orientation.v);
-	quat_mul_vec3(out, q, VEC3_FORWARD.v);
-
-	return Vec3(-out[0], -out[1], -out[2]);
+	// TODO: define FORWARD in xmath.h
+	return _orientation.inverse().rotate({0, 0, -1});
 }
 
 
-Vec3 Camera::up()
+vec<3> Camera::up()
 {
-	vec4 out;
-
-	quat q;
-	quat_invert(q, _orientation.v);
-	quat_mul_vec3(out, q, VEC3_DOWN.v);
-
-	return Vec3(-out[0], -out[1], -out[2]);
+	// TODO: define UP in xmath.h
+	return _orientation.inverse().rotate({0, 1, 0});
 }
 
 
-Positionable* Camera::position(Vec3& pos)
+Positionable* Camera::position(const vec<3>& pos)
 {
 	_position = pos;
 
-	mat4x4_from_quat(_view.v, _orientation.v);
-	mat4x4_translate_in_place(_view.v, -_position.x, -_position.y, -_position.z);
+	_view = _orientation.to_matrix();
+	_view *= mat<4, 4>::translation({-_position[0], -_position[1], -_position[2]});
+	// mat<4, 4>_from_quat(_view.v, _orientation.v);
+	// mat<4,4>ranslate_in_place(_view.v, -_position[0], -_position[1], -_position[2]);
 
 	return this;
 }
@@ -94,60 +80,67 @@ Positionable* Camera::position(Vec3& pos)
 
 Positionable* Camera::position(float x, float y, float z)
 {
-		_position.x = x;
-		_position.y = y;
-		_position.z = z;
+		_position[0] = x;
+		_position[1] = y;
+		_position[2] = z;
 
-		mat4x4 rot, trans;
-		mat4x4_from_quat(rot, _orientation.v);
+		// mat<4, 4> rot, trans;
+		// mat<4, 4>_from_quat(rot, _orientation.v);
 
-		mat4x4_identity(trans);
-		mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
+		// mat<4, 4>_identity(trans);
+		// mat<4,4>ranslate_in_place(trans, -_position[0], -_position[1], -_position[2]);
 
-		mat4x4_mul(_view.v, rot, trans);
+		// mat<4, 4>_mul(_view.v, rot, trans);
+
+		auto rot = _orientation.to_matrix();
+		auto trans = mat<4, 4>::translation({-_position[0], -_position[1], -_position[2]});
+
+		_view = rot * trans;
+
 		return this;
 }
 
 
-Quat Camera::orientation()
+quat<> Camera::orientation()
 {
 	return _orientation;
 }
 
 
-Positionable* Camera::orientation(Quat& ori)
+Positionable* Camera::orientation(const quat<>& ori)
 {
 	_orientation = ori;
 
-	// mat4x4_from_quat(_view.v, _orientation.v);
-	// mat4x4_translate_in_place(_view.v, _position.x, _position.y, _position.z);
-	mat4x4 rot, trans;
-	mat4x4_from_quat(rot, _orientation.v);
+	// mat<4, 4>_from_quat(_view.v, _orientation.v);
+	// mat<4,4>ranslate_in_place(_view.v, _position[0], _position[1], _position[2]);
+	mat<4, 4> rot = ori.to_matrix(), trans = mat<4, 4>::translation(-_position);
+	//mat<4, 4>_from_quat(rot, _orientation.v);
 
-	mat4x4_identity(trans);
-	mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
+	// mat<4, 4>_identity(trans);
+	// mat<4,4>ranslate_in_place(trans, -_position[0], -_position[1], -_position[2]);
 
-	mat4x4_mul(_view.v, rot, trans);
-
-	return this;
-}
-
-
-void Camera::rotation(mat3x3 rot) {}
-void Camera::matrix(mat4x4 world) {}
-
-
-Viewer* Camera::view(mat4x4 v)
-{
-	mat4x4_dup(_view.v, v);
+	// mat<4, 4>_mul(_view.v, rot, trans);
+	_view = rot * trans;
 
 	return this;
 }
 
 
-Viewer* Camera::projection(mat4x4 p)
+void Camera::rotation(mat<3, 3> rot) {}
+void Camera::matrix(mat<4, 4> world) {}
+
+
+Viewer* Camera::view(const mat<4, 4>& v)
 {
-	mat4x4_dup(p, _projection.v);
+	_view = v;
+
+	return this;
+}
+
+
+Viewer* Camera::projection(const mat<4, 4>& p)
+{
+	_projection = p;
 
 	return this;
 }

@@ -31,12 +31,10 @@ struct ShaderParam {
 	ShaderParam(ShaderProgram* program, const char* name);
 
 	void operator<<(float f);
-	void operator<<(vec3_t& v);
-	void operator<<(vec4_t& v);
-	void operator<<(Vec3 v);
-	// void operator<<(Vec4 v);
-	void operator<<(mat3x3_t& m);
-	void operator<<(mat4x4_t& m);
+	void operator<<(vec<3> v);
+	// void operator<<(vec<4> v);
+	void operator<<(mat<3,3>& m);
+	void operator<<(mat<4,4>& m);
 	void operator<<(GLint i);
 	void operator<<(Tex t);
 	void operator<<(Cubemap* c);

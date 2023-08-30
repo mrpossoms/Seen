@@ -1,0 +1,16 @@
+location: gitman_sources
+sources:
+  - repo: https://github.com/mrpossoms/xmath.h.git
+    name: xmath
+    rev: master
+    type: git
+    params:
+    sparse_paths:
+      -
+    links:
+      -
+    scripts:
+      -
+default_group: ''
+groups:
+  -

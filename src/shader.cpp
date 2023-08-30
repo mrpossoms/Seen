@@ -568,25 +568,25 @@ void ShaderParam::operator<<(vec4_t& v)
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(Vec3 v)
+void ShaderParam::operator<<(vec<3> v)
 {
 	glUniform3fv(_uniform, 1, (GLfloat*)v.v);
 }
 //------------------------------------------------------------------------------
 //
-// void ShaderParam::operator<<(Vec4 v)
+// void ShaderParam::operator<<(vec<4> v)
 // {
 // 	glUniform4fv(_uniform, 1, (GLfloat*)v.v);
 // }
 // //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(mat3x3_t& m)
+void ShaderParam::operator<<(mat<3,3>& m)
 {
 	glUniformMatrix3fv(_uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(mat4x4_t& m)
+void ShaderParam::operator<<(mat<4,4>& m)
 {
 	glUniformMatrix4fv(_uniform, 1, GL_FALSE, (GLfloat*)m.v);
 }

@@ -21,7 +21,7 @@ int main(int argc, const char* argv[])
 	auto dirt_mat = seen::TextureFactory::get_material("dirt");
 
 	const float s = 4;
-	auto mc_mesh = new seen::Volume(Vec3(-s, -s, -s), Vec3(s, s, s), 32);
+	auto mc_mesh = new seen::Volume(vec<3>(-s, -s, -s), vec<3>(s, s, s), 32);
 	mc_mesh->generate(sphere);
 	seen::Model monolith(mc_mesh);
 
@@ -30,7 +30,7 @@ int main(int argc, const char* argv[])
 	seen::Light light;
 	light.power = { 1.5, 1.5, 1.5 };
 	light.ambience = 0.01;
-	mat4x4_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
+	mat<4, 4>_perspective(light.projection.v, M_PI / 2, 1, 0.1, 100);
 
 	// define render passes
 	auto shadow_pass = seen::ShadowPass(512, true);

@@ -9,32 +9,32 @@ public:
 	Camera(float fov, int frame_w, int frame_h);
 
 	// Positionable
-	Vec3 position();
-	Positionable* position(Vec3& pos);
+	vec<3> position();
+	Positionable* position(const vec<3>& pos);
 	Positionable* position(float x, float y, float z);
 
-	Quat orientation();
-	Positionable* orientation(Quat& ori);
+	quat<> orientation();
+	Positionable* orientation(const quat<>& ori);
 
-	void rotation(mat3x3 rot);
-	void matrix(mat4x4 world);
+	void rotation(mat<3, 3> rot);
+	void matrix(mat<4, 4> world);
 
-	Viewer* view_projection(mat4x4 vp);
-	Viewer* view(mat4x4 v);
-	Viewer* projection(mat4x4 p);
+	Viewer* view_projection(mat<4, 4>& vp);
+	Viewer* view(const mat<4, 4>& v);
+	Viewer* projection(const mat<4, 4>& p);
 
 	Viewer* fov(float f);
 
-	Vec3 left();
-	Vec3 forward();
-	Vec3 up();
-	// mat4x4 view();
-	// mat4x4 projection();
+	vec<3> left();
+	vec<3> forward();
+	vec<3> up();
+	// mat<4, 4> view();
+	// mat<4, 4> projection();
 
 private:
-	Vec3 _position;
-	Quat _orientation;
-	// mat4x4 _projection, _view;
+	vec<3> _position;
+	quat<> _orientation;
+	// mat<4, 4> _projection, _view;
 	int width, height;
 };
 

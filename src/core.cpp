@@ -27,9 +27,9 @@ float seen::rf(float min, float max)
 }
 
 
-Vec3 seen::rn()
+vec<3> seen::rn()
 {
-	Vec3 n(rf() - 0.5f, rf() - 0.5f, rf() - 0.5f);
+	vec<3> n(rf() - 0.5f, rf() - 0.5f, rf() - 0.5f);
 	n.normalize();
 	return n;
 }
@@ -59,13 +59,13 @@ fail:
 
 using namespace seen;
 
-Vec3& Positionable::position()
+vec<3>& Positionable::position()
 {
 	return _position;
 }
 
 
-Vec3 Positionable::left()
+vec<3> Positionable::left()
 {
 	vec4 out;
 
@@ -73,11 +73,11 @@ Vec3 Positionable::left()
 	quat_invert(q, _orientation.v);
 	quat_mul_vec3(out, q, VEC3_LEFT.v);
 
-	return Vec3(-out[0], -out[1], -out[2]);
+	return vec<3>(-out[0], -out[1], -out[2]);
 }
 
 
-Vec3 Positionable::forward()
+vec<3> Positionable::forward()
 {
 	vec4 out;
 
@@ -85,27 +85,27 @@ Vec3 Positionable::forward()
 	quat_invert(q, _orientation.v);
 	quat_mul_vec3(out, q, VEC3_FORWARD.v);
 
-	return Vec3(-out[0], -out[1], -out[2]);
+	return vec<3>(-out[0], -out[1], -out[2]);
 }
 
 
-Quat Positionable::orientation()
+quat Positionable::orientation()
 {
 	return _orientation;
 }
 
 
-Positionable* Positionable::position(Vec3& pos)
+Positionable* Positionable::position(vec<3>& pos)
 {
 	_position = pos;
 
-	mat4x4 rot, trans;
-	mat4x4_from_quat(rot, _orientation.v);
+	mat<4, 4> rot, trans;
+	mat<4, 4>_from_quat(rot, _orientation.v);
 
-	mat4x4_identity(trans);
-	mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
+	mat<4, 4>_identity(trans);
+	mat<4,4>ranslate_in_place(trans, -_position.x, -_position.y, -_position.z);
 
-	mat4x4_mul(_world.v, rot, trans);
+	mat<4, 4>_mul(_world.v, rot, trans);
 
 	return this;
 }
@@ -113,23 +113,23 @@ Positionable* Positionable::position(Vec3& pos)
 
 Positionable* Positionable::position(float x, float y, float z)
 {
-	Vec3 pos(x, y, z);
+	vec<3> pos(x, y, z);
 	return this->position(pos);
 }
 
 
-Positionable* Positionable::orientation(Quat& ori)
+Positionable* Positionable::orientation(quat& ori)
 {
 	_orientation = ori;
 
-	// mat4x4_from_quat(_view.v, _orientation.v);
-	// mat4x4_translate_in_place(_view.v, _position.x, _position.y, _position.z);
-	mat4x4 rot, trans;
-	mat4x4_from_quat(rot, _orientation.v);
+	// mat<4, 4>_from_quat(_view.v, _orientation.v);
+	// mat<4,4>ranslate_in_place(_view.v, _position.x, _position.y, _position.z);
+	mat<4, 4> rot, trans;
+	mat<4, 4>_from_quat(rot, _orientation.v);
 
-	mat4x4_identity(trans);
-	mat4x4_translate_in_place(trans, -_position.x, -_position.y, -_position.z);
-	mat4x4_mul(_world.v, rot, trans);
+	mat<4, 4>_identity(trans);
+	mat<4,4>ranslate_in_place(trans, -_position.x, -_position.y, -_position.z);
+	mat<4, 4>_mul(_world.v, rot, trans);
 
 	vec3_norm(normal_matrix.c0, rot[0]);
 	vec3_norm(normal_matrix.c1, rot[1]);
@@ -139,30 +139,30 @@ Positionable* Positionable::orientation(Quat& ori)
 }
 
 
-void Positionable::orientation(mat3x3 rot)
+void Positionable::orientation(mat<3, 3> rot)
 {
-	Quat ori;
-	mat4x4 m = {};
+	quat ori;
+	mat<4, 4> m = {};
 
 	vec3_copy(m[0], rot[0]);
 	vec3_copy(m[1], rot[1]);
 	vec3_copy(m[2], rot[2]);
 
-	quat_from_mat4x4(ori.v, m);
+	quat_from_mat<4, 4>(ori.v, m);
 
 	orientation(ori);
 }
 
 
-void Positionable::world(mat4x4 world)
+void Positionable::world(mat<4, 4> world)
 {
-	quat_from_mat4x4(_orientation.v, world);
-	_position = Vec3(world[3][0], world[3][1], world[3][2]);
-	mat4x4_dup(_world.v, world);
+	quat_from_mat<4, 4>(_orientation.v, world);
+	_position = vec<3>(world[3][0], world[3][1], world[3][2]);
+	mat<4, 4>_dup(_world.v, world);
 }
 
 
-mat4x4_t& Positionable::world()
+mat<4,4>& Positionable::world()
 {
 	return _world;
 }

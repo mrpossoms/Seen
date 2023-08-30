@@ -1,8 +1,8 @@
 $(eval OS := $(shell uname))
 
 CXX=g++
-CFLAGS=--std=c++11 -g -Wall -fPIC -O0
-INC=-I/usr/local/include -I./src
+CFLAGS=--std=c++20 -g -Wall -fPIC -O0
+INC=-I/usr/local/include -I./src -I gitman_sources/xmath/inc
 SRCS=camera.cpp cubemap.cpp geo.cpp texture.cpp shader.cpp shader_factory.cpp shader_factory_expression.cpp renderergl.cpp listscene.cpp core.cpp custompass.cpp
 LINK=-lpng
 OBJS=$(addprefix obj/,$(SRCS:.cpp=.o))

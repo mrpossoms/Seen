@@ -13,10 +13,10 @@ in vec3 v_pos;      // pixel view space position
 out vec4 color;
 
 
-uniform mat4x4 world_matrix;  // object's world position
-uniform mat4x4 view_matrix;   // view (camera) transform
-uniform mat4x4 proj_matrix;   // projection matrix
-uniform mat3x3 normal_matrix; // normal transformation matrix ( transpose(inverse(W * V)) )
+uniform mat<4, 4> world_matrix;  // object's world position
+uniform mat<4, 4> view_matrix;   // view (camera) transform
+uniform mat<4, 4> proj_matrix;   // projection matrix
+uniform mat<3, 3> normal_matrix; // normal transformation matrix ( transpose(inverse(W * V)) )
 
 
 uniform vec4 material; // x - metallic, y - roughness, w - "rim" lighting
@@ -150,7 +150,7 @@ void main() {
     vec3 nn = normalize(v_normal);
 
     vec3 nb = normalize(v_binormal);
-    mat3x3 tbn = mat3x3(nb, cross(nn, nb), nn);
+    mat<3, 3> tbn = mat<3, 3>(nb, cross(nn, nb), nn);
 
 
     vec2 texcoord = v_texcoord;
@@ -189,7 +189,7 @@ void main() {
     // diffuse IBL term
     //    I know that my IBL cubemap has diffuse pre-integrated value in 10th MIP level
     //    actually level selection should be tweakable or from separate diffuse cubemap
-    mat3x3 tnrm = transpose(normal_matrix);
+    mat<3, 3> tnrm = transpose(normal_matrix);
     vec3 envdiff = textureLod(envd, tnrm * N, 10).xyz;
     // vec3 envdiff = texture(envd, tnrm * N).xyz;
 

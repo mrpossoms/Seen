@@ -2,35 +2,41 @@
 
 #include <GLFW/glfw3.h>
 
+#define XMTYPE float
+#include "xmath.h"
+
+using namespace xmath;
+
+
 namespace seen
 {
 
 struct Positionable
 {
 		// Dynamic Interface
-		Vec3& position();
-		Vec3 left();
-		Vec3 forward();
-		Quat orientation();
+		vec<3>& position();
+		vec<3> left();
+		vec<3> forward();
+		quat<> orientation();
 
-		Positionable* position(Vec3& pos);
+		Positionable* position(vec<3>& pos);
 		Positionable* position(float x, float y, float z);
 
-		Positionable* orientation(Quat& ori);
-		void orientation(mat3x3 rot);
+		Positionable* orientation(quat<>& ori);
+		void orientation(mat<3, 3> rot);
 
-		void world(mat4x4 world);
-		mat4x4_t& world();
+		void world(mat<4, 4> world);
+		mat<4,4>& world();
 
-		mat3x3_t normal_matrix = { {
+		mat<3,3> normal_matrix = { {
 			{ 1, 0, 0 },
 			{ 0, 1, 0 },
 			{ 0, 0, 1 },
 		} };
 private:
-		Vec3 _position;
-		Quat _orientation = QUAT_I;
-		mat4x4_t _world = { {
+		vec<3> _position;
+		quat<> _orientation;
+		mat<4,4> _world = { {
 			{ 1, 0, 0, 0 },
 			{ 0, 1, 0, 0 },
 			{ 0, 0, 1, 0 },
@@ -42,12 +48,12 @@ private:
 class Viewer : public Positionable
 {
 public:
-	virtual Viewer* view_projection(mat4x4 vp) = 0;
-	virtual Viewer* view(mat4x4 v) = 0;
-	virtual Viewer* projection(mat4x4 p) = 0;
+	virtual Viewer* view_projection(mat<4, 4> vp) = 0;
+	virtual Viewer* view(mat<4, 4> v) = 0;
+	virtual Viewer* projection(mat<4, 4> p) = 0;
 
-	mat4x4_t _view;
-	mat4x4_t _projection;
+	mat<4,4> _view;
+	mat<4,4> _projection;
 };
 
 

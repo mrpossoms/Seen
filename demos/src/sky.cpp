@@ -20,10 +20,10 @@ void Sky::draw(Viewer* viewer)
 
     Model* model = MeshFactory::get_model("sphereized_cube.obj");
 
-	mat4x4_t world;
-	mat3x3_t rot;
-	mat4x4_identity(world.v);
-	mat3x3_identity(rot.v);
+	mat<4,4> world;
+	mat<3,3> rot;
+	mat<4, 4>_identity(world.v);
+	mat<3, 3>_identity(rot.v);
 
     ShaderProgram& prog = *ShaderProgram::active();
 

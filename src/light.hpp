@@ -6,9 +6,9 @@ namespace seen
 {
 	struct Light
 	{
-		Vec3 position, direction;
-		Vec3 power;
+		vec<3> position, direction;
+		vec<3> power;
 		float ambience;
-		mat4x4_t projection;
+		mat<4,4> projection;
 	};
 }

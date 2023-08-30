@@ -15,7 +15,7 @@ int main(int argc, const char* argv[])
 
 	seen::Tex displacement_tex = seen::TextureFactory::load_texture(disp_name);
 	seen::CustomPass bale_pass, bale_tess_pass;
-	Quat q_bale_ori;
+	quat q_bale_ori;
 
 	srand(time(NULL));
 
@@ -39,8 +39,8 @@ int main(int argc, const char* argv[])
 	{
 		vec4_t material = { 0.1, 0.01, 1, 0.01 };
 		vec4_t albedo = { 1, 1, 1, 1 };
-		mat4x4_t world;
-		mat3x3_t rot;
+		mat<4,4> world;
+		mat<3,3> rot;
 		vec3_t light_dir = { 1, 0, 1 };
 		vec3 axis = { 0.0, 1.0, 0.0 };
 
@@ -53,7 +53,7 @@ int main(int argc, const char* argv[])
 			vec3_norm(axis, axis);
 			quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
 			camera.fov(M_PI / seen::rf(1,3));
-			mat4x4_translate(world.v, seen::rf(-0.5, 0.5), seen::rf(-1, 1), seen::rf(-1, 1));
+			mat<4,4>ranslate(world.v, seen::rf(-0.5, 0.5), seen::rf(-1, 1), seen::rf(-1, 1));
 		}
 		else
 		{
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[])
 
 		shader << bale_mat; //->use(&shader.draw_params.material_uniforms.tex);
 
-		mat4x4_from_quat(world.v, q_bale_ori.v);
+		mat<4, 4>_from_quat(world.v, q_bale_ori.v);
 
 		for(int i = 3; i--;)
 		for(int j = 3; j--;)

@@ -71,11 +71,11 @@ void Mesh::compute_tangents()
 }
 //------------------------------------------------------------------------------
 
-Vec3 Mesh::min_position()
+vec<3> Mesh::min_position()
 {
 	if(_min) return *_min;
 	Vertex* v = verts();
-	_min = new Vec3(v->position[0], v->position[1], v->position[2]);
+	_min = new vec<3>(v->position[0], v->position[1], v->position[2]);
 
 	for(int i = vert_count(); i--;)
 	{
@@ -92,11 +92,11 @@ Vec3 Mesh::min_position()
 }
 
 //------------------------------------------------------------------------------
-Vec3 Mesh::max_position()
+vec<3> Mesh::max_position()
 {
 	if(_max) return *_max;
 	Vertex* v = verts();
-	_max = new Vec3(v->position[0], v->position[1], v->position[2]);
+	_max = new vec<3>(v->position[0], v->position[1], v->position[2]);
 
 	for(int i = vert_count(); i--;)
 	{
@@ -114,10 +114,10 @@ Vec3 Mesh::max_position()
 
 
 //------------------------------------------------------------------------------
-Vec3 Mesh::box_dimensions()
+vec<3> Mesh::box_dimensions()
 {
-	Vec3 min = min_position();
-	Vec3 max = max_position();
+	vec<3> min = min_position();
+	vec<3> max = max_position();
 	return max - min;
 }
 
@@ -141,8 +141,8 @@ STLMesh::STLMesh(int fd)
 	// allocate space for the model's geometry
 	unsigned int vert_count = this->tri_count * 3;
 	all_verts = new Vertex[vert_count];
-	all_positions = new Vec3[vert_count];
-	all_normals = new Vec3[this->tri_count];
+	all_positions = new vec<3>[vert_count];
+	all_normals = new vec<3>[this->tri_count];
 	this->tris = new STLTri[this->tri_count];
 	this->_indices = new unsigned int[vert_count];
 
@@ -167,8 +167,8 @@ STLMesh::STLMesh(int fd)
 		tri->normal = all_normals + i;
 
 		// read from file
-		read(fd, tri->normal, sizeof(Vec3));
-		read(fd, tri->verts, sizeof(Vec3) * 3);
+		read(fd, tri->normal, sizeof(vec<3>));
+		read(fd, tri->verts, sizeof(vec<3>) * 3);
 		read(fd, &tri->attr, sizeof(tri->attr));
 
 		// Copy positions and normals into contiguious array
@@ -264,7 +264,7 @@ Plane::Plane(float size, int subdivisions)
 }
 //------------------------------------------------------------------------------
 
-Plane::Plane(Vec3 c0, Vec3 c1)
+Plane::Plane(vec<3> c0, vec<3> c1)
 {
 	Vertex verts[4] = {
 		{ { c0.x, c0.y, c0.z } },
@@ -353,7 +353,7 @@ void Heightmap::generate(Tex texture, int resolution)
 }
 
 //------------------------------------------------------------------------------
-Volume::Volume(Vec3 corner0, Vec3 corner1, int divisions)
+Volume::Volume(vec<3> corner0, vec<3> corner1, int divisions)
 {
 	_corners[0] = corner0;
 	_corners[1] = corner1;
@@ -372,21 +372,21 @@ void Volume::generate(float(*density_at)(vec3 loc))
 
 	float div = _divisions;
 
-	Vec3& p0 = _corners[0];
-	Vec3& p1 = _corners[1];
-	Vec3 block_delta = (p1 - p0);
-	Vec3 voxel_delta = block_delta / div;
+	vec<3>& p0 = _corners[0];
+	vec<3>& p1 = _corners[1];
+	vec<3> block_delta = (p1 - p0);
+	vec<3> voxel_delta = block_delta / div;
 
 	for (int x = _divisions; x--;)
 	for (int y = _divisions; y--;)
 	for (int z = _divisions; z--;)
 	{
-		Vec3 voxel_index(x, y, z);
-		Vec3 p[8];  // voxel corners
+		vec<3> voxel_index(x, y, z);
+		vec<3> p[8];  // voxel corners
 		float d[8]; // densities at each corner
 		uint8_t voxel_case = 0;
 
-		Vec3 c[8] = {
+		vec<3> c[8] = {
 			{ 0.f, 0.f, 0.f },
 			{ 0.f, 1.f, 0.f },
 			{ 1.f, 1.f, 0.f },
@@ -437,7 +437,7 @@ void Volume::generate(float(*density_at)(vec3 loc))
 			w[i] = d[p0_i] / (d[p0_i] - d[p1_i]);
 
 			Vertex v = {};
-			Vec3 _p = p[p1_i] * w[i] + p[p0_i] * (1 - w[i]);
+			vec<3> _p = p[p1_i] * w[i] + p[p0_i] * (1 - w[i]);
 			vec3_copy(v.position, _p.v);
 
 			indices.push_back(vertices.size());

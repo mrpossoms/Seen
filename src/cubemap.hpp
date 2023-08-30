@@ -19,11 +19,11 @@ public:
 
 	void draw(Viewer* viewer) {};
 	void draw(Viewer* viewer, Scene* scene, std::vector<Drawable*>& excluding);
-	void draw_at(Vec3 position, Scene* scene, std::vector<Drawable*>& excluding);
+	void draw_at(vec<3> position, Scene* scene, std::vector<Drawable*>& excluding);
 
 	void finish();
 
-	mat4x4_t side_projection;
+	mat<4,4> side_projection;
 private:
 	GLuint _map;
 	GLint _last_viewport[4];
