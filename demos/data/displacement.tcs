@@ -2,16 +2,16 @@
 
 layout(vertices = 3) out;
 
-in vec3 v_pos[];      // pixel view space position
+in vec<3> v_pos[];      // pixel view space position
 in vec2 v_texcoord[]; // texture coords
-in vec3 v_normal[];   // normal
-in vec3 v_tangent[];
+in vec<3> v_normal[];   // normal
+in vec<3> v_tangent[];
 
-out vec3 tc_pos[];
+out vec<3> tc_pos[];
 out vec2 tc_texcoord[];
-out vec3 tc_normal[];
-out vec3 tc_tangent[];
-out vec3 tc_binormal[];
+out vec<3> tc_normal[];
+out vec<3> tc_tangent[];
+out vec<3> tc_binormal[];
 out float tc_displacement_weight[];
 
 uniform float TessLevelInner;

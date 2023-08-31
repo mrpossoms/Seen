@@ -34,15 +34,15 @@ void Mesh::compute_normals()
 
 	for(unsigned int i = 0; i < indices.size(); i += 3)
 	{
-		vec3 diff[2];
+		vec<3> diff[2];
 
-		vec3_sub(diff[0], v[indices[i + 0]].position, v[indices[i + 1]].position);
-		vec3_sub(diff[1], v[indices[i + 0]].position, v[indices[i + 2]].position);
+		vec<3>_sub(diff[0], v[indices[i + 0]].position, v[indices[i + 1]].position);
+		vec<3>_sub(diff[1], v[indices[i + 0]].position, v[indices[i + 2]].position);
 
 		Vertex* vert = v + indices[i];
-		vec3 cross;
-		vec3_mul_cross(cross, diff[0], diff[1]);
-		vec3_norm(vert->normal, cross);
+		vec<3> cross;
+		vec<3>_mul_cross(cross, diff[0], diff[1]);
+		vec<3>_norm(vert->normal, cross);
 
 		if(isnan(vert->normal[0]) || isnan(vert->normal[1]) || isnan(vert->normal[2]))
 		{
@@ -61,11 +61,11 @@ void Mesh::compute_tangents()
 	for(unsigned int i = 0; i < indices.size(); i += 3)
 	{
 
-		vec3_sub(v[indices[i + 0]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
+		vec<3>_sub(v[indices[i + 0]].tangent, v[indices[i]].position, v[indices[i + 1]].position);
 
 		for(int j = 3; j--;)
 		{
-			vec3_norm(v[indices[i + j]].tangent, v[indices[i + j]].tangent);
+			vec<3>_norm(v[indices[i + j]].tangent, v[indices[i + j]].tangent);
 		}
 	}
 }
@@ -173,12 +173,12 @@ STLMesh::STLMesh(int fd)
 
 		// Copy positions and normals into contiguious array
 		// for rendering
-		vec3_copy(all_verts[(i * 3) + 0].position , tri->verts[0].v);
-		vec3_copy(all_verts[(i * 3) + 0].normal   , tri->normal->v);
-		vec3_copy(all_verts[(i * 3) + 1].position , tri->verts[1].v);
-		vec3_copy(all_verts[(i * 3) + 1].normal   , tri->normal->v);
-		vec3_copy(all_verts[(i * 3) + 2].position , tri->verts[2].v);
-		vec3_copy(all_verts[(i * 3) + 2].normal   , tri->normal->v);
+		vec<3>_copy(all_verts[(i * 3) + 0].position , tri->verts[0].v);
+		vec<3>_copy(all_verts[(i * 3) + 0].normal   , tri->normal->v);
+		vec<3>_copy(all_verts[(i * 3) + 1].position , tri->verts[1].v);
+		vec<3>_copy(all_verts[(i * 3) + 1].normal   , tri->normal->v);
+		vec<3>_copy(all_verts[(i * 3) + 2].position , tri->verts[2].v);
+		vec<3>_copy(all_verts[(i * 3) + 2].normal   , tri->normal->v);
 	}
 
 	compute_tangents();
@@ -273,17 +273,17 @@ Plane::Plane(vec<3> c0, vec<3> c1)
 		{ { c1.x, c1.y, c1.z } },
 	};
 
-	vec3_t normal, d[2];
-	vec3_sub(d[0].v, verts[0].position, verts[1].position);
-	vec3_sub(d[1].v, verts[0].position, verts[2].position);
-	vec3_mul_cross(normal.v, d[0].v, d[1].v);
-	vec3_norm(verts[0].normal, normal.v);
+	vec<3> normal, d[2];
+	vec<3>_sub(d[0].v, verts[0].position, verts[1].position);
+	vec<3>_sub(d[1].v, verts[0].position, verts[2].position);
+	vec<3>_mul_cross(normal.v, d[0].v, d[1].v);
+	vec<3>_norm(verts[0].normal, normal.v);
 
 	for(int i = 4; i--;)
 	{
 		if (i > 0)
 		{
-			vec3_copy(verts[i].normal, verts[0].normal);
+			vec<3>_copy(verts[i].normal, verts[0].normal);
 		}
 
 		printf("%f %f %f\n", verts[i].normal[0], verts[i].normal[1], verts[i].normal[2]);
@@ -366,7 +366,7 @@ Volume::Volume(vec<3> corner0, vec<3> corner1, int divisions)
 }
 
 //------------------------------------------------------------------------------
-void Volume::generate(float(*density_at)(vec3 loc))
+void Volume::generate(float(*density_at)(vec<3> loc))
 {
 	#include "mc_luts.hpp"
 
@@ -438,7 +438,7 @@ void Volume::generate(float(*density_at)(vec3 loc))
 
 			Vertex v = {};
 			vec<3> _p = p[p1_i] * w[i] + p[p0_i] * (1 - w[i]);
-			vec3_copy(v.position, _p.v);
+			vec<3>_copy(v.position, _p.v);
 
 			indices.push_back(vertices.size());
 			vertices.push_back(v);
@@ -451,8 +451,8 @@ void Volume::generate(float(*density_at)(vec3 loc))
 	for (int i = 0; i < vertices.size(); i++)
 	{
 		const float s = 0.1;
-		vec3 grad;
-		vec3 deltas[3][2] = {
+		vec<3> grad;
+		vec<3> deltas[3][2] = {
 			{{ s, 0, 0 }, { -s, 0, 0 }},
 			{{ 0, s, 0 }, { 0, -s, 0 }},
 			{{ 0, 0, s }, { 0,  0, -s }},
@@ -461,13 +461,13 @@ void Volume::generate(float(*density_at)(vec3 loc))
 
 		for (int j = 3; j--;)
 		{
-			vec3 samples[2];
-			vec3_add(samples[0], v.position, deltas[j][0]);
-			vec3_add(samples[1], v.position, deltas[j][1]);
+			vec<3> samples[2];
+			vec<3>_add(samples[0], v.position, deltas[j][0]);
+			vec<3>_add(samples[1], v.position, deltas[j][1]);
 			grad[j] = density_at(samples[0]) - density_at(samples[1]);
 		}
 
-		vec3_norm(v.normal, grad);
+		vec<3>_norm(v.normal, grad);
 	}
 }
 //------------------------------------------------------------------------------
@@ -491,10 +491,10 @@ struct ObjLine {
 	ObjLineType type;
 	char str[1024];
 	union {
-		vec3 position;
-		vec3 texture;
-		vec3 normal;
-		vec3 parameter;
+		vec<3> position;
+		vec<3> texture;
+		vec<3> normal;
+		vec<3> parameter;
 		struct {
 			int pos_idx[3], tex_idx[3], norm_idx[3];
 		} face;
@@ -628,26 +628,26 @@ OBJMesh::OBJMesh(int fd)
 				break;
 			case POSITION:
 			{
-				vec3_t p = { { l.position[0], l.position[1], l.position[2] } };
+				vec<3> p = { { l.position[0], l.position[1], l.position[2] } };
 				positions.push_back(p);
 			}
 				break;
 			case TEXTURE:
 			{
-				vec3_t t = { { l.texture[0], l.texture[1], l.texture[2] } };
+				vec<3> t = { { l.texture[0], l.texture[1], l.texture[2] } };
 				tex_coords.push_back(t);
 			}
 				break;
 			case NORMAL:
 			{
 				// printf("n %f %f %f\n", l.normal[0], l.normal[1], l.normal[2] } };
-				vec3_t n = { { l.normal[0], l.normal[1], l.normal[2] } };
+				vec<3> n = { { l.normal[0], l.normal[1], l.normal[2] } };
 				normals.push_back(n);
 			}
 				break;
 			case PARAMETER:
 			{
-				vec3_t p = { { l.parameter[0], l.parameter[1], l.parameter[2] } };
+				vec<3> p = { { l.parameter[0], l.parameter[1], l.parameter[2] } };
 				params.push_back(p);
 			}
 				break;
@@ -656,9 +656,9 @@ OBJMesh::OBJMesh(int fd)
 				for(int i = 0; i < 3; ++i)
 				{
 					Vertex v = {};
-					if(l.face.pos_idx[i])  vec3_copy(v.position, positions[l.face.pos_idx[i] - 1].v);
-					if(l.face.tex_idx[i])  vec3_copy(v.texture,  tex_coords[l.face.tex_idx[i] - 1].v);
-					if(l.face.norm_idx[i]) vec3_copy(v.normal,   normals[l.face.norm_idx[i] - 1].v);
+					if(l.face.pos_idx[i])  vec<3>_copy(v.position, positions[l.face.pos_idx[i] - 1].v);
+					if(l.face.tex_idx[i])  vec<3>_copy(v.texture,  tex_coords[l.face.tex_idx[i] - 1].v);
+					if(l.face.norm_idx[i]) vec<3>_copy(v.normal,   normals[l.face.norm_idx[i] - 1].v);
 
 					char token[21] = {};
 
@@ -824,7 +824,7 @@ void Model::draw()
 
 	for(int i = 4; i--;)
 	{
-		glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec3) * i));
+		glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(vec<3>) * i));
 	}
 
 

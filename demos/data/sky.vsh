@@ -1,14 +1,14 @@
 #version 330 core
 
-layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec3 a_normal;
-layout(location = 2) in vec3 a_tangent;
-layout(location = 3) in vec3 a_texcoord;
+layout(location = 0) in vec<3> a_position;
+layout(location = 1) in vec<3> a_normal;
+layout(location = 2) in vec<3> a_tangent;
+layout(location = 3) in vec<3> a_texcoord;
 
 out vec2 v_texcoord; // texture coords
-out vec3 v_normal;   // normal
-out vec3 v_binormal; // binormal (for TBN basis calc)
-out vec3 v_pos;      // pixel view space position
+out vec<3> v_normal;   // normal
+out vec<3> v_binormal; // binormal (for TBN basis calc)
+out vec<3> v_pos;      // pixel view space position
 
 
 uniform mat4 u_view_matrix;
@@ -19,7 +19,7 @@ uniform mat4 u_world_matrix;
 
 void main()
 {
-	vec3 binormal = cross(a_normal, a_tangent);
+	vec<3> binormal = cross(a_normal, a_tangent);
 
 	v_texcoord = a_texcoord.xy;
 	v_normal   = u_normal_matrix * a_normal;

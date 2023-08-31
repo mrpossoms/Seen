@@ -1,6 +1,6 @@
 #include "seen.hpp"
 
-static float sphere(vec3 v)
+static float sphere(vec<3> v)
 {
 	return (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]) - 1.f;
 }

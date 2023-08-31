@@ -41,8 +41,8 @@ int main(int argc, const char* argv[])
 		vec4_t albedo = { 1, 1, 1, 1 };
 		mat<4,4> world;
 		mat<3,3> rot;
-		vec3_t light_dir = { 1, 0, 1 };
-		vec3 axis = { 0.0, 1.0, 0.0 };
+		vec<3> light_dir = { 1, 0, 1 };
+		vec<3> axis = { 0.0, 1.0, 0.0 };
 
 		if (argc > 2)
 		{
@@ -50,7 +50,7 @@ int main(int argc, const char* argv[])
 			light_dir.z = seen::rf(-1, 1);
 			uv_rot = seen::rf(0, 2 * M_PI);
 
-			vec3_norm(axis, axis);
+			vec<3>_norm(axis, axis);
 			quat_from_axis_angle(q_bale_ori.v, axis[0], axis[1], axis[2], seen::rf(0, 2 * M_PI));
 			camera.fov(M_PI / seen::rf(1,3));
 			mat<4,4>ranslate(world.v, seen::rf(-0.5, 0.5), seen::rf(-1, 1), seen::rf(-1, 1));
@@ -75,7 +75,7 @@ int main(int argc, const char* argv[])
 		shader["u_world_matrix"] << world;
 		shader["u_normal_matrix"] << rot;
 
-		vec3_t tint = { 0.75, 0.75, 0.75 };
+		vec<3> tint = { 0.75, 0.75, 0.75 };
 
 		shader["u_light_dir"] << light_dir;
 		shader["u_texcoord_rotation"] << uv_rot;
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
 
 		shader["us_displacement"] << displacement_tex;
 
-		vec3_t tint = { 1.0, 1.0, 1.0 };
+		vec<3> tint = { 1.0, 1.0, 1.0 };
 
 		shader["u_displacement_weight"] << 0.5f;
 		shader["TessLevelInner"] << 5.0f;

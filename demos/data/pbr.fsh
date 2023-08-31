@@ -6,9 +6,9 @@
 // #define USE_ROUGHNESS_MAP
 
 in vec2 v_texcoord; // texture coords
-in vec3 v_normal;   // normal
-in vec3 v_binormal; // binormal (for TBN basis calc)
-in vec3 v_pos;      // pixel view space position
+in vec<3> v_normal;   // normal
+in vec<3> v_binormal; // binormal (for TBN basis calc)
+in vec<3> v_pos;      // pixel view space position
 
 out vec4 color;
 
@@ -52,9 +52,9 @@ float phong_diffuse()
 
 // compute fresnel specular factor for given base specular and product
 // product could be NdV or VdH depending on used technique
-vec3 fresnel_factor(in vec3 f0, in float product)
+vec<3> fresnel_factor(in vec<3> f0, in float product)
 {
-    return mix(f0, vec3(1.0), pow(1.01 - product, 5.0));
+    return mix(f0, vec<3>(1.0), pow(1.01 - product, 5.0));
 }
 
 
@@ -95,9 +95,9 @@ float G_schlick(in float roughness, in float NdV, in float NdL)
 
 
 // simple phong specular calculation with normalization
-vec3 phong_specular(in vec3 V, in vec3 L, in vec3 N, in vec3 specular, in float roughness)
+vec<3> phong_specular(in vec<3> V, in vec<3> L, in vec<3> N, in vec<3> specular, in float roughness)
 {
-    vec3 R = reflect(-L, N);
+    vec<3> R = reflect(-L, N);
     float spec = max(0.0, dot(V, R));
 
     float k = 1.999 / (roughness * roughness);
@@ -106,7 +106,7 @@ vec3 phong_specular(in vec3 V, in vec3 L, in vec3 N, in vec3 specular, in float 
 }
 
 // simple blinn specular calculation with normalization
-vec3 blinn_specular(in float NdH, in vec3 specular, in float roughness)
+vec<3> blinn_specular(in float NdH, in vec<3> specular, in float roughness)
 {
     float k = 1.999 / (roughness * roughness);
 
@@ -114,7 +114,7 @@ vec3 blinn_specular(in float NdH, in vec3 specular, in float roughness)
 }
 
 // cook-torrance specular calculation
-vec3 cooktorrance_specular(in float NdL, in float NdV, in float NdH, in vec3 specular, in float roughness)
+vec<3> cooktorrance_specular(in float NdL, in float NdV, in float NdH, in vec<3> specular, in float roughness)
 {
 #ifdef COOK_BLINN
     float D = D_blinn(roughness, NdH);
@@ -138,18 +138,18 @@ vec3 cooktorrance_specular(in float NdL, in float NdV, in float NdH, in vec3 spe
 
 void main() {
     // point light direction to point in view space
-    vec3 local_light_pos = (view_matrix * (/*world_matrix */ light_pos)).xyz;
+    vec<3> local_light_pos = (view_matrix * (/*world_matrix */ light_pos)).xyz;
 
     // light attenuation
     float A = 1.0;// / dot(local_light_pos - v_pos, local_light_pos - v_pos);
 
     // L, V, H vectors
-    vec3 L = normalize(local_light_pos - v_pos);
-    vec3 V = normalize(-v_pos);
-    vec3 H = normalize(L + V);
-    vec3 nn = normalize(v_normal);
+    vec<3> L = normalize(local_light_pos - v_pos);
+    vec<3> V = normalize(-v_pos);
+    vec<3> H = normalize(L + V);
+    vec<3> nn = normalize(v_normal);
 
-    vec3 nb = normalize(v_binormal);
+    vec<3> nb = normalize(v_binormal);
     mat<3, 3> tbn = mat<3, 3>(nb, cross(nn, nb), nn);
 
 
@@ -159,16 +159,16 @@ void main() {
     // normal map
 #ifdef USE_NORMAL_MAP
     // tbn basis
-    vec3 N = tbn * (texture(norm, texcoord).xyz * 2.0 - 1.0);
+    vec<3> N = tbn * (texture(norm, texcoord).xyz * 2.0 - 1.0);
 #else
-    vec3 N = nn;
+    vec<3> N = nn;
 #endif
 
     // albedo/specular base
 #ifdef USE_ALBEDO_MAP
-    vec3 base = texture(tex, texcoord).xyz;
+    vec<3> base = texture(tex, texcoord).xyz;
 #else
-    vec3 base = albedo.xyz;
+    vec<3> base = albedo.xyz;
 #endif
 
     // roughness
@@ -183,22 +183,22 @@ void main() {
 
     // mix between metal and non-metal material, for non-metal
     // constant base specular factor of 0.04 grey is used
-    vec3 specular = mix(vec3(0.04), base, metallic);
+    vec<3> specular = mix(vec<3>(0.04), base, metallic);
 
     // TODO: put env map back
     // diffuse IBL term
     //    I know that my IBL cubemap has diffuse pre-integrated value in 10th MIP level
     //    actually level selection should be tweakable or from separate diffuse cubemap
     mat<3, 3> tnrm = transpose(normal_matrix);
-    vec3 envdiff = textureLod(envd, tnrm * N, 10).xyz;
-    // vec3 envdiff = texture(envd, tnrm * N).xyz;
+    vec<3> envdiff = textureLod(envd, tnrm * N, 10).xyz;
+    // vec<3> envdiff = texture(envd, tnrm * N).xyz;
 
     // specular IBL term
     //    11 magic number is total MIP levels in cubemap, this is simplest way for picking
     //    MIP level from roughness value (but it's not correct, however it looks fine)
-    vec3 refl = tnrm * reflect(-V, N);
-    vec3 envspec = textureLod(envd, refl, max(roughness * 11.0, textureQueryLod(envd, refl).y)).xyz;
-    // vec3 envspec = texture(envd, nn).xyz;
+    vec<3> refl = tnrm * reflect(-V, N);
+    vec<3> envspec = textureLod(envd, refl, max(roughness * 11.0, textureQueryLod(envd, refl).y)).xyz;
+    // vec<3> envspec = texture(envd, nn).xyz;
 
 
     // compute material reflectance
@@ -215,45 +215,45 @@ void main() {
 
 #ifdef PHONG
     // specular reflectance with PHONG
-    vec3 specfresnel = fresnel_factor(specular, NdV);
-    vec3 specref = phong_specular(V, L, N, specfresnel, roughness);
+    vec<3> specfresnel = fresnel_factor(specular, NdV);
+    vec<3> specref = phong_specular(V, L, N, specfresnel, roughness);
 #endif
 
 #ifdef BLINN
     // specular reflectance with BLINN
-    vec3 specfresnel = fresnel_factor(specular, HdV);
-    vec3 specref = blinn_specular(NdH, specfresnel, roughness);
+    vec<3> specfresnel = fresnel_factor(specular, HdV);
+    vec<3> specref = blinn_specular(NdH, specfresnel, roughness);
 #endif
 
 #ifdef COOK
     // specular reflectance with COOK-TORRANCE
-    vec3 specfresnel = fresnel_factor(specular, HdV);
-    vec3 specref = cooktorrance_specular(NdL, NdV, NdH, specfresnel, roughness);
+    vec<3> specfresnel = fresnel_factor(specular, HdV);
+    vec<3> specref = cooktorrance_specular(NdL, NdV, NdH, specfresnel, roughness);
 #endif
 
-    specref *= vec3(NdL);
+    specref *= vec<3>(NdL);
 
     // diffuse is common for any model
-    vec3 diffref = (vec3(1.0) - specfresnel) * phong_diffuse() * NdL;
+    vec<3> diffref = (vec<3>(1.0) - specfresnel) * phong_diffuse() * NdL;
 
 
     // compute lighting
-    vec3 reflected_light = vec3(0);
-    vec3 diffuse_light = vec3(0); // initial value == constant ambient light
+    vec<3> reflected_light = vec<3>(0);
+    vec<3> diffuse_light = vec<3>(0); // initial value == constant ambient light
 
     // point light
-    vec3 light_color = vec3(1.0) * A;
+    vec<3> light_color = vec<3>(1.0) * A;
     reflected_light += specref * light_color;
     diffuse_light += diffref * light_color;
 
     // IBL lighting
     vec2 brdf = texture(iblbrdf, vec2(roughness, NdV)).xy;
-    vec3 iblspec = min(vec3(0.99), fresnel_factor(specular, NdV) * brdf.x + brdf.y);
+    vec<3> iblspec = min(vec<3>(0.99), fresnel_factor(specular, NdV) * brdf.x + brdf.y);
     reflected_light += iblspec * envspec;
     diffuse_light += envdiff * (1.0 / PI);
 
     // final result
-    vec3 result = diffuse_light * mix(base, vec3(0.0), metallic) + reflected_light;
+    vec<3> result = diffuse_light * mix(base, vec<3>(0.0), metallic) + reflected_light;
 
 
     color = vec4(texture(envd,v_normal).xyz, 1.0);// + vec4(texture(tex, texcoord)) * 0.1;

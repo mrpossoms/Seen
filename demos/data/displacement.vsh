@@ -1,21 +1,21 @@
 #version 400 core
 
-layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec3 a_normal;
-layout(location = 2) in vec3 a_tangent;
-layout(location = 3) in vec3 a_texcoord;
+layout(location = 0) in vec<3> a_position;
+layout(location = 1) in vec<3> a_normal;
+layout(location = 2) in vec<3> a_tangent;
+layout(location = 3) in vec<3> a_texcoord;
 
-out vec3 v_pos;      // pixel view space position
+out vec<3> v_pos;      // pixel view space position
 out vec2 v_texcoord; // texture coords
-out vec3 v_normal;   // normal
-out vec3 v_tangent;
+out vec<3> v_normal;   // normal
+out vec<3> v_tangent;
 
-// out vec3 v_binormal; // binormal (for TBN basis calc)
+// out vec<3> v_binormal; // binormal (for TBN basis calc)
 // out vec4 v_screen_space;
 
 uniform float u_texcoord_rotation;
 uniform sampler2D us_displacement;
-uniform vec3 u_tex_control;
+uniform vec<3> u_tex_control;
 uniform mat4 u_world_matrix;
 
 void main()

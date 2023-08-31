@@ -2,18 +2,18 @@
 
 layout(triangles, equal_spacing, ccw) in;
 
-in vec3 tc_pos[];
+in vec<3> tc_pos[];
 in vec2 tc_texcoord[];
-in vec3 tc_normal[];
-in vec3 tc_tangent[];
+in vec<3> tc_normal[];
+in vec<3> tc_tangent[];
 
-out vec3 te_pos;
+out vec<3> te_pos;
 out vec2 te_texcoord;
-out vec3 te_normal;
-out vec3 te_tangent;
-out vec3 te_binormal;
+out vec<3> te_normal;
+out vec<3> te_tangent;
+out vec<3> te_binormal;
 
-out vec3 te_patch_distance;
+out vec<3> te_patch_distance;
 
 uniform mat4 u_view_matrix;
 uniform mat4 u_proj_matrix;
@@ -31,19 +31,19 @@ void main()
 	te_texcoord = TRI_LERP(tc_texcoord);
 	te_normal = TRI_LERP(tc_normal);
 	te_tangent = TRI_LERP(tc_tangent);
-	vec3 displacement = texture(us_displacement, te_texcoord).x * u_displacement_weight * te_normal;
+	vec<3> displacement = texture(us_displacement, te_texcoord).x * u_displacement_weight * te_normal;
 	te_pos = TRI_LERP(tc_pos) + displacement;
 	// te_pos += displacement;
 	// te_pos = mix(te_pos, normalize(te_pos), 0.1);
 
-    // te_normal = vec3(0.0);
-    // te_tangent = vec3(0.0);
+    // te_normal = vec<3>(0.0);
+    // te_tangent = vec<3>(0.0);
 
-    // vec3 adj[2];
+    // vec<3> adj[2];
     //
     // for (int i = 0; i < 3; ++i)
     // {
-    //     vec3 diff = tc_pos[i] - te_pos;
+    //     vec<3> diff = tc_pos[i] - te_pos;
     //
     //     if (length(diff) > 0.1)
     //     {

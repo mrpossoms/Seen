@@ -71,7 +71,7 @@ vec<3> Positionable::left()
 
 	quat q;
 	quat_invert(q, _orientation.v);
-	quat_mul_vec3(out, q, VEC3_LEFT.v);
+	quat_mul_vec<3>(out, q, VEC3_LEFT.v);
 
 	return vec<3>(-out[0], -out[1], -out[2]);
 }
@@ -83,7 +83,7 @@ vec<3> Positionable::forward()
 
 	quat q;
 	quat_invert(q, _orientation.v);
-	quat_mul_vec3(out, q, VEC3_FORWARD.v);
+	quat_mul_vec<3>(out, q, VEC3_FORWARD.v);
 
 	return vec<3>(-out[0], -out[1], -out[2]);
 }
@@ -131,9 +131,9 @@ Positionable* Positionable::orientation(quat& ori)
 	mat<4,4>ranslate_in_place(trans, -_position.x, -_position.y, -_position.z);
 	mat<4, 4>_mul(_world.v, rot, trans);
 
-	vec3_norm(normal_matrix.c0, rot[0]);
-	vec3_norm(normal_matrix.c1, rot[1]);
-	vec3_norm(normal_matrix.c2, rot[2]);
+	vec<3>_norm(normal_matrix.c0, rot[0]);
+	vec<3>_norm(normal_matrix.c1, rot[1]);
+	vec<3>_norm(normal_matrix.c2, rot[2]);
 
 	return this;
 }
@@ -144,9 +144,9 @@ void Positionable::orientation(mat<3, 3> rot)
 	quat ori;
 	mat<4, 4> m = {};
 
-	vec3_copy(m[0], rot[0]);
-	vec3_copy(m[1], rot[1]);
-	vec3_copy(m[2], rot[2]);
+	vec<3>_copy(m[0], rot[0]);
+	vec<3>_copy(m[1], rot[1]);
+	vec<3>_copy(m[2], rot[2]);
 
 	quat_from_mat<4, 4>(ori.v, m);
 

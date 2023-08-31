@@ -258,11 +258,11 @@ ShaderProgram& ShaderProgram::builtin_sky()
 	auto sun = fsh.local("sun").as(Shader::vec(3));
 	auto light_angle = fsh.local("light_angle").as(Shader::vec(1));
 
-	fsh.next(left_forward = fsh.vec3(1.0, 0.0, 1.0))
-	   .next(light_dir = fsh.vec3(0.0, 1.0, 1.0))
-	   .next(dark_blue = fsh.vec3(4.0 / 255.0, 39.0 / 255.0, 181.0 / 255.0))
-	   .next(light_blue = fsh.vec3(131.0 / 255.0, 187.0 / 255.0, 248.0 / 255.0))
-	   .next(sun_color = fsh.vec3(253.0 / 255.0, 184.0 / 255.0, 19.0 / 255.0))
+	fsh.next(left_forward = fsh.vec<3>(1.0, 0.0, 1.0))
+	   .next(light_dir = fsh.vec<3>(0.0, 1.0, 1.0))
+	   .next(dark_blue = fsh.vec<3>(4.0 / 255.0, 39.0 / 255.0, 181.0 / 255.0))
+	   .next(light_blue = fsh.vec<3>(131.0 / 255.0, 187.0 / 255.0, 248.0 / 255.0))
+	   .next(sun_color = fsh.vec<3>(253.0 / 255.0, 184.0 / 255.0, 19.0 / 255.0))
 
 	   .next(norm = fsh.input("view_position_*").normalize())
 	   .next(light_angle = (light_dir.normalize().dot(norm) + 1.0))
@@ -556,7 +556,7 @@ void ShaderParam::operator<<(float f)
 }
 //------------------------------------------------------------------------------
 
-void ShaderParam::operator<<(vec3_t& v)
+void ShaderParam::operator<<(vec<3>& v)
 {
 	glUniform3fv(_uniform, 1, (GLfloat*)v.v);
 }

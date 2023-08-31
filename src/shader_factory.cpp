@@ -161,9 +161,9 @@ Shader::Expression Shader::vec2(float x, float y)
 }
 //------------------------------------------------------------------------------
 
-Shader::Expression Shader::vec3(float x, float y, float z)
+Shader::Expression Shader::vec<3>(float x, float y, float z)
 {
-	return call("vec3", {
+	return call("vec<3>", {
 		{std::to_string(x)}, {std::to_string(y)}, {std::to_string(z)}
 	});
 }
@@ -534,7 +534,7 @@ Shader::Expression Shader::builtin(std::string gl_name)
 	};
 
 	static std::map<std::string, Shader::Variable> tess_eval_builtin_map = {
-		{ "gl_TessCoord", Shader::Variable(VRole::VAR_IN, "vec3", "gl_TessCoord") },
+		{ "gl_TessCoord", Shader::Variable(VRole::VAR_IN, "vec<3>", "gl_TessCoord") },
 		{ "gl_PatchVerticesIn",     Shader::Variable(VRole::VAR_IN, "int", "gl_PatchVerticesIn") },
 		{ "gl_PrimitiveID",    Shader::Variable(VRole::VAR_IN, "int", "gl_PrimitiveID") },
 		{ "gl_TessLevelOuter",     Shader::Variable(VRole::VAR_IN, "float", "gl_TessLevelOuter").array(4) },

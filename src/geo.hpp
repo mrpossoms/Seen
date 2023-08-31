@@ -28,10 +28,10 @@ struct STLVert
 //------------------------------------------------------------------------------
 struct Vertex
 {
-	vec3 position;
-	vec3 normal;
-	vec3 tangent;
-	vec3 texture;
+	vec<3> position;
+	vec<3> normal;
+	vec<3> tangent;
+	vec<3> texture;
 };
 //------------------------------------------------------------------------------
 struct Mesh
@@ -51,11 +51,11 @@ struct Mesh
 	vec<3> box_dimensions();
 
 protected:
-	std::vector<vec3_t> positions;
-	std::vector<vec3_t> tex_coords;
-	std::vector<vec3_t> normals;
+	std::vector<vec<3>> positions;
+	std::vector<vec<3>> tex_coords;
+	std::vector<vec<3>> normals;
 
-	std::vector<vec3_t> params;
+	std::vector<vec<3>> params;
 	std::vector<uint16_t> indices;
 	std::vector<Vertex> vertices;
 };
@@ -140,7 +140,7 @@ struct Volume : Mesh
 {
 	Volume(vec<3> corner0, vec<3> corner1, int divisions);
 
-	void generate(float(*density_at)(vec3 loc));
+	void generate(float(*density_at)(vec<3> loc));
 private:
 	int _divisions;
 	vec<3> _corners[2];
